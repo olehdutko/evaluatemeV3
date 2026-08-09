@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main, '001-01-architecture']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npx prisma generate
+      - run: npm run test
+      - run: npm run test:integration
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'mysql://root:root@localhost:3306/evaluateme_test' }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'test-secret-min-32-chars-long-for-ci-only' }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET || 'test-refresh-secret-min-32-chars-long-for-ci-only' }}
+          API_PORT: '3001'

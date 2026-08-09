@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String            @id @default(uuid()) @db.VarChar(36)
+  email             String            @unique @db.VarChar(255)
+  passwordHash      String?           @db.VarChar(255)
+  legacyMd5Hash     String?           @db.VarChar(255)
+  role              String            @db.VarChar(20)
+  activationStatus  String            @db.VarChar(20)
+  companyProfileId  String?           @unique @db.VarChar(36)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@map("users")
+}
+
+model CompanyProfile {
+  id                    String    @id @default(uuid()) @db.VarChar(36)
+  userId                String    @unique @db.VarChar(36)
+  companyName           String    @db.VarChar(255)
+  address               String?   @db.VarChar(255)
+  phone                 String?   @db.VarChar(50)
+  country               String?   @db.VarChar(100)
+  occupation            String?   @db.VarChar(100)
+  availableTests        Int       @default(0)
+  availableAccessCodes  Int       @default(0)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("company_profiles")
+}
+
+model Campaign {
+  id              String    @id @default(uuid()) @db.VarChar(36)
+  name            String    @db.VarChar(255)
+  description     String?   @db.Text
+  status          String    @db.VarChar(20)
+  createdByUserId String    @db.VarChar(36)
+  startDate       DateTime?
+  endDate         DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("campaigns")
+}
+
+model CampaignHistory {
+  id              String   @id @default(uuid()) @db.VarChar(36)
+  campaignId      String   @db.VarChar(36)
+  status          String   @db.VarChar(20)
+  changedByUserId String   @db.VarChar(36)
+  changedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("campaign_history")
+}
+
+model Technology {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  name        String   @unique @db.VarChar(100)
+  slug        String   @unique @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@map("technologies")
+}
+
+model Test {
+  id              String   @id @default(uuid()) @db.VarChar(36)
+  title           String   @db.VarChar(255)
+  technologyId    String   @db.VarChar(36)
+  status          String   @db.VarChar(20)
+  durationMinutes Int?
+  passingScore    Int?
+  createdByUserId String   @db.VarChar(36)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("tests")
+}
+
+model Question {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  testId      String   @db.VarChar(36)
+  content     String   @db.Text
+  type        String   @db.VarChar(20)
+  orderIndex  Int
+  score       Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("questions")
+}
+
+model Answer {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  questionId  String   @db.VarChar(36)
+  content     String   @db.Text
+  isCorrect   Boolean
+  orderIndex  Int
+  createdAt   DateTime @default(now())
+
+  @@map("answers")
+}
+
+model FreeSampleQuestion {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  technologyId String  @db.VarChar(36)
+  content     String   @db.Text
+  type        String   @db.VarChar(20)
+  explanation String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@map("free_sample_questions")
+}
+
+model UserSession {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  sessionId     String    @db.VarChar(255)
+  questionId    String    @db.VarChar(36)
+  userId        String    @db.VarChar(36)
+  testId        String    @db.VarChar(36)
+  answerId      String?   @db.VarChar(36)
+  status        String    @db.VarChar(20)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@unique([sessionId, questionId])
+  @@map("user_sessions")
+}
+
+model UserResult {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  resultCode  String    @unique @db.VarChar(255)
+  userId      String    @db.VarChar(36)
+  testId      String    @db.VarChar(36)
+  score       Int?
+  maxScore    Int?
+  status      String    @db.VarChar(20)
+  sessionId   String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("user_results")
+}
+
+model CandidateSession {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  sessionId     String    @db.VarChar(255)
+  questionId    String    @db.VarChar(36)
+  candidateId   String?   @db.VarChar(36)
+  accessCodeId  String    @db.VarChar(36)
+  answerId      String?   @db.VarChar(36)
+  status        String    @db.VarChar(20)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@unique([sessionId, questionId])
+  @@map("candidate_sessions")
+}
+
+model CandidateResult {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  resultCode  String    @unique @db.VarChar(255)
+  candidateId String?   @db.VarChar(36)
+  testId      String    @db.VarChar(36)
+  score       Int?
+  maxScore    Int?
+  status      String    @db.VarChar(20)
+  sessionId   String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("candidate_results")
+}
+
+model AccessCode {
+  id              String    @id @default(uuid()) @db.VarChar(36)
+  code            String    @unique @db.VarChar(100)
+  companyId       String    @db.VarChar(36)
+  testId          String    @db.VarChar(36)
+  status          String    @db.VarChar(20)
+  expiresAt       DateTime?
+  usedAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@map("access_codes")
+}
+
+model Order {
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  orderNumber String   @unique @db.VarChar(100)
+  userId      String   @db.VarChar(36)
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String   @default("USD") @db.VarChar(3)
+  status      String   @db.VarChar(20)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("orders")
+}
+
+model EmailTemplate {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  name      String   @unique @db.VarChar(100)
+  subject   String   @db.VarChar(255)
+  bodyHtml  String   @db.Text
+  bodyText  String?  @db.Text
+  variables String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("email_templates")
+}
+
+model LandingAd {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  title     String   @db.VarChar(255)
+  content   String?  @db.Text
+  imageUrl  String?  @db.VarChar(500)
+  linkUrl   String?  @db.VarChar(500)
+  position  String   @db.VarChar(20)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("landing_ads")
+}
+
+model CreditSetting {
+  id            String   @id @default(uuid()) @db.VarChar(36)
+  key           String   @unique @db.VarChar(100)
+  value         String   @db.Text
+  updatedByUserId String @db.VarChar(36)
+  updatedAt     DateTime @updatedAt
+
+  @@map("credit_settings")
+}

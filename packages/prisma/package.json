@@ -1,0 +1,24 @@
+{
+  "name": "@evaluateme/prisma",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Prisma schema and migrations for MySQL",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "prisma generate && tsc",
+    "lint": "echo 'No lint'",
+    "test": "echo 'No tests'",
+    "test:integration": "echo 'No integration tests'",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:status": "prisma migrate status"
+  },
+  "devDependencies": {
+    "@evaluateme/tsconfig": "*",
+    "prisma": "^5.10.0",
+    "@prisma/client": "^5.10.0",
+    "typescript": "^5.4.0"
+  }
+}

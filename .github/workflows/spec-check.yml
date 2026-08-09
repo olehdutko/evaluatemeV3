@@ -1,0 +1,34 @@
+name: Spec Check
+
+on:
+  push:
+    branches: [main, '001-01-architecture']
+  pull_request:
+    branches: [main]
+
+jobs:
+  spec-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for prohibited Docker references in specs
+        run: |
+          if grep -R -i -E "docker|docker-compose|container" specs/ docs/ 2>/dev/null; then
+            echo "ERROR: Docker or container references found in specs/docs"
+            exit 1
+          fi
+          echo "OK: No Docker/container references found"
+      - name: Check for prohibited PostgreSQL references as primary database
+        run: |
+          if grep -R -i -E "postgres(ql)?\s+as\s+(the\s+)?primary\s+database|primary\s+database.*postgres" specs/ docs/ 2>/dev/null; then
+            echo "ERROR: PostgreSQL referenced as primary database"
+            exit 1
+          fi
+          echo "OK: No PostgreSQL-as-primary references found"
+      - name: Verify MySQL is explicitly named as primary database
+        run: |
+          if ! grep -R -i "mysql.*primary\|primary.*mysql" specs/ docs/ 2>/dev/null; then
+            echo "ERROR: MySQL not explicitly named as primary database"
+            exit 1
+          fi
+          echo "OK: MySQL explicitly named as primary database"

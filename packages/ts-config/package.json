@@ -1,0 +1,18 @@
+{
+  "name": "@evaluateme/tsconfig",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared TypeScript configuration for EvaluateMe v3",
+  "files": [
+    "tsconfig.json"
+  ],
+  "scripts": {
+    "build": "echo 'No build'",
+    "lint": "echo 'No lint'",
+    "test": "echo 'No tests'",
+    "test:integration": "echo 'No integration tests'"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

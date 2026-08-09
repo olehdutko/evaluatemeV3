@@ -1,0 +1,202 @@
+-- Migration: Add v3 tables and v3 columns to legacy users table
+-- This migration is non-destructive: it only creates new tables and adds nullable columns.
+
+-- Add v3 columns to existing legacy users table (non-destructive)
+ALTER TABLE `users`
+  ADD COLUMN IF NOT EXISTS `role` VARCHAR(20) NULL,
+  ADD COLUMN IF NOT EXISTS `activation_status` VARCHAR(20) NULL,
+  ADD COLUMN IF NOT EXISTS `password_hash` VARCHAR(255) NULL,
+  ADD COLUMN IF NOT EXISTS `company_profile_id` VARCHAR(36) NULL UNIQUE;
+
+-- New v3 InnoDB tables
+CREATE TABLE IF NOT EXISTS `company_profiles` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `user_id` VARCHAR(36) NOT NULL UNIQUE,
+  `company_name` VARCHAR(255) NOT NULL,
+  `address` VARCHAR(255) NULL,
+  `phone` VARCHAR(50) NULL,
+  `country` VARCHAR(100) NULL,
+  `occupation` VARCHAR(100) NULL,
+  `available_tests` INT NOT NULL DEFAULT 0,
+  `available_access_codes` INT NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `campaigns` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL,
+  `description` TEXT NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `created_by_user_id` VARCHAR(36) NOT NULL,
+  `start_date` DATETIME NULL,
+  `end_date` DATETIME NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `campaign_history` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `campaign_id` VARCHAR(36) NOT NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `changed_by_user_id` VARCHAR(36) NOT NULL,
+  `changed_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `technologies` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `name` VARCHAR(100) NOT NULL UNIQUE,
+  `slug` VARCHAR(100) NOT NULL UNIQUE,
+  `description` TEXT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `tests` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `title` VARCHAR(255) NOT NULL,
+  `technology_id` VARCHAR(36) NOT NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `duration_minutes` INT NULL,
+  `passing_score` INT NULL,
+  `created_by_user_id` VARCHAR(36) NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `questions` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `test_id` VARCHAR(36) NOT NULL,
+  `content` TEXT NOT NULL,
+  `type` VARCHAR(20) NOT NULL,
+  `order_index` INT NOT NULL,
+  `score` INT NOT NULL DEFAULT 1,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `answers` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `question_id` VARCHAR(36) NOT NULL,
+  `content` TEXT NOT NULL,
+  `is_correct` BOOLEAN NOT NULL,
+  `order_index` INT NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `free_sample_questions` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `technology_id` VARCHAR(36) NOT NULL,
+  `content` TEXT NOT NULL,
+  `type` VARCHAR(20) NOT NULL,
+  `explanation` TEXT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `user_sessions` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `session_id` VARCHAR(255) NOT NULL,
+  `question_id` VARCHAR(36) NOT NULL,
+  `user_id` VARCHAR(36) NOT NULL,
+  `test_id` VARCHAR(36) NOT NULL,
+  `answer_id` VARCHAR(36) NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `started_at` DATETIME NULL,
+  `completed_at` DATETIME NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `user_sessions_session_question` (`session_id`, `question_id`)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `user_results` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `result_code` VARCHAR(255) NOT NULL UNIQUE,
+  `user_id` VARCHAR(36) NOT NULL,
+  `test_id` VARCHAR(36) NOT NULL,
+  `score` INT NULL,
+  `max_score` INT NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `session_id` VARCHAR(255) NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `candidate_sessions` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `session_id` VARCHAR(255) NOT NULL,
+  `question_id` VARCHAR(36) NOT NULL,
+  `candidate_id` VARCHAR(36) NULL,
+  `access_code_id` VARCHAR(36) NOT NULL,
+  `answer_id` VARCHAR(36) NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `started_at` DATETIME NULL,
+  `completed_at` DATETIME NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `candidate_sessions_session_question` (`session_id`, `question_id`)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `candidate_results` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `result_code` VARCHAR(255) NOT NULL UNIQUE,
+  `candidate_id` VARCHAR(36) NULL,
+  `test_id` VARCHAR(36) NOT NULL,
+  `score` INT NULL,
+  `max_score` INT NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `session_id` VARCHAR(255) NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `access_codes` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `code` VARCHAR(100) NOT NULL UNIQUE,
+  `company_id` VARCHAR(36) NOT NULL,
+  `test_id` VARCHAR(36) NOT NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `expires_at` DATETIME NULL,
+  `used_at` DATETIME NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `orders` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `order_number` VARCHAR(100) NOT NULL UNIQUE,
+  `user_id` VARCHAR(36) NOT NULL,
+  `amount` DECIMAL(10, 2) NOT NULL,
+  `currency` VARCHAR(3) NOT NULL DEFAULT 'USD',
+  `status` VARCHAR(20) NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `email_templates` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `name` VARCHAR(100) NOT NULL UNIQUE,
+  `subject` VARCHAR(255) NOT NULL,
+  `body_html` TEXT NOT NULL,
+  `body_text` TEXT NULL,
+  `variables` TEXT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `landing_ads` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `title` VARCHAR(255) NOT NULL,
+  `content` TEXT NULL,
+  `image_url` VARCHAR(500) NULL,
+  `link_url` VARCHAR(500) NULL,
+  `position` VARCHAR(20) NOT NULL,
+  `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `credit_settings` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `key` VARCHAR(100) NOT NULL UNIQUE,
+  `value` TEXT NOT NULL,
+  `updated_by_user_id` VARCHAR(36) NOT NULL,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
