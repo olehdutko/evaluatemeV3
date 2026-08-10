@@ -1,16 +1,25 @@
+type BadgeStatus = 'ok' | 'healthy' | 'error' | 'unhealthy' | 'warning' | 'info' | 'pending';
+
 interface StatusBadgeProps {
-  status: 'ok' | 'error' | 'pending';
+  status: BadgeStatus;
 }
 
-const styles: Record<StatusBadgeProps['status'], string> = {
-  ok: 'bg-green-100 text-green-800',
-  error: 'bg-red-100 text-red-800',
-  pending: 'bg-yellow-100 text-yellow-800',
+const colorMap: Record<string, string> = {
+  ok: 'border-success text-success',
+  healthy: 'border-success text-success',
+  error: 'border-error text-error',
+  unhealthy: 'border-error text-error',
+  warning: 'border-warning text-warning',
+  info: 'border-info text-info',
+  pending: 'border-info text-info',
 };
 
 export function StatusBadge({ status }: StatusBadgeProps): JSX.Element {
+  const normalized = status.toLowerCase();
+  const colorClass = colorMap[normalized] ?? colorMap.info;
+
   return (
-    <span className={`inline-block rounded px-2 py-0.5 text-sm font-medium ${styles[status]}`}>
+    <span className={`inline-block border-l-4 px-3 py-1 font-mono text-xs uppercase tracking-wider bg-bg-secondary ${colorClass}`}>
       {status}
     </span>
   );

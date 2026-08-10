@@ -4,8 +4,11 @@ import TestSessionPage from '../../../../src/app/tests/[sessionId]/page';
 import * as navigation from 'next/navigation';
 import * as api from '../../../../src/lib/test-engine.api';
 
+const mockPush = jest.fn();
+
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(),
+  useRouter: jest.fn(),
 }));
 
 jest.mock('../../../../src/lib/test-engine.api', () => ({
@@ -17,12 +20,13 @@ describe('TestSessionPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (navigation.useParams as jest.Mock).mockReturnValue({ sessionId: '550e8400-e29b-41d4-a716-446655440000' });
+    (navigation.useRouter as jest.Mock).mockReturnValue({ push: mockPush });
   });
 
   it('renders loading state initially', () => {
     (api.getTestSession as jest.Mock).mockImplementation(() => new Promise(() => {}));
     render(<TestSessionPage />);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    expect(screen.getByText('Loading test session')).toBeInTheDocument();
   });
 
   it('renders question and submits answer', async () => {
@@ -34,6 +38,7 @@ describe('TestSessionPage', () => {
       data: {
         sessionId: '550e8400-e29b-41d4-a716-446655440000',
         status: 'in_progress',
+        score: null,
         currentQuestionIndex: 0,
         questions: [
           {
@@ -58,15 +63,14 @@ describe('TestSessionPage', () => {
     render(<TestSessionPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Question 1 of 1')).toBeInTheDocument();
+      expect(screen.getByText('Question 01 of 01')).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByLabelText('4'));
-    await userEvent.click(screen.getByRole('button', { name: 'Submit Answer' }));
+    await userEvent.click(screen.getByText('4'));
+    await userEvent.click(screen.getByRole('button', { name: 'Finish Test' }));
 
     await waitFor(() => {
-      expect(screen.getByText('Test Complete')).toBeInTheDocument();
-      expect(screen.getByText('100%')).toBeInTheDocument();
+      expect(mockPush).toHaveBeenCalledWith('/tests/550e8400-e29b-41d4-a716-446655440000/results');
     });
   });
 });

@@ -28,36 +28,44 @@ export function LoginForm(): JSX.Element {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
-      <h1 className="text-2xl font-bold">Log in</h1>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="border-b border-border pb-4 mb-6">
+        <h2 className="font-display text-2xl font-bold text-text-primary">Log in</h2>
+      </div>
+
       <label className="block">
-        <span className="block text-sm font-medium">Email</span>
+        <span className="label-mono">Email</span>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full border rounded px-3 py-2"
+          autoComplete="email"
+          className="input-field"
         />
       </label>
+
       <label className="block">
-        <span className="block text-sm font-medium">Password</span>
+        <span className="label-mono">Password</span>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={8}
-          className="w-full border rounded px-3 py-2"
+          autoComplete="current-password"
+          className="input-field"
         />
       </label>
+
       {error && <ErrorMessage message={error} />}
+
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
+        className="btn-primary w-full"
       >
-        {isSubmitting ? 'Logging in...' : 'Log in'}
+        {isSubmitting ? 'Logging in…' : 'Log in'}
       </button>
     </form>
   );

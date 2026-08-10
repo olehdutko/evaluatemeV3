@@ -1,8 +1,16 @@
-export function Loading(): JSX.Element {
+interface LoadingProps {
+  message?: string;
+}
+
+export function Loading({ message = 'Loading…' }: LoadingProps): JSX.Element {
   return (
-    <div className="flex items-center gap-2 text-slate-600" aria-live="polite">
-      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
-      Loading...
+    <div className="flex flex-col items-center justify-center gap-4 py-12 sm:py-16" role="status" aria-live="polite">
+      <div className="flex gap-1">
+        <span className="w-2 h-8 bg-accent animate-pulse" style={{ animationDelay: '0ms' }} />
+        <span className="w-2 h-8 bg-accent animate-pulse" style={{ animationDelay: '150ms' }} />
+        <span className="w-2 h-8 bg-accent animate-pulse" style={{ animationDelay: '300ms' }} />
+      </div>
+      <p className="font-mono text-sm uppercase tracking-wider text-text-secondary">{message}</p>
     </div>
   );
 }

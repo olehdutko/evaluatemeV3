@@ -1,21 +1,22 @@
 interface ErrorMessageProps {
   message: string;
-  retry?: () => void;
+  onRetry?: () => void;
 }
 
-export function ErrorMessage({ message, retry }: ErrorMessageProps): JSX.Element {
+export function ErrorMessage({ message, onRetry }: ErrorMessageProps): JSX.Element {
   return (
-    <div className="rounded border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
-      <p>{message}</p>
-      {retry && (
-        <button
-          type="button"
-          onClick={retry}
-          className="mt-2 rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
-        >
-          Retry
-        </button>
-      )}
+    <div className="border-l-4 border-error bg-error/5 p-4 sm:p-6" role="alert">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-wider text-error mb-1">Error</p>
+          <p className="text-text-primary font-body">{message}</p>
+        </div>
+        {onRetry && (
+          <button type="button" onClick={onRetry} className="btn-secondary text-sm py-2 px-4">
+            Retry
+          </button>
+        )}
+      </div>
     </div>
   );
 }

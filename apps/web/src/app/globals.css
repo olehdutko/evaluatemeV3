@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #faf8f5;
+  --bg-secondary: #f2efe9;
+  --bg-tertiary: #e8e4dc;
+  --text-primary: #1a1816;
+  --text-secondary: #6b6560;
+  --text-muted: #9a9590;
+  --accent: #c15c34;
+  --accent-hover: #a34b2a;
+  --accent-soft: #f4e6df;
+  --success: #3a7d5c;
+  --error: #b94a48;
+  --warning: #c48a2c;
+  --info: #4a6fa5;
+  --border: #d8d4cc;
+  --border-strong: #1a1816;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body), ui-serif, Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  code,
+  kbd,
+  pre,
+  .font-mono {
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center bg-[var(--accent)] text-white uppercase tracking-wider font-semibold px-6 py-3 transition-all duration-150 hover:bg-[var(--accent-hover)] hover:-translate-y-px active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center bg-transparent text-[var(--text-primary)] border border-[var(--border-strong)] uppercase tracking-wider font-semibold px-6 py-3 transition-all duration-150 hover:bg-[var(--bg-secondary)] hover:-translate-y-px active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0;
+  }
+
+  .panel {
+    @apply bg-[var(--bg-primary)] border border-[var(--border)] transition-colors duration-200;
+  }
+
+  .panel-hover:hover {
+    @apply border-[var(--border-strong)];
+  }
+
+  .input-field {
+    @apply w-full bg-[var(--bg-secondary)] border border-[var(--border)] px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--accent)] transition-shadow;
+  }
+
+  .label-mono {
+    @apply block text-xs font-mono uppercase tracking-[0.06em] text-[var(--text-secondary)] mb-2;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

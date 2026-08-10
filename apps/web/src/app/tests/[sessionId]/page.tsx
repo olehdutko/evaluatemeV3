@@ -1,91 +1,154 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { getTestSession, submitAnswer } from '../../../lib/test-engine.api';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
+import { Loading } from '../../../components/ui/Loading';
+import { Button } from '../../../components/ui/Button';
 
 export default function TestSessionPage(): JSX.Element {
   const params = useParams();
+  const router = useRouter();
   const sessionId = params.sessionId as string;
   const [state, setState] = useState<Awaited<ReturnType<typeof getTestSession>>['data'] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
+  const loadSession = useCallback(() => {
     getTestSession(sessionId)
       .then((response) => setState(response.data))
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load test'));
   }, [sessionId]);
 
+  useEffect(() => {
+    loadSession();
+  }, [loadSession]);
+
   if (error) {
-    return <ErrorMessage message={error} />;
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <ErrorMessage message={error} onRetry={loadSession} />
+      </div>
+    );
   }
 
   if (!state) {
-    return <p>Loading...</p>;
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Loading message="Loading test session" />
+      </div>
+    );
   }
 
   if (state.status === 'completed') {
-    return (
-      <section className="py-12 max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold">Test Complete</h1>
-        <p className="text-lg mt-4">Your score: <strong>{state.score ?? 0}%</strong></p>
-      </section>
-    );
+    router.push(`/tests/${sessionId}/results`);
+    return <></>;
   }
 
   const question = state.questions[state.currentQuestionIndex];
   if (!question) {
-    return <ErrorMessage message="No more questions" />;
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <ErrorMessage message="No more questions" />
+      </div>
+    );
   }
 
   function handleSubmit() {
     if (!selectedAnswerId) {
       return;
     }
+    setError(null);
     setIsSubmitting(true);
     submitAnswer(sessionId, { questionId: question.id, answerId: selectedAnswerId })
       .then((response) => {
         if (response.data.isComplete) {
-          setState((prev) => (prev ? { ...prev, status: 'completed', score: response.data.currentScore } : prev));
+          router.push(`/tests/${sessionId}/results`);
         } else {
-          void getTestSession(sessionId).then((r) => setState(r.data));
+          setSelectedAnswerId(null);
+          loadSession();
         }
-        setSelectedAnswerId(null);
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to submit answer'))
       .finally(() => setIsSubmitting(false));
   }
 
+  const totalQuestions = state.questions.length;
+  const current = state.currentQuestionIndex + 1;
+
   return (
-    <section className="py-12 max-w-2xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">Question {state.currentQuestionIndex + 1} of {state.questions.length}</h1>
-      </div>
-      <div className="border rounded p-4" dangerouslySetInnerHTML={{ __html: question.content }} />
-      <div className="space-y-2">
-        {question.answers.map((answer) => (
-          <label key={answer.id} className="flex items-center gap-2 border rounded p-3 cursor-pointer">
-            <input
-              type="radio"
-              name="answer"
-              value={answer.id}
-              checked={selectedAnswerId === answer.id}
-              onChange={() => setSelectedAnswerId(answer.id)}
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <p className="font-mono text-xs uppercase tracking-[0.12em] text-text-muted">
+          Question {String(current).padStart(2, '0')} of {String(totalQuestions).padStart(2, '0')}
+        </p>
+        <div className="flex gap-1 h-2 w-full sm:w-64">
+          {Array.from({ length: totalQuestions }).map((_, index) => (
+            <div
+              key={index}
+              className={`flex-1 transition-colors duration-300 ${
+                index < current ? 'bg-accent' : 'bg-bg-tertiary'
+              }`}
             />
-            <span dangerouslySetInnerHTML={{ __html: answer.content }} />
-          </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="panel accent p-6 sm:p-8 lg:p-10 mb-6">
+        <div className="flex items-start gap-3">
+          <span className="font-mono text-accent text-lg">Q.</span>
+          <div
+            className="prose prose-sm sm:prose-base max-w-none font-body text-text-primary"
+            dangerouslySetInnerHTML={{ __html: question.content }}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {question.answers.map((answer) => (
+          <button
+            key={answer.id}
+            type="button"
+            onClick={() => setSelectedAnswerId(answer.id)}
+            className={`w-full text-left p-4 sm:p-5 border transition-all duration-150 font-body ${
+              selectedAnswerId === answer.id
+                ? 'border-accent bg-accent-soft'
+                : 'border-border bg-bg-primary hover:border-border-strong hover:bg-bg-secondary'
+            }`}
+            aria-pressed={selectedAnswerId === answer.id}
+          >
+            <div className="flex items-start gap-3">
+              <span
+                className={`mt-0.5 w-5 h-5 shrink-0 border flex items-center justify-center transition-colors ${
+                  selectedAnswerId === answer.id ? 'border-accent bg-accent text-white' : 'border-text-muted'
+                }`}
+              >
+                {selectedAnswerId === answer.id && <span className="text-xs">✓</span>}
+              </span>
+              <span dangerouslySetInnerHTML={{ __html: answer.content }} />
+            </div>
+          </button>
         ))}
       </div>
-      <button
-        onClick={handleSubmit}
-        disabled={!selectedAnswerId || isSubmitting}
-        className="w-full bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
-      >
-        {isSubmitting ? 'Submitting...' : 'Submit Answer'}
-      </button>
-    </section>
+
+      {error && (
+        <div className="mt-6">
+          <ErrorMessage message={error} />
+        </div>
+      )}
+
+      <div className="mt-8 flex flex-col sm:flex-row sm:justify-end">
+        <Button
+          variant="primary"
+          onClick={handleSubmit}
+          disabled={!selectedAnswerId || isSubmitting}
+          className="w-full sm:w-auto"
+        >
+          {isSubmitting ? 'Submitting…' : current === totalQuestions ? 'Finish Test' : 'Submit Answer'}
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -24,7 +24,7 @@ describe('StartTestPage', () => {
 
   it('renders technology slug and start button', () => {
     render(<StartTestPage />);
-    expect(screen.getByText('Technology:')).toBeInTheDocument();
+    expect(screen.getByText('Technology')).toBeInTheDocument();
     expect(screen.getByText('csharp')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Start Test' })).toBeInTheDocument();
   });

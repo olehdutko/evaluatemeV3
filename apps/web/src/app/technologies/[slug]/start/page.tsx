@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { startTest } from '../../../../lib/test-engine.api';
 import { ErrorMessage } from '../../../../components/ui/ErrorMessage';
+import { PageHeader } from '../../../../components/ui/PageHeader';
 
 export default function StartTestPage(): JSX.Element {
   const params = useParams();
@@ -22,17 +23,50 @@ export default function StartTestPage(): JSX.Element {
   }
 
   return (
-    <section className="py-12 max-w-md mx-auto space-y-4">
-      <h1 className="text-2xl font-bold">Start Test</h1>
-      <p>Technology: <strong>{slug}</strong></p>
-      {error && <ErrorMessage message={error} />}
-      <button
-        onClick={handleStart}
-        disabled={isStarting}
-        className="w-full bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
-      >
-        {isStarting ? 'Starting...' : 'Start Test'}
-      </button>
-    </section>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <PageHeader
+        title="Start Test"
+        description={`Prepare for the ${slug} evaluation.`}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="panel accent p-6 sm:p-8">
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-text-primary">
+              What to expect
+            </h2>
+            <ul className="mt-4 space-y-3 font-body text-text-secondary">
+              <li className="flex gap-3">
+                <span className="font-mono text-accent">01.</span>
+                You will answer up to 20 questions selected for this technology.
+              </li>
+              <li className="flex gap-3">
+                <span className="font-mono text-accent">02.</span>
+                Each question has one correct answer. Choose carefully.
+              </li>
+              <li className="flex gap-3">
+                <span className="font-mono text-accent">03.</span>
+                Your final score is the percentage of correct answers.
+              </li>
+            </ul>
+          </div>
+
+          {error && <ErrorMessage message={error} onRetry={handleStart} />}
+        </div>
+
+        <div className="panel p-6 sm:p-8 h-fit">
+          <p className="label-mono">Technology</p>
+          <p className="font-display text-2xl sm:text-3xl font-bold text-text-primary capitalize">{slug}</p>
+
+          <button
+            onClick={handleStart}
+            disabled={isStarting}
+            className="btn-primary w-full mt-8"
+          >
+            {isStarting ? 'Starting…' : 'Start Test'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

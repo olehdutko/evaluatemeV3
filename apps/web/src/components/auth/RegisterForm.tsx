@@ -29,48 +29,53 @@ export function RegisterForm(): JSX.Element {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
-      <h1 className="text-2xl font-bold">Create account</h1>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="border-b border-border pb-4 mb-6">
+        <h2 className="font-display text-2xl font-bold text-text-primary">Create account</h2>
+      </div>
+
       <label className="block">
-        <span className="block text-sm font-medium">Email</span>
+        <span className="label-mono">Email</span>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full border rounded px-3 py-2"
+          autoComplete="email"
+          className="input-field"
         />
       </label>
+
       <label className="block">
-        <span className="block text-sm font-medium">Password</span>
+        <span className="label-mono">Password</span>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={8}
-          className="w-full border rounded px-3 py-2"
+          autoComplete="new-password"
+          className="input-field"
         />
       </label>
+
       <label className="block">
-        <span className="block text-sm font-medium">Role</span>
+        <span className="label-mono">Account type</span>
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as 'user' | 'company' | 'admin')}
-          className="w-full border rounded px-3 py-2"
+          className="input-field"
         >
-          <option value="user">User</option>
-          <option value="company">Company</option>
-          <option value="admin">Admin</option>
+          <option value="user">Personal — take tests and track progress</option>
+          <option value="company">Company — invite candidates and buy access codes</option>
+          <option value="admin">Admin — manage content and settings</option>
         </select>
       </label>
+
       {error && <ErrorMessage message={error} />}
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
-      >
-        {isSubmitting ? 'Creating account...' : 'Create account'}
+
+      <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
+        {isSubmitting ? 'Creating account…' : 'Create account'}
       </button>
     </form>
   );

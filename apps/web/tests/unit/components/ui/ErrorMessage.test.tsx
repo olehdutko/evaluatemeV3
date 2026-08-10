@@ -8,9 +8,9 @@ describe('ErrorMessage', () => {
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
 
-  it('calls retry when button clicked', async () => {
+  it('calls onRetry when button clicked', async () => {
     const retry = jest.fn();
-    render(<ErrorMessage message="Error" retry={retry} />);
+    render(<ErrorMessage message="Error" onRetry={retry} />);
     await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(retry).toHaveBeenCalledTimes(1);
   });
