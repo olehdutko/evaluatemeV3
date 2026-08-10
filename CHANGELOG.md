@@ -89,3 +89,9 @@ Options going forward:
 
 - Added `apps/web/.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:40001`.
 - Restarted web dev server to pick up correct API origin.
+
+## 2026-08-10 — Auth flow verified
+
+- User successfully logged in via web UI.
+- Technologies page displays the imported list of 19 technologies.
+- No application errors; remaining console messages were from browser extensions.
