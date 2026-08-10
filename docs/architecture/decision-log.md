@@ -13,16 +13,22 @@ A concise summary of the architecture decisions recorded as ADRs.
 
 - **Status**: Accepted
 - **Decision**: Keep legacy MyISAM tables read-only; create new v3 InnoDB tables alongside them; add non-destructive v3 columns to `users`.
-- **Migration approach**: One-time, idempotent migrations using natural keys (`session_id` + `question_id`, `result_code`, `email`).
+- **Migration approach**: One-time, idempotent migrations using natural keys.
 - **Safety**: `MigrationGuard` blocks destructive SQL unless `--force-destructive` is passed and logged.
 - **Impact**: Rollback is trivial; legacy data is preserved; v3 schema can evolve independently.
 
 ## ADR-003: Module Boundaries
 
 - **Status**: Accepted
-- **Decision**: Backend is divided into 13 modules (`auth`, `users`, `companies`, `campaigns`, `technologies`, `tests`, `test-engine`, `access-codes`, `candidates`, `payments`, `results`, `admin`, `notifications`).
-- **Rules**: Each feature belongs to one module; circular dependencies are forbidden; modules communicate through domain ports/integration contracts.
+- **Decision**: Backend is divided into 13 modules with forbidden circular dependencies.
+- **Rules**: Each feature belongs to one module; modules communicate through domain ports.
 - **Impact**: Clear ownership, easier parallel development, cycle detection in CI.
+
+## ADR-004: API Versioning Policy
+
+- **Status**: Accepted
+- **Decision**: All v3 endpoints under `/api/v1`; breaking changes require `/api/v2` with a deprecation period and an ADR.
+- **Impact**: Stable consumer contracts and a documented path for API evolution.
 
 ## Migration Strategy Summary
 

@@ -43,7 +43,8 @@ for environment setup, build steps, and validation gates.
 - [`docs/architecture/modules.md`](docs/architecture/modules.md) — 13 backend modules and their responsibilities.
 - [`docs/architecture/adr-001-clean-architecture.md`](docs/architecture/adr-001-clean-architecture.md) — Layering decision.
 - [`docs/architecture/adr-002-legacy-database-strategy.md`](docs/architecture/adr-002-legacy-database-strategy.md) — Legacy MySQL migration strategy.
-- [`docs/architecture/adr-003-module-boundaries.md`](docs/architecture/adr-003-module-boundaries.md) — Module boundaries and cycle detection.
+- [`docs/architecture/adr-003-module-boundaries.md`
+- [`docs/architecture/adr-004-api-versioning.md`](docs/architecture/adr-004-api-versioning.md) — API versioning policy.](docs/architecture/adr-003-module-boundaries.md) — Module boundaries and cycle detection.
 - [`docs/architecture/legacy-database-mapping.md`](docs/architecture/legacy-database-mapping.md) — Table-by-table legacy-to-v3 mapping.
 - [`docs/architecture/decision-log.md`](docs/architecture/decision-log.md) — Summary of all ADRs and migration strategy.
 

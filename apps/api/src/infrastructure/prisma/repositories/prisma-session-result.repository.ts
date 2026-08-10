@@ -87,6 +87,16 @@ export class PrismaUserSessionRepository implements IUserSessionRepository {
     this.logger = createLogger('PrismaUserSessionRepository');
   }
 
+  async findBySessionId(sessionId: string): Promise<UserSession[]> {
+    try {
+      const sessions = await this.prisma.userSession.findMany({ where: { sessionId } });
+      return sessions.map(toDomainSession);
+    } catch (error: unknown) {
+      this.logger.error('Failed to find user sessions by session id', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
+  }
+
   async findBySessionIdAndQuestionId(sessionId: string, questionId: string): Promise<UserSession | null> {
     try {
       const session = await this.prisma.userSession.findUnique({
@@ -142,6 +152,16 @@ export class PrismaUserResultRepository implements IUserResultRepository {
     }
   }
 
+  async findByUserId(userId: string): Promise<UserResult[]> {
+    try {
+      const results = await this.prisma.userResult.findMany({ where: { userId } });
+      return results.map(toDomainResult);
+    } catch (error: unknown) {
+      this.logger.error('Failed to find user results by user id', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
+  }
+
   async save(result: UserResult): Promise<UserResult> {
     const saved = await this.prisma.userResult.upsert({
       where: { resultCode: result.resultCode },
@@ -172,6 +192,16 @@ export class PrismaCandidateSessionRepository implements ICandidateSessionReposi
 
   constructor(private readonly prisma: PrismaService) {
     this.logger = createLogger('PrismaCandidateSessionRepository');
+  }
+
+  async findBySessionId(sessionId: string): Promise<CandidateSession[]> {
+    try {
+      const sessions = await this.prisma.candidateSession.findMany({ where: { sessionId } });
+      return sessions.map(toDomainCandidateSession);
+    } catch (error: unknown) {
+      this.logger.error('Failed to find candidate sessions by session id', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
   }
 
   async findBySessionIdAndQuestionId(sessionId: string, questionId: string): Promise<CandidateSession | null> {
@@ -226,6 +256,16 @@ export class PrismaCandidateResultRepository implements ICandidateResultReposito
       return result ? toDomainCandidateResult(result) : null;
     } catch (error: unknown) {
       this.logger.error('Failed to find candidate result by result code', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
+  }
+
+  async findByCandidateId(candidateId: string): Promise<CandidateResult[]> {
+    try {
+      const results = await this.prisma.candidateResult.findMany({ where: { candidateId } });
+      return results.map(toDomainCandidateResult);
+    } catch (error: unknown) {
+      this.logger.error('Failed to find candidate results by candidate id', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }

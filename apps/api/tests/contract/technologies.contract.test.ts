@@ -6,11 +6,11 @@ describe('Technologies endpoint contract', () => {
       success: true,
       data: [
         {
-          id: 'tech-1',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           name: 'TypeScript',
           slug: 'typescript',
           description: 'Typed JavaScript',
-          createdAt: new Date().toISOString(),
+          createdAt: '2026-08-10T12:00:00Z',
         },
       ],
     };
@@ -21,7 +21,7 @@ describe('Technologies endpoint contract', () => {
   it('rejects missing fields', () => {
     const invalid = {
       success: true,
-      data: [{ id: 'tech-1', name: 'TypeScript' }],
+      data: [{ id: '550e8400-e29b-41d4-a716-446655440000', name: 'TypeScript' }],
     };
 
     expect(() => technologyResponseSchema.parse(invalid)).toThrow();

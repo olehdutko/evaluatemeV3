@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { ITechnologyRepositoryPort, Technology } from '@evaluateme/domain';
+import { ITechnologyRepository, Technology } from '@evaluateme/domain';
 
 @Injectable()
-export class PrismaTechnologyRepository implements ITechnologyRepositoryPort {
+export class PrismaTechnologyRepository implements ITechnologyRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(): Promise<Technology[]> {

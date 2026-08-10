@@ -1,14 +1,19 @@
 import { createUnitTestModule } from '../../test-module.factory';
 import { HealthCheckUseCase } from '../../../../src/application/health/health-check.use-case';
-import { IHealthRepository, IHealthRepositoryPort } from '@evaluateme/domain';
+import { IHealthRepository } from '@evaluateme/domain';
 
 describe('HealthCheckUseCase', () => {
   let useCase: HealthCheckUseCase;
-  let healthRepository: jest.Mocked<IHealthRepositoryPort>;
+  let healthRepository: jest.Mocked<IHealthRepository>;
 
   beforeEach(async () => {
     healthRepository = {
-      checkDatabase: jest.fn().mockResolvedValue({ ok: true, latencyMs: 12 }),
+      check: jest.fn().mockResolvedValue({
+        status: 'ok',
+        database: 'ok',
+        latencyMs: 12,
+        timestamp: '2026-08-10T12:00:00Z',
+      }),
     };
 
     const module = await createUnitTestModule({
@@ -32,7 +37,12 @@ describe('HealthCheckUseCase', () => {
   });
 
   it('returns database error when database check fails', async () => {
-    healthRepository.checkDatabase.mockResolvedValue({ ok: false, latencyMs: 5 });
+    healthRepository.check.mockResolvedValue({
+      status: 'ok',
+      database: 'error',
+      latencyMs: 5,
+      timestamp: '2026-08-10T12:00:00Z',
+    });
 
     const result = await useCase.execute();
 

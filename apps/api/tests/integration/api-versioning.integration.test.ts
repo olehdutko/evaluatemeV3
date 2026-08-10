@@ -2,6 +2,7 @@ import request from 'supertest';
 import { createTestApp } from './test-app.factory';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 
+// Validates ADR-004: all routes are under /api/v1
 describe('API versioning', () => {
   let app: NestExpressApplication | undefined;
 

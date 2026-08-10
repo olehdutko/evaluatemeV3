@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IHealthRepository, IHealthRepositoryPort } from '@evaluateme/domain';
+import { IHealthRepository, HealthCheckResult } from '@evaluateme/domain';
 import { Logger, createLogger } from '../../infrastructure/logging/logger';
 
 @Injectable()
@@ -7,22 +7,20 @@ export class HealthCheckUseCase {
   private readonly logger: Logger;
 
   constructor(
-    @Inject(IHealthRepository) private readonly healthRepository: IHealthRepositoryPort,
+    @Inject(IHealthRepository) private readonly healthRepository: IHealthRepository,
   ) {
     this.logger = createLogger('HealthCheckUseCase');
   }
 
-  async execute(): Promise<{ success: true; data: { status: string; database: string; latencyMs: number; timestamp: string } }> {
-    const dbCheck = await this.healthRepository.checkDatabase();
-    this.logger.debug('Health check executed', { ok: dbCheck.ok, latencyMs: dbCheck.latencyMs });
+  async execute(): Promise<{ success: true; data: HealthCheckResult }> {
+    const dbCheck = await this.healthRepository.check();
+    this.logger.debug('Health check executed', {
+      database: dbCheck.database,
+      latencyMs: dbCheck.latencyMs,
+    });
     return {
       success: true,
-      data: {
-        status: 'ok',
-        database: dbCheck.ok ? 'ok' : 'error',
-        latencyMs: dbCheck.latencyMs,
-        timestamp: new Date().toISOString(),
-      },
+      data: dbCheck,
     };
   }
 }

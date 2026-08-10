@@ -1,10 +1,10 @@
 import { createUnitTestModule } from '../../test-module.factory';
 import { ListTechnologiesUseCase } from '../../../../src/application/technologies/list-technologies.use-case';
-import { ITechnologyRepository, ITechnologyRepositoryPort, Technology } from '@evaluateme/domain';
+import { ITechnologyRepository, Technology } from '@evaluateme/domain';
 
 describe('ListTechnologiesUseCase', () => {
   let useCase: ListTechnologiesUseCase;
-  let repository: jest.Mocked<ITechnologyRepositoryPort>;
+  let repository: jest.Mocked<ITechnologyRepository>;
 
   beforeEach(async () => {
     repository = {

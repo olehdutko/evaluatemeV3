@@ -1,19 +1,17 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ITechnologyRepository, ITechnologyRepositoryPort, Technology } from '@evaluateme/domain';
-
-export interface ListTechnologiesResult {
-  success: true;
-  data: Technology[];
-}
+import { ITechnologyRepository, Technology } from '@evaluateme/domain';
 
 @Injectable()
 export class ListTechnologiesUseCase {
   constructor(
-    @Inject(ITechnologyRepository) private readonly repository: ITechnologyRepositoryPort,
+    @Inject(ITechnologyRepository) private readonly technologyRepository: ITechnologyRepository,
   ) {}
 
-  async execute(): Promise<ListTechnologiesResult> {
-    const technologies = await this.repository.findAll();
-    return { success: true, data: technologies };
+  async execute(): Promise<{ success: true; data: Technology[] }> {
+    const technologies = await this.technologyRepository.findAll();
+    return {
+      success: true,
+      data: technologies,
+    };
   }
 }
