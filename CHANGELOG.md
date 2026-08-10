@@ -125,3 +125,16 @@ Options going forward:
   - Fetch all questions and submit the first answer for each question.
   - Final session status becomes `completed` and returns a score.
 - All 19 backend unit test suites / 52 tests passed after changes.
+
+## 2026-08-11 — Test Engine candidate session flow
+
+- Fixed `createdAt`/`updatedAt` types in `Question`, `Answer`, `FreeSampleQuestion` entities to use `Date` consistently.
+- Removed duplicate `question.entity.ts` and `answer.entity.ts` from `packages/domain`.
+- Added `validateSingleChoice` helper to `test.entity.ts`.
+- Updated `SessionStrategyAdapter` to match domain `ISessionStrategy` interface (`issueSessionToken`, `verifySessionToken`, `revokeSessionToken`).
+- Added `PrismaAccessCodeRepository` and added `updatedAt` to the `AccessCode` Prisma model.
+- Implemented `StartSessionUseCase` for access-code candidate flow.
+- Created `SessionsController` with `POST /api/v1/sessions/start`.
+- Exported `ISessionStrategy` from `AuthModule` for `TestEngineModule` reuse.
+- Added unit tests for `StartSessionUseCase` and updated `SessionStrategyAdapter` tests.
+- All unit tests pass; TypeScript build (`tsc -b`) passes for domain, prisma, api, and web.

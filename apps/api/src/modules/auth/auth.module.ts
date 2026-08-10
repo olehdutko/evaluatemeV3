@@ -34,6 +34,6 @@ import {
     { provide: ISessionStrategy, useClass: SessionStrategyAdapter },
     { provide: ITokenBlacklist, useClass: InMemoryTokenBlacklist },
   ],
-  exports: [JwtAuthGuard, IJwtStrategy],
+  exports: [JwtAuthGuard, IJwtStrategy, ISessionStrategy],
 })
 export class AuthModule {}

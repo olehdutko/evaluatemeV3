@@ -1,5 +1,9 @@
 import { Entity } from './base.entity';
 
+export function validateSingleChoice(answers: Answer[]): boolean {
+  return answers.filter((a) => a.isCorrect).length === 1;
+}
+
 export interface Test extends Entity {
   title: string;
   technologyId: string;
@@ -16,8 +20,8 @@ export interface Question {
   type: 'single' | 'multiple';
   orderIndex: number;
   score: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Answer {
@@ -26,8 +30,8 @@ export interface Answer {
   content: string;
   isCorrect: boolean;
   orderIndex: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface FreeSampleQuestion {
@@ -36,5 +40,6 @@ export interface FreeSampleQuestion {
   content: string;
   type: string;
   explanation?: string | null;
-  createdAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

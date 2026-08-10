@@ -1,36 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes } from 'crypto';
-import { ISessionStrategy } from '@evaluateme/domain';
+import { ISessionStrategy, ITokenPayload } from '@evaluateme/domain';
 
 interface SessionRecord {
-  userId: string;
+  payload: ITokenPayload;
   createdAt: Date;
 }
 
 @Injectable()
 export class SessionStrategyAdapter implements ISessionStrategy {
   private readonly sessions = new Map<string, SessionRecord>();
-  private readonly ttlMs = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-  async create(userId: string): Promise<string> {
+  async issueSessionToken(candidateId: string, accessCodeId: string, _expiresInMinutes: number): Promise<string> {
     const token = randomBytes(32).toString('hex');
-    this.sessions.set(token, { userId, createdAt: new Date() });
+    const payload: ITokenPayload = {
+      sub: candidateId,
+      type: 'session',
+      email: `candidate+${accessCodeId}@evaluateme.local`,
+      role: 'candidate',
+    };
+    this.sessions.set(token, { payload, createdAt: new Date() });
     return token;
   }
 
-  async verify(token: string): Promise<{ userId: string }> {
+  async verifySessionToken(token: string): Promise<ITokenPayload | null> {
     const record = this.sessions.get(token);
     if (!record) {
-      throw new Error('Invalid session token');
+      return null;
     }
-    if (Date.now() - record.createdAt.getTime() > this.ttlMs) {
+    const ttlMs = 1000 * 60 * 60 * 24 * 7; // 7 days default
+    if (Date.now() - record.createdAt.getTime() > ttlMs) {
       this.sessions.delete(token);
-      throw new Error('Session expired');
+      return null;
     }
-    return { userId: record.userId };
+    return record.payload;
   }
 
-  async revoke(token: string): Promise<void> {
+  async revokeSessionToken(token: string): Promise<void> {
     this.sessions.delete(token);
   }
 }

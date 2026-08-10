@@ -5,6 +5,10 @@ export const startTestRequestSchema = z.object({
   technologySlug: z.string().min(1).max(100),
 });
 
+export const startSessionRequestSchema = z.object({
+  accessCode: z.string().min(1).max(100),
+});
+
 export const startTestResponseSchema = successEnvelopeSchema(
   z.object({
     sessionId: z.string().uuid(),

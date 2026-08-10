@@ -6,8 +6,8 @@ export interface AuthTokens {
 
 export interface ITokenPayload {
   sub: string;
-  email: string;
-  role: 'user' | 'company' | 'admin';
+  email?: string;
+  role?: string;
   type: 'access' | 'refresh' | 'session';
   iat?: number;
   exp?: number;
@@ -21,9 +21,9 @@ export interface IJwtStrategy {
 export const IJwtStrategy = Symbol('IJwtStrategy');
 
 export interface ISessionStrategy {
-  create(userId: string): Promise<string>;
-  verify(token: string): Promise<{ userId: string }>;
-  revoke(token: string): Promise<void>;
+  issueSessionToken(candidateId: string, accessCodeId: string, expiresInMinutes: number): Promise<string>;
+  verifySessionToken(token: string): Promise<ITokenPayload | null>;
+  revokeSessionToken(token: string): Promise<void>;
 }
 
 export const ISessionStrategy = Symbol('ISessionStrategy');

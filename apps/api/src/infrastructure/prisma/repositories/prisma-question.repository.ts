@@ -53,11 +53,11 @@ export class PrismaQuestionRepository implements IQuestionRepository {
       id: row.id,
       testId: row.testId,
       content: row.content,
-      type: row.type as 'single' | 'multiple',
+      type: row.type === 'multiple_choice' ? 'multiple' : 'single',
       orderIndex: row.orderIndex,
       score: row.score,
-      createdAt: row.createdAt.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     };
   }
 }

@@ -2,9 +2,9 @@ export const IJwtStrategy = Symbol('IJwtStrategy');
 
 export interface ITokenPayload {
   sub: string;
-  email: string;
-  role: string;
-  type: 'access' | 'refresh';
+  email?: string;
+  role?: string;
+  type: 'access' | 'refresh' | 'session';
 }
 
 export interface IJwtStrategy {

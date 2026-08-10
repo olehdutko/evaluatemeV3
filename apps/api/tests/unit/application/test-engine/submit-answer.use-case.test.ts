@@ -9,17 +9,17 @@ import {
   UserAnswer,
 } from '@evaluateme/domain';
 
-const nowStr = new Date().toISOString();
+const now = new Date();
 
 const session: TestSession = {
   id: 'session-1',
   userId: 'user-1',
   testId: 'tech-1',
   status: 'in_progress',
-  startedAt: new Date(),
+  startedAt: now,
   currentQuestionIndex: 0,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  createdAt: now,
+  updatedAt: now,
 };
 
 const questions: Question[] = [
@@ -30,8 +30,8 @@ const questions: Question[] = [
     type: 'single',
     orderIndex: 0,
     score: 1,
-    createdAt: nowStr,
-    updatedAt: nowStr,
+    createdAt: now,
+    updatedAt: now,
   },
 ];
 
@@ -68,7 +68,7 @@ class FakeAnswerRepository implements IAnswerRepository {
   }
   async findById(id: string): Promise<Answer | null> {
     return id === 'a-1'
-      ? { id: 'a-1', questionId: 'q-1', content: 'Correct', isCorrect: true, orderIndex: 0, createdAt: nowStr, updatedAt: nowStr }
+      ? { id: 'a-1', questionId: 'q-1', content: 'Correct', isCorrect: true, orderIndex: 0, createdAt: now, updatedAt: now }
       : null;
   }
   async findByQuestionIds(): Promise<Answer[]> {

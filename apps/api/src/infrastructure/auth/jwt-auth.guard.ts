@@ -22,7 +22,7 @@ export class JwtAuthGuard implements CanActivate {
       if (payload.type !== 'access') {
         throw new UnauthorizedException('Invalid token type');
       }
-      request.user = { sub: payload.sub, email: payload.email, role: payload.role };
+      request.user = { sub: payload.sub, email: payload.email ?? '', role: payload.role ?? '' };
       return true;
     } catch {
       throw new UnauthorizedException('Invalid access token');

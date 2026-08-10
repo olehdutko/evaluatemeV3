@@ -45,8 +45,8 @@ export class PrismaAnswerRepository implements IAnswerRepository {
       content: row.content,
       isCorrect: row.isCorrect,
       orderIndex: row.orderIndex,
-      createdAt: row.createdAt.toISOString(),
-      updatedAt: row.createdAt.toISOString(),
+      createdAt: row.createdAt,
+      updatedAt: row.createdAt,
     };
   }
 }

@@ -5,7 +5,7 @@ import {
   Test,
   validateSingleChoice,
 } from '../../../src/entities/test.entity';
-import { QuestionType, TestStatus } from '../../../src/entities/status.enums';
+import { TestStatus } from '../../../src/entities/status.enums';
 
 const now = new Date();
 
@@ -31,14 +31,14 @@ describe('Test / Question / Answer entities', () => {
       id: 'q-1',
       testId: 'test-1',
       content: 'What is a type?',
-      type: QuestionType.SINGLE_CHOICE,
+      type: 'single',
       orderIndex: 1,
       score: 1,
       createdAt: now,
       updatedAt: now,
     };
 
-    expect(question.type).toBe('single_choice');
+    expect(question.type).toBe('single');
   });
 
   it('validates single choice has exactly one correct answer', () => {
@@ -71,7 +71,7 @@ describe('Test / Question / Answer entities', () => {
       id: 'sample-1',
       technologyId: 'tech-1',
       content: 'Sample',
-      type: QuestionType.TEXT,
+      type: 'text',
       explanation: 'Because',
       createdAt: now,
       updatedAt: now,

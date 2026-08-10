@@ -6,7 +6,7 @@ describe('StatusBadge', () => {
     ['ok', 'bg-green-100'],
     ['error', 'bg-red-100'],
     ['pending', 'bg-yellow-100'],
-  ])('renders %s badge with expected style', (status, expectedClass) => {
+  ] as const)('renders %s badge with expected style', (status, expectedClass) => {
     render(<StatusBadge status={status} />);
     const badge = screen.getByText(status);
     expect(badge).toHaveClass(expectedClass);

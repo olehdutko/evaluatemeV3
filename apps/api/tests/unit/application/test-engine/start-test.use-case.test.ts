@@ -8,15 +8,15 @@ import {
   TestSession,
 } from '@evaluateme/domain';
 
-const nowStr = new Date().toISOString();
+const now = new Date();
 
 const tech: Technology = {
   id: 'tech-1',
   name: 'C#',
   slug: 'csharp',
   description: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  createdAt: now,
+  updatedAt: now,
 };
 
 const question: Question = {
@@ -26,8 +26,8 @@ const question: Question = {
   type: 'single',
   orderIndex: 0,
   score: 1,
-  createdAt: nowStr,
-  updatedAt: nowStr,
+  createdAt: now,
+  updatedAt: now,
 };
 
 const session: TestSession = {
