@@ -35,3 +35,11 @@ Options going forward:
 1. Backup and truncate legacy tables, then re-run `prisma migrate deploy`.
 2. Baseline the existing DB with `prisma migrate resolve --applied <migration_name>` and add manual SQL migration steps.
 3. Use a fresh database (`evaluateme_v3` or `evaluateme_test`) for clean development.
+
+## 2026-08-10 — Remote MySQL configured
+
+- Created `evaluateme_v3` and `evaluateme_test` databases on `192.168.1.132`.
+- Granted privileges to `evaluateme_dev`@'%' on both databases.
+- Synced Prisma schema to `evaluateme_v3` (dev DB) and `evaluateme_test` (test DB via force-reset).
+- API dev server now uses `DATABASE_URL=mysql://evaluateme_dev@192.168.1.132:3306/evaluateme_v3`.
+- Health check returns `database: ok`.
