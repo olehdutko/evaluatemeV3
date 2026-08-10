@@ -2,9 +2,11 @@ import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { appConfig } from './infrastructure/config/app-config';
+import { SecurityHeadersMiddleware } from './infrastructure/security/security-headers.middleware';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  app.use(new SecurityHeadersMiddleware().use);
   app.use(cookieParser());
   app.enableCors({
     origin: [process.env.WEB_ORIGIN || 'http://localhost:4000', 'http://localhost:3000'],
@@ -15,4 +17,4 @@ async function bootstrap(): Promise<void> {
   await app.listen(appConfig.apiPort);
 }
 
-bootstrap();
+void bootstrap();

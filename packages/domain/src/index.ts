@@ -32,3 +32,5 @@ export * from './ports/credit-setting-repository.port';
 export * from './ports/health-repository.port';
 export * from './ports/auth';
 export * from './ports/password-hasher.port';
+export * from './ports/rate-limit-store.port';
+export * from './ports/security-audit-logger.port';

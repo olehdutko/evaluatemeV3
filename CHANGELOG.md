@@ -156,3 +156,15 @@ Options going forward:
 - Preserved `InMemoryTokenBlacklist` as a lightweight fallback for tests/local use.
 - Marked automatic access-token refresh and persistent blacklist tasks as completed in `specs/005-05-auth/tasks.md`.
 - Added unit and integration tests verifying logout blocks subsequent refresh.
+
+## 2026-08-11 — Security MVP (006-06-security)
+
+- Wrote `specs/006-06-security/spec.md` and `tasks.md` defining rate limiting, security headers, RBAC, and audit logging user stories.
+- Added `IRateLimitStore` port, `InMemoryRateLimitStore`, and `RateLimitGuard`/`@RateLimit()` decorator.
+- Applied rate limiting to all `/api/v1/auth/*` endpoints.
+- Added `SecurityHeadersMiddleware` setting `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Content-Security-Policy`, and `Permissions-Policy` on every API response.
+- Added `@Roles()` decorator and `RolesGuard` for role-based access control; exported from `AuthModule`.
+- Added `ISecurityAuditLogger` domain port, `LogSecurityEventUseCase` application service, and `ConsoleSecurityAuditLogger` infrastructure adapter.
+- Emitted `AUTH_LOGIN_FAILURE` security audit event from `AuthController`.
+- Added unit and integration tests for rate limiting, security headers, RBAC, and audit logging.
+- All unit, contract, and integration tests pass.

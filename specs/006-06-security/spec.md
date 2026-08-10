@@ -1,140 +1,107 @@
-# Feature Specification: [FEATURE NAME]
+# Feature Specification: Security MVP
 
-**Feature Branch**: `[###-feature-name]`
+**Feature Branch**: `006-06-security`
 
-**Created**: [DATE]
+**Created**: 2026-08-11
 
-**Status**: Draft
+**Status**: In Progress
 
-**Input**: User description: "$ARGUMENTS"
+**Input**: Implement foundational security controls for EvaluateMe v3 that can be extended into a full security feature later. Focus on rate limiting, security headers, role-based access control (RBAC), and audit logging.
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing
 
-<!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
+### User Story 1 — Rate limiting for authentication endpoints (Priority: P1)
 
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
--->
+As an operator, I want to limit the number of requests to authentication endpoints per IP so that brute-force and abuse are mitigated.
 
-### User Story 1 - [Brief Title] (Priority: P1)
+**Why this priority**: Authentication endpoints are the primary attack surface; rate limiting is the cheapest and most effective first line of defense.
 
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Independent Test**: Integration tests assert that after the configured number of failed requests from the same IP, subsequent requests receive `429 Too Many Requests` for a short window.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** a client IP, **When** it exceeds the configured request limit on `/api/v1/auth/login`, **Then** it receives `429` and a clear error envelope.
+2. **Given** a rate-limited IP, **When** the window expires, **Then** new requests are allowed.
 
 ---
 
-### User Story 2 - [Brief Title] (Priority: P2)
+### User Story 2 — Security headers on all API responses (Priority: P1)
 
-[Describe this user journey in plain language]
+As a client, I want the API to return common security headers so that common browser-level attacks are mitigated.
 
-**Why this priority**: [Explain the value and why it has this priority level]
+**Why this priority**: Headers are low-cost, high-value hardening that benefits every endpoint immediately.
 
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: An integration test asserts that `GET /api/v1/health` returns `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, and a strict `Content-Security-Policy` header.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** any API request, **When** the response is returned, **Then** it includes the configured security headers.
+2. **Given** a preflight `OPTIONS` request, **When** CORS is configured, **Then** the response still includes security headers.
 
 ---
 
-### User Story 3 - [Brief Title] (Priority: P3)
+### User Story 3 — Role-based access control for admin endpoints (Priority: P2)
 
-[Describe this user journey in plain language]
+As an admin, I want endpoints that mutate global settings or user state to be restricted by role so that regular users cannot perform admin actions.
 
-**Why this priority**: [Explain the value and why it has this priority level]
+**Why this priority**: Separating admin, company, and user privileges is required before any admin or company-specific endpoints can be trusted.
 
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Unit and integration tests assert that a user with role `user` accessing an admin-only route receives `403`, while a user with role `admin` succeeds.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** an authenticated user with role `user`, **When** they call an admin-only endpoint, **Then** they receive `403 Forbidden`.
+2. **Given** an authenticated user with role `admin`, **When** they call the same endpoint, **Then** the request succeeds.
 
 ---
 
-[Add more user stories as needed, each with an assigned priority]
+### User Story 4 — Audit logging for security events (Priority: P2)
 
-### Edge Cases
+As a security operator, I want failed logins, rate-limit hits, and unauthorized access attempts to be logged with context so that incidents can be investigated.
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
+**Why this priority**: Detection and forensic ability are required to respond to abuse even when prevention succeeds.
 
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
+**Independent Test**: Unit tests assert that the security logger is called with the correct event code and metadata for failed login, rate limit hit, and forbidden access.
 
-## Requirements *(mandatory)*
+**Acceptance Scenarios**:
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
-  All requirements MUST be compatible with Clean Architecture, TypeScript strict mode,
-  replaceable Infrastructure, and validated external input.
--->
+1. **Given** a failed login attempt, **When** the request completes, **Then** a security audit log entry is emitted with IP, email, and outcome.
+2. **Given** a rate-limited request, **When** the 429 response is sent, **Then** a security audit log entry is emitted.
+
+## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: The API MUST apply per-IP rate limiting to `POST /api/v1/auth/login`, `POST /api/v1/auth/register`, `POST /api/v1/auth/refresh`, and `POST /api/v1/auth/logout`.
+- **FR-002**: Rate-limited requests MUST receive HTTP `429` with a `{ success: false, error: { code: 'TOO_MANY_REQUESTS' } }` envelope.
+- **FR-003**: The API MUST return `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Content-Security-Policy: default-src 'none'` on every response.
+- **FR-004**: A `@Roles()` decorator and `RolesGuard` MUST restrict controller routes to users whose JWT `role` claim matches one of the allowed roles.
+- **FR-005**: Security events (failed login, rate limit hit, unauthorized access) MUST be logged via the existing structured logger with a `security` tag, event code, IP, and user identifier when available.
 
-*Example of marking unclear requirements:*
+### Key Entities
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **SecurityEvent**: Domain concept representing a security-relevant occurrence (eventCode, ip, userId?, email?, outcome, timestamp). Not persisted in MVP; logged only.
+- **RateLimitWindow**: Infrastructure concept tracking requests per IP per window.
 
-### Key Entities *(include if feature involves data)*
+### Success Criteria
 
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
+- **SC-001**: Brute-force attempts against `/api/v1/auth/login` are blocked after the configured threshold.
+- **SC-002**: 100% of API responses include the required security headers.
+- **SC-003**: Admin-only routes reject non-admin users with `403`.
+- **SC-004**: Every failed login and rate-limit hit produces a structured log line.
 
-## Success Criteria *(mandatory)*
-
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
-
-### Measurable Outcomes
-
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
-
-## Architecture & Non-Functional Constraints *(mandatory)*
+## Architecture & Non-Functional Constraints
 
 - Business logic MUST be framework-independent and live in Domain and Application layers.
-- External input MUST be validated; database access MUST use parameterized queries or equivalent safe bindings.
-- Persistence MUST be abstracted so the primary MySQL store can be replaced by another SQL database without changing Domain or Application code.
+- External input MUST be validated; rate-limit state MUST use parameterized or in-memory tracking only.
+- Persistence MUST be abstracted so rate-limit storage can later be replaced by Redis without changing Domain or Application code.
 - The feature MUST be testable with unit, integration, and API tests without Docker or container-dependent workflows.
 
-## Assumptions
+## Future Extensions
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right assumptions based on reasonable defaults
-  chosen when the feature description did not specify certain details.
--->
-
-- [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
-- [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
-- [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+- Redis-backed distributed rate limiting.
+- Persistent `security_events` table for audit trails and dashboards.
+- CSP nonce support for inline scripts in frontend pages.
+- CSRF token validation for state-changing browser requests.
+- Account lockout after repeated failed logins.
+- Suspicious IP detection and alerting.
