@@ -1,140 +1,76 @@
-# Feature Specification: [FEATURE NAME]
+# Feature Specification: Test Engine
 
-**Feature Branch**: `[###-feature-name]`
+**Feature Branch**: `008-08-test-engine`
 
-**Created**: [DATE]
+**Created**: 2026-08-10
 
-**Status**: Draft
+**Status**: In Progress
 
-**Input**: User description: "$ARGUMENTS"
+**Input**: Implement the core test-taking engine for EvaluateMe v3: authenticated users can start a test session from a technology, answer questions, submit the test, and receive a score. Companies and candidates can also start lightweight sessions via session tokens and access codes.
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing
 
-<!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
+### User Story 1 — P1: Start a test from a technology
 
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
--->
+As an authenticated user, I want to start a test for a selected technology so that I can evaluate my knowledge.
 
-### User Story 1 - [Brief Title] (Priority: P1)
+**Why this priority**: This is the core value proposition of the platform.
 
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Independent Test**: Integration test starts a test session for a technology and receives the first question.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** an authenticated user on `/technologies`, **When** they click a technology, **Then** they are taken to the test start page.
+2. **Given** a technology slug, **When** `POST /api/v1/tests/start` is called, **Then** a `TestSession` is created and the first question is returned.
+3. **Given** an invalid technology slug, **When** `POST /api/v1/tests/start` is called, **Then** a `404 NOT_FOUND` error is returned.
 
----
+### User Story 2 — P1: Answer a question and advance
 
-### User Story 2 - [Brief Title] (Priority: P2)
+As a test taker, I want to submit an answer and see the next question so that I can complete the test.
 
-[Describe this user journey in plain language]
+**Why this priority**: Required to complete a test flow.
 
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-
----
-
-### User Story 3 - [Brief Title] (Priority: P3)
-
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Unit and integration tests verify answer submission and score calculation.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** an active test session, **When** `POST /api/v1/tests/:sessionId/answer` is called with a selected answer, **Then** the answer is recorded and the next question is returned.
+2. **Given** the last question, **When** it is answered, **Then** the test is marked complete and the final score is returned.
 
----
+### User Story 3 — P2: Session-based test for companies/candidates
 
-[Add more user stories as needed, each with an assigned priority]
+As a company or candidate, I want to start a test using a session token and access code so that no full account is required.
 
-### Edge Cases
+**Why this priority**: Supports the lightweight candidate flow required by the product.
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
+**Independent Test**: Unit tests for `SessionStrategyAdapter` and contract tests for session endpoints.
 
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
+**Acceptance Scenarios**:
 
-## Requirements *(mandatory)*
+1. **Given** a valid access code, **When** `POST /api/v1/sessions/start` is called, **Then** a session token is created and a test session is started.
+2. **Given** an expired or invalid access code, **When** start is attempted, **Then** a `401 UNAUTHORIZED` error is returned.
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
-  All requirements MUST be compatible with Clean Architecture, TypeScript strict mode,
-  replaceable Infrastructure, and validated external input.
--->
+## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: `POST /api/v1/tests/start` accepts a `technologySlug` and returns a test session with the first question and possible answers.
+- **FR-002**: `POST /api/v1/tests/:sessionId/answer` accepts `questionId` and `answerId`, records the answer, and returns the next question or final score.
+- **FR-003**: `GET /api/v1/tests/:sessionId` returns the current state of a test session.
+- **FR-004**: `POST /api/v1/sessions/start` accepts an `accessCode` and returns a session token and test session.
+- **FR-005**: The test engine randomly selects up to 20 questions per technology by default.
+- **FR-006**: Score is calculated as correct answers divided by total questions, returned as a percentage.
 
-*Example of marking unclear requirements:*
+### Non-Functional Requirements
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **NFR-001**: Test sessions are isolated per user/session.
+- **NFR-002**: Answers are recorded immediately; partial submissions are allowed.
+- **NFR-003**: Session tokens for candidate flow expire after 7 days.
 
-### Key Entities *(include if feature involves data)*
+## Architecture
 
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
-
-## Success Criteria *(mandatory)*
-
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
-
-### Measurable Outcomes
-
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
-
-## Architecture & Non-Functional Constraints *(mandatory)*
-
-- Business logic MUST be framework-independent and live in Domain and Application layers.
-- External input MUST be validated; database access MUST use parameterized queries or equivalent safe bindings.
-- Persistence MUST be abstracted so the primary MySQL store can be replaced by another SQL database without changing Domain or Application code.
-- The feature MUST be testable with unit, integration, and API tests without Docker or container-dependent workflows.
-
-## Assumptions
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right assumptions based on reasonable defaults
-  chosen when the feature description did not specify certain details.
--->
-
-- [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
-- [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
-- [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+- Domain entities: `Test`, `Question`, `Answer`, `TestSession`, `CandidateSession`.
+- Application use-cases: `StartTestUseCase`, `SubmitAnswerUseCase`, `GetTestSessionUseCase`.
+- Infrastructure: Prisma repositories for new entities, `SessionStrategyAdapter` already exists.
+- API controllers: `TestsController`, `SessionsController`.
+- Web pages: `/technologies/:slug/start`, `/tests/:sessionId`.
