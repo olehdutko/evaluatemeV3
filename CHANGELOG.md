@@ -84,3 +84,8 @@ Options going forward:
 
 - Updated `middleware.ts` to explicitly allow `/_next/*`, `/static/*`, and `/favicon.ico`.
 - Prevents 404 errors on Next.js static chunks in dev mode.
+
+## 2026-08-10 — Fix web API URL
+
+- Added `apps/web/.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:40001`.
+- Restarted web dev server to pick up correct API origin.
