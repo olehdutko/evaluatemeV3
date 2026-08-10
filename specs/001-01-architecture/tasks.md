@@ -156,15 +156,15 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T061 [P] Update `README.md` at repo root with project overview, tech stack, and link to `docs/architecture/`
-- [ ] T062 [P] Run `quickstart.md` validation steps manually and confirm all gates pass; update `quickstart.md` if any command changed
-- [ ] T063 [P] Add central error handling middleware in `apps/api/src/infrastructure/errors/error-handler.ts` mapping domain/application errors to the API response envelope defined in `contracts/api-conventions.md`
-- [ ] T064 [P] Add request validation interceptor in `apps/api/src/infrastructure/validation/zod-validation.pipe.ts` using Zod for input validation at controller boundaries
-- [ ] T065 [P] Add API versioning smoke test in `apps/api/tests/integration/api-versioning.integration.test.ts` asserting all registered routes start with `/api/v1`
-- [ ] T066 [P] Add performance smoke test in `apps/api/tests/integration/performance.integration.test.ts` asserting `GET /api/v1/health` p95 <200 ms over 100 requests
-- [ ] T067 [P] Refactor any direct Prisma/ORM usage spotted outside Infrastructure into repository implementations
-- [ ] T068 [P] Add `docs/architecture/decision-log.md` summarizing ADRs 001–003 and migration strategy
-- [ ] T069 [P] Run full CI simulation locally: `npm ci`, `npm run lint`, `npx tsc --noEmit`, `npx prisma generate`, `npm run test`, `npm run test:integration`
+- [x] T061 [P] Update `README.md` at repo root with project overview, tech stack, and link to `docs/architecture/`
+- [x] T062 [P] Run `quickstart.md` validation steps manually and confirm all gates pass; update `quickstart.md` if any command changed
+- [x] T063 [P] Add central error handling middleware in `apps/api/src/infrastructure/errors/error-handler.ts` mapping domain/application errors to the API response envelope defined in `contracts/api-conventions.md`
+- [x] T064 [P] Add request validation interceptor in `apps/api/src/infrastructure/validation/zod-validation.pipe.ts` using Zod for input validation at controller boundaries
+- [x] T065 [P] Add API versioning smoke test in `apps/api/tests/integration/api-versioning.integration.test.ts` asserting all registered routes start with `/api/v1`
+- [x] T066 [P] Add performance smoke test in `apps/api/tests/integration/performance.integration.test.ts` asserting `GET /api/v1/health` p95 <200 ms over 100 requests
+- [x] T067 [P] Refactor any direct Prisma/ORM usage spotted outside Infrastructure into repository implementations
+- [x] T068 [P] Add `docs/architecture/decision-log.md` summarizing ADRs 001–003 and migration strategy
+- [x] T069 [P] Run full CI simulation locally: `npm ci`, `npm run lint`, `npx tsc --noEmit`, `npx prisma generate`, `npm run test`, `npm run test:integration`
 
 ---
 

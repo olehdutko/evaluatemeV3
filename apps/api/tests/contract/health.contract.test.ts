@@ -1,4 +1,4 @@
-import { healthResponseSchema } from '../../src/lib/schemas/health.schema';
+import { healthResponseSchema } from '../../src/lib/schemas/health';
 
 describe('Health endpoint contract', () => {
   it('validates the expected response shape', () => {

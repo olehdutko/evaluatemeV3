@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthCheckUseCase } from '../../application/health/health-check.use-case';
 
-@Controller('/health')
+@Controller('/api/v1/health')
 export class HealthController {
   constructor(private readonly healthCheckUseCase: HealthCheckUseCase) {}
 

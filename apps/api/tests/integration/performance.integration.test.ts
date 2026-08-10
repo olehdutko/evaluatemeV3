@@ -1,17 +1,13 @@
 import request from 'supertest';
 import { createTestApp } from './test-app.factory';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { healthResponseSchema } from '../../src/lib/schemas/health';
 
-const SAMPLES = 20;
+const SAMPLES = 100;
 
-describe('GET /api/v1/health', () => {
+describe('GET /api/v1/health performance', () => {
   let app: NestExpressApplication | undefined;
 
   beforeAll(async () => {
-    if (!process.env.DATABASE_URL) {
-      return;
-    }
     app = await createTestApp();
   });
 
@@ -19,25 +15,23 @@ describe('GET /api/v1/health', () => {
     await app?.close();
   });
 
-  it('returns a valid health envelope and responds within 200 ms', async () => {
+  it(`responds within 200 ms for ${SAMPLES} sequential requests`, async () => {
     if (!app) {
       return;
     }
-
+    const server = app.getHttpServer();
     const times: number[] = [];
+
     for (let i = 0; i < SAMPLES; i += 1) {
       const start = Date.now();
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/health')
-        .expect(200);
+      await request(server).get('/api/v1/health').expect(200);
       times.push(Date.now() - start);
-
-      const parsed = healthResponseSchema.safeParse(response.body);
-      expect(parsed.success).toBe(true);
     }
 
     times.sort((a, b) => a - b);
     const p95Index = Math.ceil((SAMPLES * 95) / 100) - 1;
-    expect(times[p95Index]).toBeLessThan(200);
+    const p95 = times[p95Index];
+
+    expect(p95).toBeLessThan(200);
   });
 });

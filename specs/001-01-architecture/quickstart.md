@@ -4,9 +4,9 @@ This guide validates that the architecture foundation is correctly set up and al
 
 ## Prerequisites
 
-- Node.js LTS installed locally
-- npm (with workspace support)
-- MySQL 5.7 reachable at `192.168.1.132:3306` (or local `.env` override)
+- Node.js >=20.0.0 installed locally
+- npm >=10.0.0 (with workspace support)
+- MySQL 5.7 reachable via `DATABASE_URL` (default `192.168.1.132:3306`)
 - No Docker or container tooling required
 
 ## Environment Setup
@@ -17,24 +17,7 @@ This guide validates that the architecture foundation is correctly set up and al
 cp .env.example .env
 ```
 
-2. Edit `.env` with your MySQL credentials and JWT secrets:
-
-```bash
-# Database
-DATABASE_URL="mysql://user:password@192.168.1.132:3306/evaluateme"
-
-# JWT
-JWT_SECRET="your-256-bit-secret"
-JWT_REFRESH_SECRET="your-256-bit-refresh-secret"
-
-# Generic OAuth placeholder (auth feature will define real providers)
-OAUTH_PROVIDER_PLACEHOLDER="google"
-OAUTH_CLIENT_ID=""
-OAUTH_CLIENT_SECRET=""
-
-# API
-API_PORT=3001
-```
+2. Edit `.env` with your MySQL credentials, JWT secrets, and API port.
 
 3. Install dependencies:
 
@@ -44,21 +27,12 @@ npm ci
 
 ## Build & Typecheck
 
-1. Build all workspaces:
-
 ```bash
 npm run build
+npm run typecheck
 ```
 
-Expected: zero TypeScript errors across `packages/domain`, `packages/prisma`, `apps/api`, and `apps/web`.
-
-2. Run typecheck:
-
-```bash
-npx tsc --noEmit
-```
-
-Expected: no type errors in strict mode.
+Expected: zero TypeScript errors across all workspaces.
 
 ## Lint
 
@@ -67,64 +41,39 @@ npm run lint
 ```
 
 Expected: no ESLint violations, including:
+
 - No `any`, `@ts-ignore`, `@ts-nocheck`, `@ts-expect-error` in production code.
 - No imports from `@nestjs/*`, `@prisma/client`, `next`, or `react` into `packages/domain/src`.
 
 ## Database
 
-1. Generate Prisma client:
-
 ```bash
-npx prisma generate
+npm run db:generate --workspace=packages/prisma
+npm run db:status --workspace=packages/prisma
 ```
 
-2. Validate migration status (do not apply to production legacy DB during foundation):
-
-```bash
-npx prisma migrate status
-```
-
-Expected: migrations are version-controlled and pending against the target database.
-
-3. Run migration dry-run against a local MySQL copy if available:
-
-```bash
-npx prisma migrate deploy --preview-feature
-```
+> Do not run Prisma migrations against the production legacy database until an explicit deployment plan is approved.
 
 ## Tests
 
-1. Run unit tests:
-
 ```bash
 npm run test
-```
-
-Expected: all unit tests pass.
-
-2. Run integration tests (requires database connection):
-
-```bash
 npm run test:integration
 ```
 
-Expected: API health integration test passes.
+`test:integration` requires a reachable `DATABASE_URL`. Integration tests skip when the database is not available.
 
 ## Start Services
 
-1. Start the NestJS API:
-
 ```bash
-npm run start:dev --workspace=apps/api
+# API
+npm run dev:api
+
+# Frontend (new terminal)
+npm run dev:web
 ```
 
-2. In another terminal, start the Next.js frontend:
-
-```bash
-npm run dev --workspace=apps/web
-```
-
-3. Verify the health endpoint:
+Verify the health endpoint:
 
 ```bash
 curl http://localhost:3001/api/v1/health
@@ -143,37 +92,27 @@ Expected response:
 }
 ```
 
-Response time target: p95 <200 ms for this endpoint.
+Response time target: p95 <200 ms.
 
-## Layered Import Validation
-
-Run the architecture import lint check:
+## Module Cycle Check
 
 ```bash
-npx eslint --max-warnings=0 'packages/domain/src/**/*.{ts,tsx}'
+bash scripts/check-module-cycles.sh
 ```
 
-Expected: no violations proving Domain does not import Infrastructure/Presentation packages.
+## Constitution Compliance
 
-## Check Constitution Compliance
-
-Confirm no Docker references exist:
+Confirm no Docker references:
 
 ```bash
-grep -R -i "docker\|docker-compose\|container" specs/ .github/workflows/ || echo "No Docker references"
+grep -R -i "docker\|docker-compose\|container" specs/ .github/workflows/ docs/ || echo "No Docker references"
 ```
 
-Expected: no matches.
-
-## Check API Versioning
-
-Confirm all backend controller routes are prefixed with `/api/v1`:
+## API Versioning
 
 ```bash
 grep -R "@Controller('/api/v1" apps/api/src/modules/
 ```
-
-Expected: controllers reference the `/api/v1` prefix.
 
 ## Migration Reconciliation
 
@@ -184,25 +123,25 @@ To run the one-time idempotent migration from legacy tables to new v3 InnoDB tab
 npm run migrate:legacy
 ```
 
-This command:
-- Copies legacy `Students`/`Results`/`Candidates`/`Candidates_results` rows into `user_sessions`/`user_results`/`candidate_sessions`/`candidate_results`.
-- Uses natural keys to avoid duplication.
-- Does not modify or delete original legacy rows.
+This copies legacy `Students`/`Results`/`Candidates`/`Candidates_results` rows into
+`user_sessions`/`user_results`/`candidate_sessions`/`candidate_results` without
+modifying or deleting original legacy rows.
 
-## What to Validate Before User Stories Begin
+## Validation Checklist
 
 Before any subsequent feature (auth, users, etc.) can start, the following MUST pass:
 
 - [ ] `npm run lint` passes.
-- [ ] `npx tsc --noEmit` passes.
-- [ ] `npx prisma generate` succeeds.
+- [ ] `npm run typecheck` passes.
+- [ ] `npm run db:generate --workspace=packages/prisma` succeeds.
 - [ ] `npm run test` passes.
 - [ ] `GET /api/v1/health` integration test passes with p95 <200 ms.
+- [ ] `GET /api/v1/technologies` integration test passes.
+- [ ] `bash scripts/check-module-cycles.sh` finds no cycles.
 - [ ] Version-controlled migrations exist in `packages/prisma/migrations/`.
 - [ ] No Docker or container-dependent workflow is used.
 
 ## Notes
 
-- Do not run Prisma migrations against the production legacy database until an explicit deployment plan is approved.
-- The foundation phase creates new v3 InnoDB tables alongside legacy tables; it does not drop or alter legacy tables destructively.
+- The foundation creates new v3 InnoDB tables alongside legacy tables; it does not drop or alter legacy tables destructively.
 - If any validation step fails, fix the architecture before proceeding to feature implementation.
