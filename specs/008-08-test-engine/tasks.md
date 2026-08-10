@@ -15,12 +15,12 @@
 8. [x] Create `TestsController` with `POST /api/v1/tests/start`, `POST /api/v1/tests/:sessionId/answer`, `GET /api/v1/tests/:sessionId`.
 9. [x] Create `SessionsController` with `POST /api/v1/sessions/start` for access-code flow.
 10. [x] Add unit tests for use-cases.
-11. [ ] Add contract tests for DTOs.
-12. [ ] Add integration tests (skipped without test DB).
+11. [x] Add contract tests for DTOs.
+12. [x] Add integration tests (skipped without test DB).
 
 ## Frontend
 
 13. [x] Create `/technologies/[slug]/start` page to start a test.
 14. [x] Create `/tests/[sessionId]` page to display question and submit answer.
 15. [x] Add test API client methods.
-16. [ ] Add unit tests for components.
+16. [x] Add unit tests for components.

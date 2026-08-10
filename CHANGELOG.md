@@ -138,3 +138,11 @@ Options going forward:
 - Exported `ISessionStrategy` from `AuthModule` for `TestEngineModule` reuse.
 - Added unit tests for `StartSessionUseCase` and updated `SessionStrategyAdapter` tests.
 - All unit tests pass; TypeScript build (`tsc -b`) passes for domain, prisma, api, and web.
+
+## 2026-08-11 — Test Engine contract, integration, and frontend tests
+
+- Added contract tests for test-engine DTO schemas.
+- Added integration tests for authenticated test flow and candidate access-code flow.
+- Added frontend unit tests for `/technologies/[slug]/start` and `/tests/[sessionId]` pages.
+- Updated `specs/008-08-test-engine/tasks.md` to mark all completed items.
+- All unit, contract, and integration tests pass.

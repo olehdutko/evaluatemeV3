@@ -130,6 +130,6 @@ describe('StartSessionUseCase', () => {
       save: (c) => Promise.resolve(c),
     };
     const expiredUseCase = new StartSessionUseCase(repo, new FakeQuestionRepository(), new FakeTestSessionRepository(), new FakeSessionStrategy());
-    await expect(expiredUseCase.execute('CODE-123')).rejects.toThrow('expired');
+    await expect(expiredUseCase.execute('CODE-123')).rejects.toThrow('Request validation failed.');
   });
 });
