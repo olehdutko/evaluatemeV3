@@ -16,14 +16,15 @@
 12. [x] Add unit tests for use-cases and adapters.
 13. [x] Add contract tests for auth DTOs.
 14. [x] Add integration tests (skipped when no test DB is available; run with `DATABASE_URL` set).
-15. [ ] Add a persistent token blacklist (Redis/DB) for production.
+15. [x] Use httpOnly cookies for token storage in production/dev.
+16. [ ] Add a persistent token blacklist (Redis/DB) for production.
 
 ## Frontend
 
 1. [x] Add auth API client methods (`register`, `login`, `refresh`, `logout`).
 2. [x] Build `/login` and `/register` pages with forms.
-3. [x] Store tokens in `localStorage` with expiry (client-safe fallback; production should use httpOnly cookies).
+3. [x] Store tokens in httpOnly cookies (backend sets them).
 4. [x] Add `AuthProvider` context for global auth state.
 5. [x] Add middleware route guard that redirects unauthenticated users to `/login`.
-6. [x] Add unit tests for token storage and auth API client.
+6. [x] Add unit tests for auth API client.
 7. [ ] Implement automatic access-token refresh before API calls.
