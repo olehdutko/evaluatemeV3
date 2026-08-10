@@ -14,6 +14,7 @@ export * from './entities/order.entity';
 export * from './entities/email-template.entity';
 export * from './entities/landing-ad.entity';
 export * from './entities/credit-setting.entity';
+export * from './entities/token-blacklist.entity';
 
 export * from './ports/user-repository.port';
 export * from './ports/company-profile-repository.port';

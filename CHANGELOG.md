@@ -146,3 +146,13 @@ Options going forward:
 - Added frontend unit tests for `/technologies/[slug]/start` and `/tests/[sessionId]` pages.
 - Updated `specs/008-08-test-engine/tasks.md` to mark all completed items.
 - All unit, contract, and integration tests pass.
+
+## 2026-08-11 — Auth persistent token blacklist
+
+- Added `TokenBlacklistEntry` entity to `packages/domain`.
+- Added `token_blacklist` Prisma table with `tokenHash` unique index and `expiresAt`.
+- Implemented `PrismaTokenBlacklist` storing SHA-256 hashes with hourly cleanup of expired entries.
+- Wired `PrismaTokenBlacklist` into `AuthModule` as the production `ITokenBlacklist` implementation.
+- Preserved `InMemoryTokenBlacklist` as a lightweight fallback for tests/local use.
+- Marked automatic access-token refresh and persistent blacklist tasks as completed in `specs/005-05-auth/tasks.md`.
+- Added unit and integration tests verifying logout blocks subsequent refresh.

@@ -4,7 +4,7 @@ import { PrismaUserRepository } from '../../infrastructure/prisma/repositories/p
 import { BcryptPasswordHasher } from '../../infrastructure/security/bcrypt-password-hasher';
 import { JwtStrategyAdapter } from '../../infrastructure/auth/jwt-strategy-adapter';
 import { SessionStrategyAdapter } from '../../infrastructure/auth/session-strategy-adapter';
-import { InMemoryTokenBlacklist } from '../../infrastructure/auth/in-memory-token-blacklist';
+import { PrismaTokenBlacklist } from '../../infrastructure/prisma/repositories/prisma-token-blacklist.repository';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { RegisterUseCase } from '../../application/auth/register.use-case';
 import { LoginUseCase } from '../../application/auth/login.use-case';
@@ -32,7 +32,7 @@ import {
     { provide: IPasswordHasher, useClass: BcryptPasswordHasher },
     { provide: IJwtStrategy, useClass: JwtStrategyAdapter },
     { provide: ISessionStrategy, useClass: SessionStrategyAdapter },
-    { provide: ITokenBlacklist, useClass: InMemoryTokenBlacklist },
+    { provide: ITokenBlacklist, useClass: PrismaTokenBlacklist },
   ],
   exports: [JwtAuthGuard, IJwtStrategy, ISessionStrategy],
 })

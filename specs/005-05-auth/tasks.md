@@ -17,7 +17,7 @@
 13. [x] Add contract tests for auth DTOs.
 14. [x] Add integration tests (skipped when no test DB is available; run with `DATABASE_URL` set).
 15. [x] Use httpOnly cookies for token storage in production/dev.
-16. [ ] Add a persistent token blacklist (Redis/DB) for production.
+16. [x] Add a persistent token blacklist (Prisma/MySQL) for production.
 
 ## Frontend
 
@@ -27,4 +27,4 @@
 4. [x] Add `AuthProvider` context for global auth state.
 5. [x] Add middleware route guard that redirects unauthenticated users to `/login`.
 6. [x] Add unit tests for auth API client.
-7. [ ] Implement automatic access-token refresh before API calls.
+7. [x] Implement automatic access-token refresh before API calls.
