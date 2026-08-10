@@ -79,3 +79,8 @@ Options going forward:
 - Frontend switched from `localStorage` to cookies for token storage.
 - Middleware verifies `access_token` cookie to protect routes.
 - Updated auth response schemas and unit tests accordingly.
+
+## 2026-08-10 — Middleware static asset fix
+
+- Updated `middleware.ts` to explicitly allow `/_next/*`, `/static/*`, and `/favicon.ico`.
+- Prevents 404 errors on Next.js static chunks in dev mode.
