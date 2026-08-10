@@ -12,3 +12,17 @@
 - Auth integration tests skip when `DATABASE_URL` is unavailable.
 - Committed as `9993af7 feat: 005-05-auth JWT auth, session tokens, login/register UI, route guard`.
 
+
+## Dev servers — 2026-08-10
+
+- Started local MySQL via Homebrew (`/opt/homebrew/opt/mysql/bin/mysqld_safe`).
+- Created `evaluateme_db` and local user `evaluateme/evaluateme`.
+- Started API dev server on `http://localhost:40001` (pid `$(cat /tmp/api-dev.pid)`).
+- Started web dev server on `http://localhost:4000` (pid `$(cat /tmp/web-dev.pid)`).
+- Smoke tests passed:
+  - `POST /api/v1/auth/register` — user created.
+  - `POST /api/v1/auth/login` — JWT access + refresh tokens issued.
+  - `POST /api/v1/auth/refresh` — new access token issued.
+  - `POST /api/v1/auth/logout` — refresh token blacklisted, subsequent refresh returns 401.
+  - `GET /login` — 200.
+  - `GET /technologies` without auth — 307 redirect to `/login` (middleware guard).
