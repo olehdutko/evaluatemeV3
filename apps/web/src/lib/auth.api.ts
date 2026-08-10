@@ -3,8 +3,9 @@ import {
   registerRequestSchema,
   registerResponseSchema,
   loginRequestSchema,
-  tokensResponseSchema,
+  loginResponseSchema,
   refreshRequestSchema,
+  refreshResponseSchema,
   logoutRequestSchema,
   emptySuccessSchema,
 } from './schemas/auth';
@@ -12,8 +13,9 @@ import type {
   RegisterRequest,
   RegisterResponse,
   LoginRequest,
-  TokensResponse,
+  LoginResponse,
   RefreshRequest,
+  RefreshResponse,
   LogoutRequest,
 } from './schemas/auth';
 
@@ -21,12 +23,12 @@ export function register(input: RegisterRequest): Promise<RegisterResponse> {
   return apiPost('/api/v1/auth/register', input, registerRequestSchema, registerResponseSchema);
 }
 
-export function login(input: LoginRequest): Promise<TokensResponse> {
-  return apiPost('/api/v1/auth/login', input, loginRequestSchema, tokensResponseSchema);
+export function login(input: LoginRequest): Promise<LoginResponse> {
+  return apiPost('/api/v1/auth/login', input, loginRequestSchema, loginResponseSchema);
 }
 
-export function refresh(input: RefreshRequest): Promise<TokensResponse> {
-  return apiPost('/api/v1/auth/refresh', input, refreshRequestSchema, tokensResponseSchema);
+export function refresh(input: RefreshRequest): Promise<RefreshResponse> {
+  return apiPost('/api/v1/auth/refresh', input, refreshRequestSchema, refreshResponseSchema);
 }
 
 export function logout(input: LogoutRequest): Promise<void> {

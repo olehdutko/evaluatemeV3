@@ -50,8 +50,6 @@ describe('Auth endpoint contracts', () => {
     const payload = {
       success: true,
       data: {
-        accessToken: 'jwt.access',
-        refreshToken: 'jwt.refresh',
         expiresInSeconds: 900,
       },
     };

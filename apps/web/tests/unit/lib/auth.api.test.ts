@@ -7,15 +7,13 @@ describe('auth.api', () => {
       json: async () => ({
         success: true,
         data: {
-          accessToken: 'a',
-          refreshToken: 'r',
           expiresInSeconds: 900,
         },
       }),
     } as unknown as Response);
 
     const response = await login({ email: 'a@b.com', password: 'Password123' });
-    expect(response.data.accessToken).toBe('a');
+    expect(response.data.expiresInSeconds).toBe(900);
   });
 
   it('sends register request', async () => {

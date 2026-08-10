@@ -19,6 +19,7 @@ export async function apiGet<T extends ZodTypeAny>(
 ): Promise<NonNullable<z.infer<T>>> {
   const url = `${API_BASE_URL}${path}`;
   const response = await fetch(url, {
+    credentials: 'include',
     headers: { Accept: 'application/json' },
   });
 
@@ -50,6 +51,7 @@ export async function apiPost<
   const url = `${API_BASE_URL}${path}`;
   const response = await fetch(url, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',

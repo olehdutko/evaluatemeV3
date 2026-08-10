@@ -71,3 +71,11 @@ Options going forward:
 - Added `WEB_ORIGIN=http://localhost:4000` to `.env.local`.
 - Restarted API dev server.
 - Verified preflight and login requests from web origin return correct CORS headers.
+
+## 2026-08-10 — httpOnly cookie authentication
+
+- Backend now sets `access_token` and `refresh_token` as httpOnly cookies on login.
+- Backend reads refresh token from cookie during refresh/logout when body missing.
+- Frontend switched from `localStorage` to cookies for token storage.
+- Middleware verifies `access_token` cookie to protect routes.
+- Updated auth response schemas and unit tests accordingly.

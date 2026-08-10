@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { login, register, logout as apiLogout } from '../auth.api';
-import { getTokens, saveTokens, clearTokens, isTokenExpired, AuthTokens } from './token-storage';
 import type { RegisterRequest, LoginRequest } from '../schemas/auth';
 
 interface AuthContextValue {
@@ -20,19 +19,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const tokens = getTokens();
-    setIsAuthenticated(!!tokens && !isTokenExpired(tokens));
+    // Server-side rendering cannot read cookies; default to not authenticated.
+    // Middleware handles server-side protection.
+    setIsAuthenticated(false);
     setIsLoading(false);
   }, []);
 
   const handleLogin = useCallback(async (input: LoginRequest) => {
-    const response = await login(input);
-    const tokens: AuthTokens = {
-      accessToken: response.data.accessToken,
-      refreshToken: response.data.refreshToken,
-      expiresAt: Date.now() + response.data.expiresInSeconds * 1000,
-    };
-    saveTokens(tokens);
+    await login(input);
     setIsAuthenticated(true);
   }, []);
 
@@ -42,15 +36,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
   }, [handleLogin]);
 
   const handleLogout = useCallback(async () => {
-    const tokens = getTokens();
-    if (tokens) {
-      try {
-        await apiLogout({ refreshToken: tokens.refreshToken });
-      } catch {
-        // Ignore backend errors and clear local session anyway.
-      }
+    try {
+      await apiLogout({ refreshToken: '' });
+    } catch {
+      // Ignore errors and clear client-side state anyway.
     }
-    clearTokens();
     setIsAuthenticated(false);
   }, []);
 

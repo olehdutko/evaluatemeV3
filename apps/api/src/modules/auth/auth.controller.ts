@@ -1,4 +1,5 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { RegisterUseCase } from '../../application/auth/register.use-case';
 import { LoginUseCase } from '../../application/auth/login.use-case';
 import { RefreshUseCase } from '../../application/auth/refresh.use-case';
@@ -10,6 +11,15 @@ import {
   refreshRequestSchema,
   logoutRequestSchema,
 } from '../../lib/schemas/auth.schema';
+
+const ACCESS_TOKEN_COOKIE = 'access_token';
+const REFRESH_TOKEN_COOKIE = 'refresh_token';
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+};
 
 @Controller('/api/v1/auth')
 export class AuthController {
@@ -28,20 +38,51 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body(new ZodValidationPipe(loginRequestSchema)) body: { email: string; password: string }) {
-    return this.loginUseCase.execute(body);
+  async login(
+    @Body(new ZodValidationPipe(loginRequestSchema)) body: { email: string; password: string },
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.loginUseCase.execute(body);
+    response.cookie(ACCESS_TOKEN_COOKIE, result.data.accessToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: result.data.expiresInSeconds * 1000,
+    });
+    response.cookie(REFRESH_TOKEN_COOKIE, result.data.refreshToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    return { success: true, data: { expiresInSeconds: result.data.expiresInSeconds } };
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body(new ZodValidationPipe(refreshRequestSchema)) body: { refreshToken: string }) {
-    return this.refreshUseCase.execute(body.refreshToken);
+  async refresh(
+    @Body(new ZodValidationPipe(refreshRequestSchema)) body: { refreshToken: string },
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = body.refreshToken || request.cookies[REFRESH_TOKEN_COOKIE] || '';
+    const result = await this.refreshUseCase.execute(refreshToken);
+    response.cookie(ACCESS_TOKEN_COOKIE, result.data.accessToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: result.data.expiresInSeconds * 1000,
+    });
+    return { success: true, data: { expiresInSeconds: result.data.expiresInSeconds } };
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Body(new ZodValidationPipe(logoutRequestSchema)) body: { refreshToken: string }) {
-    await this.logoutUseCase.execute(body.refreshToken);
+  async logout(
+    @Body(new ZodValidationPipe(logoutRequestSchema)) body: { refreshToken: string },
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = body.refreshToken || request.cookies[REFRESH_TOKEN_COOKIE] || '';
+    if (refreshToken) {
+      await this.logoutUseCase.execute(refreshToken);
+    }
+    response.clearCookie(ACCESS_TOKEN_COOKIE, COOKIE_OPTIONS);
+    response.clearCookie(REFRESH_TOKEN_COOKIE, COOKIE_OPTIONS);
     return { success: true };
   }
 }

@@ -26,8 +26,6 @@ export const loginRequestSchema = z.object({
 
 export const loginResponseSchema = successEnvelopeSchema(
   z.object({
-    accessToken: z.string(),
-    refreshToken: z.string(),
     expiresInSeconds: z.number().int().positive(),
   }),
 );
