@@ -103,3 +103,15 @@ Options going forward:
 - Failed refresh redirects to `/login`.
 - Concurrent 401 requests share a single refresh promise to avoid multiple refresh calls.
 - Added unit tests for retry on 401 and refresh failure.
+
+## 2026-08-10 — Test Engine MVP
+
+- Added domain entities and Prisma tables: `TestSession`, `UserAnswer`.
+- Implemented use-cases: `StartTestUseCase`, `SubmitAnswerUseCase`, `GetTestSessionUseCase`.
+- Implemented Prisma repositories for `Question`, `Answer`, `TestSession`.
+- Created `TestsController` with protected `POST /api/v1/tests/start`, `GET /api/v1/tests/:sessionId`, `POST /api/v1/tests/:sessionId/answer`.
+- Created `JwtAuthGuard` to verify `access_token` cookie on protected endpoints.
+- Added frontend pages: `/technologies/[slug]/start` and `/tests/[sessionId]`.
+- Added test-engine API client methods and schemas.
+- Added unit tests for start and submit-answer use-cases.
+- All backend and frontend builds pass; tests pass.

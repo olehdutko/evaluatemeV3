@@ -1,4 +1,4 @@
-import { Answer, FreeSampleQuestion, Question, Test } from '../entities/test.entity';
+import { Test, Question, Answer, FreeSampleQuestion } from '../entities/test.entity';
 
 export const ITestRepository = Symbol('ITestRepository');
 export const IQuestionRepository = Symbol('IQuestionRepository');
@@ -15,12 +15,14 @@ export interface ITestRepository {
 export interface IQuestionRepository {
   findById(id: string): Promise<Question | null>;
   findByTestId(testId: string): Promise<Question[]>;
+  findByTestIdRandomized(testId: string, limit: number): Promise<Question[]>;
   save(question: Question): Promise<Question>;
 }
 
 export interface IAnswerRepository {
   findById(id: string): Promise<Answer | null>;
   findByQuestionId(questionId: string): Promise<Answer[]>;
+  findByQuestionIds(questionIds: string[]): Promise<Answer[]>;
   save(answer: Answer): Promise<Answer>;
 }
 

@@ -1,38 +1,40 @@
 import { Entity } from './base.entity';
-import { QuestionType, TestStatus } from './status.enums';
 
 export interface Test extends Entity {
   title: string;
   technologyId: string;
-  status: TestStatus;
-  durationMinutes: number | null;
-  passingScore: number | null;
-  createdByUserId: string;
+  status: string;
+  durationMinutes?: number | null;
+  passingScore?: number | null;
+  createdByUserId?: string | null;
 }
 
-export interface Question extends Entity {
+export interface Question {
+  id: string;
   testId: string;
   content: string;
-  type: QuestionType;
+  type: 'single' | 'multiple';
   orderIndex: number;
   score: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface Answer extends Entity {
+export interface Answer {
+  id: string;
   questionId: string;
   content: string;
   isCorrect: boolean;
   orderIndex: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface FreeSampleQuestion extends Entity {
+export interface FreeSampleQuestion {
+  id: string;
   technologyId: string;
   content: string;
-  type: QuestionType;
-  explanation: string | null;
-}
-
-export function validateSingleChoice(answers: Answer[]): boolean {
-  const correctCount = answers.filter((a) => a.isCorrect).length;
-  return correctCount === 1;
+  type: string;
+  explanation?: string | null;
+  createdAt: string;
 }
