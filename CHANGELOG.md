@@ -115,3 +115,13 @@ Options going forward:
 - Added test-engine API client methods and schemas.
 - Added unit tests for start and submit-answer use-cases.
 - All backend and frontend builds pass; tests pass.
+
+## 2026-08-10 — Test Engine MVP (continued)
+
+- Fixed `JwtAuthGuard` to inject `IJwtStrategy` instead of `JwtStrategyAdapter` concrete.
+- Exported `IJwtStrategy` from `AuthModule` so `TestEngineModule` can use the guard.
+- Smoke test for full test lifecycle:
+  - Start a test for the "c" technology.
+  - Fetch all questions and submit the first answer for each question.
+  - Final session status becomes `completed` and returns a score.
+- All 19 backend unit test suites / 52 tests passed after changes.
