@@ -8,8 +8,7 @@ import { StartTestUseCase } from '../../application/test-engine/start-test.use-c
 import { SubmitAnswerUseCase } from '../../application/test-engine/submit-answer.use-case';
 import { GetTestSessionUseCase } from '../../application/test-engine/get-test-session.use-case';
 import { TestEngineController } from './test-engine.controller';
-import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
-import { JwtStrategyAdapter } from '../../infrastructure/auth/jwt-strategy-adapter';
+import { AuthModule } from '../auth/auth.module';
 import {
   ITechnologyRepository,
   IQuestionRepository,
@@ -18,14 +17,13 @@ import {
 } from '@evaluateme/domain';
 
 @Module({
+  imports: [AuthModule],
   controllers: [TestEngineController],
   providers: [
     PrismaService,
     StartTestUseCase,
     SubmitAnswerUseCase,
     GetTestSessionUseCase,
-    JwtAuthGuard,
-    JwtStrategyAdapter,
     { provide: ITechnologyRepository, useClass: PrismaTechnologyRepository },
     { provide: IQuestionRepository, useClass: PrismaQuestionRepository },
     { provide: IAnswerRepository, useClass: PrismaAnswerRepository },
