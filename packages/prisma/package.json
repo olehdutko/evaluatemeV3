@@ -8,7 +8,7 @@
   "scripts": {
     "build": "prisma generate && tsc",
     "lint": "echo 'No lint'",
-    "test": "echo 'No tests'",
+    "test": "jest",
     "test:integration": "echo 'No integration tests'",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

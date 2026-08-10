@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============= v3 Business Entities =============
+
 model User {
   id                String            @id @default(uuid()) @db.VarChar(36)
   email             String            @unique @db.VarChar(255)
@@ -84,6 +86,7 @@ model Test {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@unique([technologyId, title])
   @@map("tests")
 }
 
@@ -97,6 +100,7 @@ model Question {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@unique([testId, orderIndex])
   @@map("questions")
 }
 
@@ -108,16 +112,17 @@ model Answer {
   orderIndex  Int
   createdAt   DateTime @default(now())
 
+  @@unique([questionId, orderIndex])
   @@map("answers")
 }
 
 model FreeSampleQuestion {
-  id          String   @id @default(uuid()) @db.VarChar(36)
-  technologyId String  @db.VarChar(36)
-  content     String   @db.Text
-  type        String   @db.VarChar(20)
-  explanation String?  @db.Text
-  createdAt   DateTime @default(now())
+  id           String   @id @default(uuid()) @db.VarChar(36)
+  technologyId String   @db.VarChar(36)
+  content      String   @db.Text
+  type         String   @db.VarChar(20)
+  explanation  String?  @db.Text
+  createdAt    DateTime @default(now())
 
   @@map("free_sample_questions")
 }
@@ -238,11 +243,97 @@ model LandingAd {
 }
 
 model CreditSetting {
-  id            String   @id @default(uuid()) @db.VarChar(36)
-  key           String   @unique @db.VarChar(100)
-  value         String   @db.Text
-  updatedByUserId String @db.VarChar(36)
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(uuid()) @db.VarChar(36)
+  key             String   @unique @db.VarChar(100)
+  value           String   @db.Text
+  updatedByUserId String   @db.VarChar(36)
+  updatedAt       DateTime @updatedAt
 
   @@map("credit_settings")
+}
+
+// ============= Legacy Read-Only Reference Models =============
+// These models map existing MyISAM tables and MUST NOT be written to in feature code.
+
+model LegacyUser {
+  id       Int     @id @default(autoincrement()) @db.UnsignedInt
+  email    String  @unique @db.VarChar(255)
+  password String? @db.VarChar(255)
+  role     String? @db.VarChar(20)
+  status   Int?
+  created  DateTime? @db.DateTime(0)
+
+  @@map("Users")
+}
+
+model LegacyCompany {
+  id           Int     @id @default(autoincrement()) @db.UnsignedInt
+  companyName  String? @map("company_name") @db.VarChar(255)
+  email        String? @db.VarChar(255)
+  address      String? @db.VarChar(255)
+  phone        String? @db.VarChar(50)
+  country      String? @db.VarChar(100)
+  occupation   String? @db.VarChar(100)
+  tests        Int?
+  accessCodes  Int?    @map("access_codes")
+  created      DateTime? @db.DateTime(0)
+
+  @@map("Companies")
+}
+
+model LegacyStudent {
+  id        Int     @id @default(autoincrement()) @db.UnsignedInt
+  sessionId String? @map("session_id") @db.VarChar(255)
+  userId    Int?
+  testId    Int?
+  questionId Int?   @map("question_id")
+  answer    String? @db.Text
+  status    String? @db.VarChar(20)
+  started   DateTime? @db.DateTime(0)
+  completed DateTime? @db.DateTime(0)
+  created   DateTime? @db.DateTime(0)
+
+  @@map("Students")
+}
+
+model LegacyResult {
+  id         Int     @id @default(autoincrement()) @db.UnsignedInt
+  resultCode String? @map("result_code") @db.VarChar(255)
+  userId     Int?
+  testId     Int?
+  score      Int?
+  maxScore   Int?    @map("max_score")
+  status     String? @db.VarChar(20)
+  sessionId  String? @map("session_id") @db.VarChar(255)
+  created    DateTime? @db.DateTime(0)
+
+  @@map("Results")
+}
+
+model LegacyCandidate {
+  id        Int     @id @default(autoincrement()) @db.UnsignedInt
+  sessionId String? @map("session_id") @db.VarChar(255)
+  testId    Int?
+  questionId Int?   @map("question_id")
+  answer    String? @db.Text
+  status    String? @db.VarChar(20)
+  started   DateTime? @db.DateTime(0)
+  completed DateTime? @db.DateTime(0)
+  created   DateTime? @db.DateTime(0)
+
+  @@map("Candidates")
+}
+
+model LegacyCandidateResult {
+  id         Int     @id @default(autoincrement()) @db.UnsignedInt
+  resultCode String? @map("result_code") @db.VarChar(255)
+  candidateId Int?   @map("candidate_id")
+  testId     Int?
+  score      Int?
+  maxScore   Int?    @map("max_score")
+  status     String? @db.VarChar(20)
+  sessionId  String? @map("session_id") @db.VarChar(255)
+  created    DateTime? @db.DateTime(0)
+
+  @@map("Candidates_results")
 }

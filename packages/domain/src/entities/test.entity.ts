@@ -1,5 +1,5 @@
 import { Entity } from './base.entity';
-import { TestStatus, QuestionType } from './status.enums';
+import { QuestionType, TestStatus } from './status.enums';
 
 export interface Test extends Entity {
   title: string;
@@ -30,4 +30,9 @@ export interface FreeSampleQuestion extends Entity {
   content: string;
   type: QuestionType;
   explanation: string | null;
+}
+
+export function validateSingleChoice(answers: Answer[]): boolean {
+  const correctCount = answers.filter((a) => a.isCorrect).length;
+  return correctCount === 1;
 }

@@ -1,9 +1,5 @@
 # Agent Session Log — EvaluateMe v3
 
-> Purpose: this file tracks what has been implemented, what is pending, and the
-> last known state of the project. It is designed to be readable by a fresh agent
-> session so work can continue without relying on prior conversation history.
-
 ## Last Updated
 
 2026-08-10
@@ -15,44 +11,38 @@ EvaluateMe.IT v3.0 — Clean Architecture monorepo with NestJS backend and Next.
 
 ## Overall Progress
 
-- **Feature**: `specs/001-01-architecture` (Architecture Foundation)
-- **Status**: ✅ **Complete** — all 71 tasks done across six phases.
-- **Pending phases**: None
-- **Next work**: Begin next feature spec (`002-02-data-model` or whichever feature is prioritized).
+- **Completed features**:
+  - `specs/001-01-architecture` — ✅ Complete (71/71 tasks)
+  - `specs/002-02-data-model` — ✅ Complete (25/25 tasks)
+- **Active feature**: None
+- **Next work**: Begin next feature spec (`003-03-api` or whichever is prioritized)
 
-### Task counts by phase in `specs/001-01-architecture/tasks.md`
+## Feature 002-02-data-model — Summary
 
-| Phase | Done | Pending | Status |
-|-------|------|---------|--------|
-| Phase 1: Setup | 7 | 0 | ✅ |
-| Phase 2: Foundational | 14 | 0 | ✅ |
-| Phase 3: User Story 1 (Architecture) | 13 | 0 | ✅ |
-| Phase 4: User Story 2 (Legacy DB) | 15 | 0 | ✅ |
-| Phase 5: User Story 3 (Module Boundaries) | 13 | 0 | ✅ |
-| Phase 6: Polish | 9 | 0 | ✅ |
-| **Total** | **71** | **0** | ✅ |
+### Phase 1: Domain Entities & Ports
 
-## Phase 6 — Polish & Cross-Cutting Concerns (Just Completed)
+- Refined existing domain entities to match full v3 model.
+- Added `OrderStatus`, `LandingAdPosition` enums.
+- Added `validateSingleChoice` domain rule.
+- Ensured all repository ports use Symbol injection tokens.
+- Added unit tests for all v3 entities.
+- Added `ports-export.test.ts` verifying all ports and enums are exported.
 
-- Updated `README.md` with tech stack, project structure, scripts, and architecture links.
-- Updated `specs/001-01-architecture/quickstart.md` to match current commands.
-- Added central error handler: `apps/api/src/infrastructure/errors/error-handler.ts`.
-- Added domain error classes: `apps/api/src/infrastructure/errors/app-error.ts`.
-- Added Zod validation pipe: `apps/api/src/infrastructure/validation/zod-validation.pipe.ts`.
-- Added API versioning smoke test: `apps/api/tests/integration/api-versioning.integration.test.ts`.
-- Added performance smoke test: `apps/api/tests/integration/performance.integration.test.ts`.
-- Added error handler / Zod pipe unit tests.
-- Verified no direct Prisma/ORM usage outside Infrastructure.
-- Added `docs/architecture/decision-log.md`.
-- Ran full CI simulation: build, lint, typecheck, prisma generate, unit tests, integration tests.
+### Phase 2: Prisma Schema Alignment
 
-## Key Deliverables from Earlier Phases
+- Added natural-key unique constraints:
+  - `Test`: `[technologyId, title]`
+  - `Question`: `[testId, orderIndex]`
+  - `Answer`: `[questionId, orderIndex]`
+- Created version-controlled migration `20260810000000_data_model_unique_constraints`.
+- Added Prisma package test script and Jest config.
+- Added `schema-coverage.test.ts` and `schema-migration.integration.test.ts`.
 
-- Health endpoint: `GET /api/v1/health`
-- Technology catalog endpoint: `GET /api/v1/technologies`
-- Legacy database mapping, migration job + runner, migration guard.
-- 13 backend modules documented in `docs/architecture/modules.md`.
-- ADRs 001–003 and decision log.
+### Phase 3: Legacy Read-Only Models
+
+- Added Prisma models: `LegacyUser`, `LegacyCompany`, `LegacyStudent`, `LegacyResult`, `LegacyCandidate`, `LegacyCandidateResult`.
+- Added read-only integration test `legacy-readonly-read.integration.test.ts`.
+- Updated `docs/architecture/legacy-database-mapping.md` with model names and rules.
 
 ## Last Verification Results
 
@@ -64,13 +54,12 @@ Run on 2026-08-10:
 | `npm run lint` | ✅ Pass |
 | `npm run typecheck` | ✅ Pass |
 | `npm run db:generate` | ✅ Pass |
-| `npm run test` | ✅ Pass (12 API unit tests + 1 web + 1 domain) |
-| `npm run test:integration` | ✅ Pass (6 API integration tests + 1 web) |
-| `bash scripts/check-module-cycles.sh` | ✅ No cycles |
+| `npm run test` | ✅ Pass |
+| `npm run test:integration` | ✅ Pass (7 API integration tests) |
 
 ## Notes for Next Session
 
-1. Architecture foundation is fully complete and green.
-2. Continue with the next feature spec from `specs/`.
-3. Maintain the existing gates: build, lint, typecheck, tests, integration tests.
-4. No destructive changes to legacy tables without explicit `--force-destructive`.
+1. Feature `002-02-data-model` is complete and committed.
+2. Continue with the next prioritized feature spec.
+3. Maintain existing CI gates.
+4. Legacy tables remain read-only; new v3 tables carry the active data model.

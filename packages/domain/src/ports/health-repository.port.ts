@@ -1,9 +1,12 @@
-export interface IHealthRepositoryPort {
-  checkDatabase(): Promise<{ ok: boolean; latencyMs: number }>;
+export const IHealthRepository = Symbol('IHealthRepository');
+
+export interface HealthCheckResult {
+  status: 'ok';
+  database: 'ok' | 'error';
+  latencyMs: number;
+  timestamp: string;
 }
 
-export const IHealthRepository = Symbol('IHealthRepository') as unknown as new () => IHealthRepositoryPort;
-
-export class HealthRepositoryToken {
-  static readonly token = Symbol('IHealthRepository');
+export interface IHealthRepository {
+  check(): Promise<HealthCheckResult>;
 }

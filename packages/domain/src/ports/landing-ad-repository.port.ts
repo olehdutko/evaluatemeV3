@@ -1,5 +1,9 @@
-import { LandingAd } from '../entities/landing-ad.entity';
+import { LandingAd, LandingAdPosition } from '../entities/landing-ad.entity';
+
+export const ILandingAdRepository = Symbol('ILandingAdRepository');
 
 export interface ILandingAdRepository {
-  findActiveByPosition(position: 'home_top' | 'home_bottom' | 'sidebar'): Promise<LandingAd[]>;
+  findActiveByPosition(position: LandingAdPosition): Promise<LandingAd[]>;
+  findById(id: string): Promise<LandingAd | null>;
+  save(ad: LandingAd): Promise<LandingAd>;
 }

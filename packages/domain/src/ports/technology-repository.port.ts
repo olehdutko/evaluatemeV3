@@ -1,10 +1,10 @@
 import { Technology } from '../entities/technology.entity';
 
-export interface ITechnologyRepositoryPort {
-  findAll(): Promise<Technology[]>;
+export const ITechnologyRepository = Symbol('ITechnologyRepository');
+
+export interface ITechnologyRepository {
   findById(id: string): Promise<Technology | null>;
+  findAll(): Promise<Technology[]>;
   findBySlug(slug: string): Promise<Technology | null>;
   save(technology: Technology): Promise<Technology>;
 }
-
-export const ITechnologyRepository = Symbol('ITechnologyRepository') as unknown as new () => ITechnologyRepositoryPort;

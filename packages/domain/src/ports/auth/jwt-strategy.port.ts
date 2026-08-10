@@ -1,7 +1,4 @@
-export interface IJwtStrategy {
-  sign(payload: ITokenPayload, expiresIn?: string): Promise<string>;
-  verify(token: string): Promise<ITokenPayload>;
-}
+export const IJwtStrategy = Symbol('IJwtStrategy');
 
 export interface ITokenPayload {
   sub: string;
@@ -10,3 +7,7 @@ export interface ITokenPayload {
   type: 'access' | 'refresh';
 }
 
+export interface IJwtStrategy {
+  sign(payload: ITokenPayload, expiresIn?: string): Promise<string>;
+  verify(token: string): Promise<ITokenPayload>;
+}

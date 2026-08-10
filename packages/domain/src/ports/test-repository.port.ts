@@ -1,8 +1,14 @@
 import { Answer, FreeSampleQuestion, Question, Test } from '../entities/test.entity';
 
+export const ITestRepository = Symbol('ITestRepository');
+export const IQuestionRepository = Symbol('IQuestionRepository');
+export const IAnswerRepository = Symbol('IAnswerRepository');
+export const IFreeSampleQuestionRepository = Symbol('IFreeSampleQuestionRepository');
+
 export interface ITestRepository {
   findById(id: string): Promise<Test | null>;
   findAll(): Promise<Test[]>;
+  findByTechnologyId(technologyId: string): Promise<Test[]>;
   save(test: Test): Promise<Test>;
 }
 

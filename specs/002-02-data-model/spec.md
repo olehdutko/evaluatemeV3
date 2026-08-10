@@ -1,140 +1,92 @@
-# Feature Specification: [FEATURE NAME]
+# Feature Specification: Shared Data Model
 
-**Feature Branch**: `[###-feature-name]`
+**Feature Branch**: `002-02-data-model`
 
-**Created**: [DATE]
+**Created**: 2026-08-10
 
 **Status**: Draft
 
-**Input**: User description: "$ARGUMENTS"
+**Input**: User description: "Define the shared v3 domain entities, Prisma schema, and repository ports that all subsequent features will build on."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing
 
-<!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
+### User Story 1 — P1: Core v3 Entities & Repository Ports
 
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
--->
+As a backend developer, I need typed domain entities and repository ports for `User`, `CompanyProfile`, `Campaign`, `Technology`, `Test`, `Question`, `Answer`, `AccessCode`, `Order`, `EmailTemplate`, `LandingAd`, and `CreditSetting` so that all features can depend on a single, stable contract.
 
-### User Story 1 - [Brief Title] (Priority: P1)
+**Why this priority**: Without shared entities and ports, every feature reinvents boundaries and creates coupling. This story establishes the vocabulary all later features use.
 
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Independent Test**: Unit tests assert each entity can be constructed with valid data and rejected on invalid state. Ports are interfaces without implementation; tests verify they exist and are exported from `packages/domain`.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** a valid set of attributes, **When** constructing a `Test` entity, **Then** the entity exposes `id`, `title`, `technologyId`, `status`, `durationMinutes`, `passingScore`, `createdByUserId`, `createdAt`, `updatedAt`.
+2. **Given** a `Question` with type `single_choice`, **When** validated, **Then** it stores `testId`, `content`, `type`, `orderIndex`, and `score`.
 
----
+### User Story 2 — P2: Prisma Schema Alignment & Non-Destructive Migration
 
-### User Story 2 - [Brief Title] (Priority: P2)
+As a platform engineer, I need the Prisma schema and a version-controlled migration to reflect all v3 entities with correct MySQL types and natural-key constraints so that the database matches the domain model.
 
-[Describe this user journey in plain language]
+**Why this priority**: The schema is the physical contract. Aligning it now prevents future migration conflicts and allows repositories to be implemented against a single source of truth.
 
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Run `npx prisma migrate status` against a local MySQL copy and confirm one new migration is pending and contains only additive, non-destructive changes.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** the current schema, **When** `npx prisma migrate diff` is run, **Then** no `DROP` or destructive `ALTER` statements are generated for existing tables.
+2. **Given** a migration file, **When** it is inspected, **Then** it adds `users`, `company_profiles`, `campaigns`, `campaign_history`, `technologies`, `tests`, `questions`, `answers`, `free_sample_questions`, `access_codes`, `orders`, `email_templates`, `landing_ads`, `credit_settings` if they do not already exist.
 
----
+### User Story 3 — P3: Legacy Tables as Read-Only Reference Models
 
-### User Story 3 - [Brief Title] (Priority: P3)
+As a migration engineer, I need Prisma models for legacy MyISAM tables (read-only) so that the one-time migration job can read legacy data without writing to it.
 
-[Describe this user journey in plain language]
+**Why this priority**: This enables the existing migration runner to read from legacy tables using the same Prisma client, but it is not required for the core v3 entity contracts.
 
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Prisma introspection or manual models expose legacy tables with `@@map("legacy_name")` and no `@@id` or write operations in tests.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** legacy `Students`, `Results`, `Candidates`, `Candidates_results` tables, **When** Prisma client is generated, **Then** read-only models are available under `packages/prisma`.
 
----
-
-[Add more user stories as needed, each with an assigned priority]
-
-### Edge Cases
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
-
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
-
-## Requirements *(mandatory)*
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
-  All requirements MUST be compatible with Clean Architecture, TypeScript strict mode,
-  replaceable Infrastructure, and validated external input.
--->
+## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: Domain entities for all v3 business objects MUST exist in `packages/domain/src/entities/`.
+- **FR-002**: Repository ports for every entity MUST exist in `packages/domain/src/ports/`.
+- **FR-003**: Prisma schema in `packages/prisma/schema.prisma` MUST model all v3 tables with MySQL native types and natural-key unique constraints.
+- **FR-004**: A version-controlled migration MUST add any missing v3 tables without destructive changes to existing tables.
+- **FR-005**: Legacy tables MUST be modeled as read-only references (no writes in production feature code).
+- **FR-006**: Enum/string status values MUST match the state machines documented in `specs/001-01-architecture/data-model.md`.
 
-*Example of marking unclear requirements:*
+### Key Entities
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **User**: unified account (personal user, company, admin).
+- **CompanyProfile**: company-specific fields linked 1:1 to a company `User`.
+- **Campaign / CampaignHistory**: marketing campaigns and audit trail.
+- **Technology**: catalog entry for tests and free sample questions.
+- **Test / Question / Answer**: test authoring and question banks.
+- **FreeSampleQuestion**: promotional question shown without authentication.
+- **AccessCode**: code granting candidate access to a test.
+- **Order**: payment/order record.
+- **EmailTemplate / LandingAd / CreditSetting**: admin-managed content and configuration.
 
-### Key Entities *(include if feature involves data)*
+## Success Criteria
 
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
+- **SC-001**: All v3 entities and ports compile under TypeScript strict mode.
+- **SC-002**: Prisma generate succeeds and migration is non-destructive.
+- **SC-003**: Legacy read-only models do not contain `@@id` or mutable operations in domain code.
+- **SC-004**: No feature code outside Infrastructure imports Prisma models directly.
 
-## Success Criteria *(mandatory)*
-
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
-
-### Measurable Outcomes
-
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
-
-## Architecture & Non-Functional Constraints *(mandatory)*
+## Architecture & Non-Functional Constraints
 
 - Business logic MUST be framework-independent and live in Domain and Application layers.
 - External input MUST be validated; database access MUST use parameterized queries or equivalent safe bindings.
-- Persistence MUST be abstracted so the primary MySQL store can be replaced by another SQL database without changing Domain or Application code.
+- Persistence MUST be abstracted so MySQL can be replaced by another SQL database without changing Domain or Application code.
 - The feature MUST be testable with unit, integration, and API tests without Docker or container-dependent workflows.
 
 ## Assumptions
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right assumptions based on reasonable defaults
-  chosen when the feature description did not specify certain details.
--->
-
-- [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
-- [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
-- [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+- The legacy `evaluateme` database exists and is reachable via `DATABASE_URL`.
+- Existing legacy tables remain read-only during this feature.
+- v3 entities may duplicate legacy data idempotently through the existing migration runner.
