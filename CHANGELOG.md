@@ -43,3 +43,14 @@ Options going forward:
 - Synced Prisma schema to `evaluateme_v3` (dev DB) and `evaluateme_test` (test DB via force-reset).
 - API dev server now uses `DATABASE_URL=mysql://evaluateme_dev@192.168.1.132:3306/evaluateme_v3`.
 - Health check returns `database: ok`.
+
+## Dev servers — 2026-08-10 (remote DB)
+
+- API dev server: `http://localhost:40001`
+- Web dev server: `http://localhost:4000`
+- Smoke tests passed against remote `evaluateme_v3`:
+  - `POST /api/v1/auth/register` → user created.
+  - `POST /api/v1/auth/login` → JWT tokens issued.
+  - `GET /api/v1/health` → `database: ok`.
+  - `GET /login` → 200.
+  - `GET /technologies` without auth → 307 redirect to `/login`.
