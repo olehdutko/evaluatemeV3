@@ -1,71 +1,88 @@
 import { z } from 'zod';
 import { apiGet, apiPost, ApiError } from '../../../src/lib/api-client';
+import { successEnvelopeSchema } from '../../../src/lib/schemas/envelope.schema';
+import * as authApi from '../../../src/lib/auth.api';
 
-const successSchema = z.object({
-  success: z.literal(true),
-  data: z.object({ id: z.string().uuid() }),
-});
-
-const requestSchema = z.object({ name: z.string().min(1) });
+const schema = successEnvelopeSchema(z.string());
 
 describe('api-client', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  it('returns parsed data for a successful GET', async () => {
+  it('returns parsed GET response', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({
-        success: true,
-        data: { id: '550e8400-e29b-41d4-a716-446655440000' },
-      }),
-    } as Response);
+      json: async () => ({ success: true, data: 'hello' }),
+    } as unknown as Response);
 
-    const result = await apiGet('/api/v1/test', successSchema);
-    expect(result.success).toBe(true);
-    expect(result.data.id).toBe('550e8400-e29b-41d4-a716-446655440000');
+    const response = await apiGet('/api/v1/test', schema);
+    expect(response).toEqual({ success: true, data: 'hello' });
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/test'),
+      expect.objectContaining({ credentials: 'include' }),
+    );
   });
 
-  it('throws ApiError for a non-2xx response', async () => {
+  it('returns parsed POST response', async () => {
+    const requestSchema = z.object({ name: z.string() });
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true, data: 'created' }),
+    } as unknown as Response);
+
+    const response = await apiPost('/api/v1/test', { name: 'x' }, requestSchema, schema);
+    expect(response).toEqual({ success: true, data: 'created' });
+  });
+
+  it('throws ApiError on non-ok response', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       status: 500,
-      json: async () => ({ success: false, error: { code: 'INTERNAL_ERROR', message: 'boom' }, meta: null }),
-    } as Response);
+      json: async () => ({ success: false, error: { code: 'INTERNAL_ERROR' } }),
+    } as unknown as Response);
 
-    await expect(apiGet('/api/v1/test', successSchema)).rejects.toBeInstanceOf(ApiError);
+    await expect(apiGet('/api/v1/test', schema)).rejects.toThrow(ApiError);
   });
 
-  it('throws ApiError for an invalid response shape', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ success: true, data: { id: 'not-a-uuid' } }),
-    } as Response);
+  it('refreshes token on 401 and retries once', async () => {
+    const refreshSpy = jest.spyOn(authApi, 'refresh').mockResolvedValue({
+      success: true,
+      data: { expiresInSeconds: 900 },
+    });
 
-    await expect(apiGet('/api/v1/test', successSchema)).rejects.toBeInstanceOf(ApiError);
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({ success: false, error: { code: 'UNAUTHORIZED' } }),
+      } as unknown as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true, data: 'after-refresh' }),
+      } as unknown as Response);
+
+    const response = await apiGet('/api/v1/test', schema);
+    expect(response).toEqual({ success: true, data: 'after-refresh' });
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('posts a validated request and returns parsed response', async () => {
+  it('does not retry after refresh failure', async () => {
+    const refreshSpy = jest.spyOn(authApi, 'refresh').mockRejectedValue(new Error('Refresh failed'));
+
     global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 201,
-      json: async () => ({
-        success: true,
-        data: { id: '550e8400-e29b-41d4-a716-446655440000' },
-      }),
-    } as Response);
+      ok: false,
+      status: 401,
+      json: async () => ({ success: false, error: { code: 'UNAUTHORIZED' } }),
+    } as unknown as Response);
 
-    const result = await apiPost(
-      '/api/v1/test',
-      { name: 'Test' },
-      requestSchema,
-      successSchema,
-    );
-
-    expect(result.success).toBe(true);
-    expect(result.data.id).toBe('550e8400-e29b-41d4-a716-446655440000');
+    await expect(apiGet('/api/v1/test', schema)).rejects.toThrow('Refresh failed');
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 });

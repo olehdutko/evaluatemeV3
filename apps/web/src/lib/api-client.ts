@@ -1,6 +1,10 @@
 import { z, ZodTypeAny, ZodType } from 'zod';
+import { refresh } from './auth.api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+
+let isRefreshing = false;
+let refreshPromise: Promise<void> | null = null;
 
 export class ApiError extends Error {
   constructor(
@@ -13,13 +17,56 @@ export class ApiError extends Error {
   }
 }
 
+function redirectToLogin(): void {
+  if (typeof window !== 'undefined') {
+    window.location.assign('/login');
+  }
+}
+
+async function performRefresh(): Promise<void> {
+  try {
+    await refresh({ refreshToken: '' });
+  } catch (err) {
+    redirectToLogin();
+    throw err;
+  }
+}
+
+async function getRefreshPromise(): Promise<void> {
+  if (!isRefreshing) {
+    isRefreshing = true;
+    refreshPromise = performRefresh().finally(() => {
+      isRefreshing = false;
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise as Promise<void>;
+}
+
+async function fetchWithAuth(
+  url: string,
+  init: RequestInit,
+  retry = true,
+): Promise<Response> {
+  const response = await fetch(url, {
+    ...init,
+    credentials: 'include',
+  });
+
+  if (response.status === 401 && retry) {
+    await getRefreshPromise();
+    return fetchWithAuth(url, init, false);
+  }
+
+  return response;
+}
+
 export async function apiGet<T extends ZodTypeAny>(
   path: string,
   schema: T,
 ): Promise<NonNullable<z.infer<T>>> {
   const url = `${API_BASE_URL}${path}`;
-  const response = await fetch(url, {
-    credentials: 'include',
+  const response = await fetchWithAuth(url, {
     headers: { Accept: 'application/json' },
   });
 
@@ -49,9 +96,8 @@ export async function apiPost<
 ): Promise<NonNullable<z.infer<TResponse>>> {
   const validatedRequest: z.infer<TRequest> = requestSchema.parse(body);
   const url = `${API_BASE_URL}${path}`;
-  const response = await fetch(url, {
+  const response = await fetchWithAuth(url, {
     method: 'POST',
-    credentials: 'include',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',

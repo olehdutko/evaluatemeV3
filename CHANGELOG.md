@@ -95,3 +95,11 @@ Options going forward:
 - User successfully logged in via web UI.
 - Technologies page displays the imported list of 19 technologies.
 - No application errors; remaining console messages were from browser extensions.
+
+## 2026-08-10 — Automatic access token refresh
+
+- Updated `api-client.ts` to intercept 401 responses and call `POST /api/v1/auth/refresh`.
+- Refresh uses httpOnly `refresh_token` cookie.
+- Failed refresh redirects to `/login`.
+- Concurrent 401 requests share a single refresh promise to avoid multiple refresh calls.
+- Added unit tests for retry on 401 and refresh failure.
