@@ -131,22 +131,22 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T048 [P] [US3] Contract test for `GET /api/v1/technologies` response shape in `apps/api/tests/contract/technologies.contract.test.ts`
-- [ ] T049 [P] [US3] Integration test for technology list endpoint in `apps/api/tests/integration/technologies/technologies.integration.test.ts`
-- [ ] T050 [P] [US3] Unit test for `ListTechnologiesUseCase` in `apps/api/tests/unit/application/technologies/list-technologies.use-case.test.ts`
+- [x] T048 [P] [US3] Contract test for `GET /api/v1/technologies` response shape in `apps/api/tests/contract/technologies.contract.test.ts`
+- [x] T049 [P] [US3] Integration test for technology list endpoint in `apps/api/tests/integration/technologies/technologies.integration.test.ts`
+- [x] T050 [P] [US3] Unit test for `ListTechnologiesUseCase` in `apps/api/tests/unit/application/technologies/list-technologies.use-case.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T051 [P] [US3] Create module catalog document in `docs/architecture/modules.md` listing all 13 modules (`auth`, `users`, `companies`, `campaigns`, `technologies`, `tests`, `test-engine`, `access-codes`, `candidates`, `payments`, `results`, `admin`, `notifications`) with responsibilities and P1/P2 feature assignments from `.spec/spec.md`
-- [ ] T052 [US3] Add ADR in `docs/architecture/adr-003-module-boundaries.md` documenting module boundaries, forbidden circular dependencies, and integration-contract rules
-- [ ] T053 [P] [US3] Define `Technology` entity in `packages/domain/src/entities/technology.entity.ts`
-- [ ] T054 [P] [US3] Define `ITechnologyRepository` port in `packages/domain/src/ports/technology-repository.port.ts`
-- [ ] T055 [US3] Implement `ListTechnologiesUseCase` in `apps/api/src/application/technologies/list-technologies.use-case.ts`
-- [ ] T056 [US3] Implement `PrismaTechnologyRepository` in `apps/api/src/infrastructure/prisma/repositories/prisma-technology.repository.ts`
-- [ ] T057 [US3] Implement `TechnologiesController` in `apps/api/src/modules/technologies/technologies.controller.ts` exposing `GET /api/v1/technologies`
-- [ ] T058 [US3] Wire `TechnologiesModule` in `apps/api/src/modules/technologies/technologies.module.ts`
-- [ ] T059 [P] [US3] Add a dependency graph check script in `scripts/check-module-cycles.sh` using `madge` or custom parsing to reject circular module dependencies in CI
-- [ ] T060 [P] [US3] Create frontend technology listing page in `apps/web/src/app/technologies/page.tsx` consuming `GET /api/v1/technologies`
+- [x] T051 [P] [US3] Create module catalog document in `docs/architecture/modules.md` listing all 13 modules (`auth`, `users`, `companies`, `campaigns`, `technologies`, `tests`, `test-engine`, `access-codes`, `candidates`, `payments`, `results`, `admin`, `notifications`) with responsibilities and P1/P2 feature assignments from `.spec/spec.md`
+- [x] T052 [US3] Add ADR in `docs/architecture/adr-003-module-boundaries.md` documenting module boundaries, forbidden circular dependencies, and integration-contract rules
+- [x] T053 [P] [US3] Define `Technology` entity in `packages/domain/src/entities/technology.entity.ts`
+- [x] T054 [P] [US3] Define `ITechnologyRepository` port in `packages/domain/src/ports/technology-repository.port.ts`
+- [x] T055 [US3] Implement `ListTechnologiesUseCase` in `apps/api/src/application/technologies/list-technologies.use-case.ts`
+- [x] T056 [US3] Implement `PrismaTechnologyRepository` in `apps/api/src/infrastructure/prisma/repositories/prisma-technology.repository.ts`
+- [x] T057 [US3] Implement `TechnologiesController` in `apps/api/src/modules/technologies/technologies.controller.ts` exposing `GET /api/v1/technologies`
+- [x] T058 [US3] Wire `TechnologiesModule` in `apps/api/src/modules/technologies/technologies.module.ts`
+- [x] T059 [P] [US3] Add a dependency graph check script in `scripts/check-module-cycles.sh` using `madge` or custom parsing to reject circular module dependencies in CI
+- [x] T060 [P] [US3] Create frontend technology listing page in `apps/web/src/app/technologies/page.tsx` consuming `GET /api/v1/technologies`
 
 **Checkpoint**: All three user stories should now be independently functional: architecture layering is enforced, legacy database is mapped and migrated, and module boundaries are documented and demonstrated.
 

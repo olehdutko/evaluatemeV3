@@ -160,7 +160,7 @@ Options going forward:
 ## 2026-08-11 — Security MVP (006-06-security)
 
 - Wrote `specs/006-06-security/spec.md` and `tasks.md` defining rate limiting, security headers, RBAC, and audit logging user stories.
-- Added `IRateLimitStore` port, `InMemoryRateLimitStore`, and `RateLimitGuard`/`@RateLimit()` decorator.
+- Added `IRateLimitStore` port, `InMemoryRateLimitStore`, `RateLimitGuard`/`@RateLimit()` decorator.
 - Applied rate limiting to all `/api/v1/auth/*` endpoints.
 - Added `SecurityHeadersMiddleware` setting `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Content-Security-Policy`, and `Permissions-Policy` on every API response.
 - Added `@Roles()` decorator and `RolesGuard` for role-based access control; exported from `AuthModule`.
@@ -168,3 +168,9 @@ Options going forward:
 - Emitted `AUTH_LOGIN_FAILURE` security audit event from `AuthController`.
 - Added unit and integration tests for rate limiting, security headers, RBAC, and audit logging.
 - All unit, contract, and integration tests pass.
+
+## 2026-08-11 — Architecture Phase 5 completion (001-01-architecture)
+
+- Verified and marked all Phase 5 (US3) module-boundary tasks as completed in `specs/001-01-architecture/tasks.md`.
+- Confirmed existing implementation covers: contract/integration/unit tests for technologies catalog, `modules.md` catalog, `adr-003-module-boundaries.md`, `Technology` entity, `ITechnologyRepository`, `ListTechnologiesUseCase`, `PrismaTechnologyRepository`, `TechnologiesController`, `TechnologiesModule`, `scripts/check-module-cycles.sh`, and frontend `/technologies` page.
+- Architecture foundation is now fully tracked as complete.
