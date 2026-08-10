@@ -1,140 +1,82 @@
-# Feature Specification: [FEATURE NAME]
+# Feature Specification: Authentication
 
-**Feature Branch**: `[###-feature-name]`
+**Feature Branch**: `005-05-auth`
 
-**Created**: [DATE]
+**Created**: 2026-08-10
 
-**Status**: Draft
+**Status**: Implemented
 
-**Input**: User description: "$ARGUMENTS"
+**Input**: User description: "Implement user authentication for EvaluateMe v3: personal users and admins authenticate via JWT access/refresh tokens; companies and candidates use session tokens. Include registration, login, token refresh, logout, and secure password handling with bcrypt."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing
 
-<!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
+### User Story 1 — P1: Personal User / Admin Registration and Login
 
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
--->
+As a personal user or admin, I need to register with email and password and log in to receive JWT access and refresh tokens so that I can access protected resources.
 
-### User Story 1 - [Brief Title] (Priority: P1)
+**Why this priority**: Authentication is the gateway for all user-facing features.
 
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Independent Test**: API contract tests + integration tests hit `POST /api/v1/auth/register` and `POST /api/v1/auth/login` and verify JWT issuance and envelope shape.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** a unique email and valid password, **When** `POST /api/v1/auth/register` is called, **Then** a user is created and a success response with user details is returned.
+2. **Given** valid credentials, **When** `POST /api/v1/auth/login` is called, **Then** access and refresh tokens are returned.
+3. **Given** an invalid password, **When** login is attempted, **Then** a `401 UNAUTHORIZED` error is returned.
 
----
+### User Story 2 — P2: JWT Token Refresh and Logout
 
-### User Story 2 - [Brief Title] (Priority: P2)
+As an authenticated user, I need to refresh my access token using a refresh token and invalidate tokens on logout so that my session remains secure.
 
-[Describe this user journey in plain language]
+**Why this priority**: Token lifecycle is required for secure long-lived sessions.
 
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-
----
-
-### User Story 3 - [Brief Title] (Priority: P3)
-
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Integration tests verify refresh token exchange and logout revocation.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** a valid refresh token, **When** `POST /api/v1/auth/refresh` is called, **Then** a new access token is issued.
+2. **Given** an authenticated request, **When** `POST /api/v1/auth/logout` is called, **Then** the refresh token is blacklisted and can no longer be used.
 
----
+### User Story 3 — P3: Session-Based Tokens for Companies/Candidates
 
-[Add more user stories as needed, each with an assigned priority]
+As a company or candidate, I need a session token to take tests without a full user account so that candidate flows remain lightweight.
 
-### Edge Cases
+**Why this priority**: Candidate test-taking must work without forcing account creation.
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
+**Independent Test**: Unit tests for session strategy and contract tests for session endpoints.
 
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
+**Acceptance Scenarios**:
 
-## Requirements *(mandatory)*
+1. **Given** a valid access code, **When** a session token is issued, **Then** the token contains candidate and access-code identifiers.
+2. **Given** an expired session token, **When** it is verified, **Then** verification returns `null`.
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
-  All requirements MUST be compatible with Clean Architecture, TypeScript strict mode,
-  replaceable Infrastructure, and validated external input.
--->
+## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: `POST /api/v1/auth/register` accepts `email`, `password`, `role` (`user`, `company`, `admin`) and creates a `User` with `activationStatus = pending`.
+- **FR-002**: `POST /api/v1/auth/login` accepts `email`, `password` and returns `accessToken`, `refreshToken`, `expiresInSeconds`.
+- **FR-003**: `POST /api/v1/auth/refresh` accepts a refresh token and returns a new access token (same refresh token returned).
+- **FR-004**: `POST /api/v1/auth/logout` accepts a refresh token and blacklists it.
+- **FR-005**: `SessionStrategyAdapter` creates, verifies, and revokes opaque session tokens for company/candidate flows.
 
-*Example of marking unclear requirements:*
+### Non-Functional Requirements
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **NFR-001**: Passwords are hashed with bcrypt at 12 rounds.
+- **NFR-002**: JWT access tokens expire after 15 minutes; refresh tokens expire after 7 days.
+- **NFR-003**: Token blacklist is implemented as an in-memory store; production should replace with Redis or DB persistence.
 
-### Key Entities *(include if feature involves data)*
+## Architecture
 
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
+- Domain layer defines ports: `IUserRepository`, `IPasswordHasher`, `IJwtStrategy`, `ISessionStrategy`, `ITokenBlacklist`.
+- Application layer use-cases: `RegisterUseCase`, `LoginUseCase`, `RefreshUseCase`, `LogoutUseCase`.
+- Infrastructure adapters: `BcryptPasswordHasher`, `JwtStrategyAdapter`, `SessionStrategyAdapter`, `InMemoryTokenBlacklist`.
+- API layer: `AuthController` under `/api/v1/auth` with endpoints `register`, `login`, `refresh`, `logout`.
+- Web layer: `AuthProvider` context, `/login` and `/register` pages, token storage, and middleware route guard.
 
-## Success Criteria *(mandatory)*
+## Implementation Notes
 
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
-
-### Measurable Outcomes
-
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
-
-## Architecture & Non-Functional Constraints *(mandatory)*
-
-- Business logic MUST be framework-independent and live in Domain and Application layers.
-- External input MUST be validated; database access MUST use parameterized queries or equivalent safe bindings.
-- Persistence MUST be abstracted so the primary MySQL store can be replaced by another SQL database without changing Domain or Application code.
-- The feature MUST be testable with unit, integration, and API tests without Docker or container-dependent workflows.
-
-## Assumptions
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right assumptions based on reasonable defaults
-  chosen when the feature description did not specify certain details.
--->
-
-- [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
-- [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
-- [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+- `JwtStrategyAdapter` signs access tokens with `JWT_SECRET` and refresh tokens with `JWT_REFRESH_SECRET`.
+- `AuthModule` provides all adapters via Symbol-tokens for dependency injection.
+- Frontend tokens are stored in `localStorage` as a client-side convenience; the production deployment should switch to httpOnly cookies set by the backend.
+- Integration tests require `DATABASE_URL` to be set to a MySQL database. The test suite skips auth integration tests when no database is available.

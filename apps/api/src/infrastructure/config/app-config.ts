@@ -25,4 +25,13 @@ function loadAppConfig(): AppConfig {
   return parsed.data;
 }
 
-export const appConfig = loadAppConfig();
+let cachedConfig: AppConfig | undefined;
+
+export function getAppConfig(): AppConfig {
+  if (!cachedConfig) {
+    cachedConfig = loadAppConfig();
+  }
+  return cachedConfig;
+}
+
+export const appConfig = getAppConfig();
