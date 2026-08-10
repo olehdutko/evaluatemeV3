@@ -26,3 +26,12 @@
   - `POST /api/v1/auth/logout` — refresh token blacklisted, subsequent refresh returns 401.
   - `GET /login` — 200.
   - `GET /technologies` without auth — 307 redirect to `/login` (middleware guard).
+
+## Note — 2026-08-10
+
+Migration deploy against remote `evaluateme_db` failed because the database already contains legacy data and migrations require non-null columns on existing rows.
+To avoid data loss, we did **not** use `--force-reset`. The API starts and `/api/v1/health` responds, but health shows `database: error` because Prisma expects a schema state that doesn't match.
+Options going forward:
+1. Backup and truncate legacy tables, then re-run `prisma migrate deploy`.
+2. Baseline the existing DB with `prisma migrate resolve --applied <migration_name>` and add manual SQL migration steps.
+3. Use a fresh database (`evaluateme_v3` or `evaluateme_test`) for clean development.
