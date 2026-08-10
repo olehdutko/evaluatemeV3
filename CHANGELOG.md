@@ -54,3 +54,13 @@ Options going forward:
   - `GET /api/v1/health` → `database: ok`.
   - `GET /login` → 200.
   - `GET /technologies` without auth → 307 redirect to `/login`.
+
+## 2026-08-10 — Legacy data migration
+
+- Migrated data from `evaluateme_db` to `evaluateme_v3`:
+  - `Technologies` → `technologies`: 19 rows.
+  - `Questions` → `questions`: 6535 rows.
+  - `Answer` → `answers`: 26460 rows (19 answers skipped due to missing questions).
+- Mapped old integer IDs to UUIDs for new schema.
+- Generated slugs for technologies; deduplicated conflicting names.
+- Skipped 19 orphan answers referencing `QuestionID` 0 or missing questions.
