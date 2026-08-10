@@ -64,3 +64,10 @@ Options going forward:
 - Mapped old integer IDs to UUIDs for new schema.
 - Generated slugs for technologies; deduplicated conflicting names.
 - Skipped 19 orphan answers referencing `QuestionID` 0 or missing questions.
+
+## 2026-08-10 — CORS fix
+
+- Added `app.enableCors()` in `apps/api/src/main.ts` allowing requests from `http://localhost:4000`.
+- Added `WEB_ORIGIN=http://localhost:4000` to `.env.local`.
+- Restarted API dev server.
+- Verified preflight and login requests from web origin return correct CORS headers.
