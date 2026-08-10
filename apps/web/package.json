@@ -9,7 +9,6 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:integration": "jest --config jest.integration.config.js",
     "test:integration": "jest --config jest.integration.config.js"
   },
   "dependencies": {
@@ -21,6 +20,9 @@
   },
   "devDependencies": {
     "@evaluateme/tsconfig": "*",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.3",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

@@ -1,13 +1,6 @@
 import { apiGet } from './api-client';
-import { healthResponseSchema, HealthResponse } from './schemas/health.schema';
+import { healthResponseSchema, HealthResponse } from './schemas/health';
 
 export async function fetchHealth(): Promise<HealthResponse> {
-  const response = await apiGet<HealthResponse['data']>('/health');
-  if (!response.success) {
-    throw new Error('Health check failed');
-  }
-  return healthResponseSchema.parse({
-    success: true,
-    data: response.data,
-  });
+  return apiGet('/api/v1/health', healthResponseSchema);
 }

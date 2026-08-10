@@ -1,140 +1,94 @@
-# Feature Specification: [FEATURE NAME]
+# Feature Specification: Frontend Foundation
 
-**Feature Branch**: `[###-feature-name]`
+**Feature Branch**: `004-04-frontend`
 
-**Created**: [DATE]
+**Created**: 2026-08-10
 
 **Status**: Draft
 
-**Input**: User description: "$ARGUMENTS"
+**Input**: User description: "Build the Next.js App Router frontend foundation: shared layout, navigation, typed API client, reusable components, and minimal pages for health and technology catalog."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing
 
-<!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
+### User Story 1 — P1: Shared Layout and Navigation
 
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
--->
+As a visitor, I need a consistent layout with navigation so that I can move between public pages (home, technologies, health).
 
-### User Story 1 - [Brief Title] (Priority: P1)
+**Why this priority**: The shared layout is the base for every page; without it, each page reinvents chrome and navigation.
 
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Independent Test**: Render the layout in a unit test and confirm navigation links exist and point to known routes.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** any page, **When** it loads, **Then** it renders a header with links to `/`, `/technologies`, `/health`.
+2. **Given** a mobile viewport, **When** the menu is toggled, **Then** navigation links are accessible.
 
----
+### User Story 2 — P2: Typed API Client and Data Fetching
 
-### User Story 2 - [Brief Title] (Priority: P2)
+As a frontend developer, I need a typed REST client that validates API responses with Zod so that backend contract changes are caught at build time.
 
-[Describe this user journey in plain language]
+**Why this priority**: Typed data fetching prevents runtime surprises and aligns the frontend with the API conventions.
 
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Unit tests mock API responses and assert the client validates success/error envelopes.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** a valid `GET /api/v1/health` response, **When** fetched, **Then** the client returns typed data.
+2. **Given** an invalid response envelope, **When** fetched, **Then** the client throws a typed error.
 
----
+### User Story 3 — P3: Reusable Page Components
 
-### User Story 3 - [Brief Title] (Priority: P3)
+As a frontend developer, I need reusable components (`PageHeader`, `Loading`, `ErrorMessage`, `StatusBadge`) so that pages are consistent and easy to maintain.
 
-[Describe this user journey in plain language]
+**Why this priority**: Reusable components reduce duplication and make the UI predictable.
 
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
+**Independent Test**: Component unit tests render each reusable component with representative props.
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** a `PageHeader` with title and description, **When** rendered, **Then** both texts appear.
+2. **Given** an `ErrorMessage`, **When** rendered, **Then** it displays the message and a retry action if provided.
 
----
-
-[Add more user stories as needed, each with an assigned priority]
-
-### Edge Cases
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
-
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
-
-## Requirements *(mandatory)*
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
-  All requirements MUST be compatible with Clean Architecture, TypeScript strict mode,
-  replaceable Infrastructure, and validated external input.
--->
+## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: A shared root layout MUST exist in `apps/web/src/app/layout.tsx` and wrap all pages with a header and footer.
+- **FR-002**: The header MUST contain navigation links to `/`, `/technologies`, `/health`.
+- **FR-003**: The typed API client in `apps/web/src/lib/api-client.ts` MUST parse JSON and validate responses with Zod.
+- **FR-004**: The API client MUST throw a typed `ApiError` for non-2xx responses and invalid envelopes.
+- **FR-005**: Reusable components (`PageHeader`, `Loading`, `ErrorMessage`, `StatusBadge`) MUST live in `apps/web/src/components/`.
+- **FR-006**: Public pages (`/`, `/technologies`, `/health`) MUST consume the API client and handle loading/error states.
+- **FR-007**: The frontend MUST use Tailwind CSS or an equivalent utility-first approach already configured in the project.
 
-*Example of marking unclear requirements:*
+### Key Components
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **RootLayout**: HTML lang, metadata, header, main, footer.
+- **Header**: logo, navigation links, mobile menu toggle.
+- **Footer**: copyright / link to docs.
+- **ApiClient**: fetch wrapper with Zod validation and error mapping.
+- **PageHeader**: title + optional description.
+- **Loading**: spinner / skeleton.
+- **ErrorMessage**: message + optional retry callback.
+- **StatusBadge**: colored badge for ok/error/pending states.
 
-### Key Entities *(include if feature involves data)*
+## Success Criteria
 
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
+- **SC-001**: `npm run test` in `apps/web` passes with component and client unit tests.
+- **SC-002**: `npm run build` generates all pages without errors.
+- **SC-003**: All public pages render in a smoke test (production build export).
+- **SC-004**: No `any` or untyped fetch usage in `apps/web/src`.
 
-## Success Criteria *(mandatory)*
+## Architecture & Non-Functional Constraints
 
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
-
-### Measurable Outcomes
-
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
-
-## Architecture & Non-Functional Constraints *(mandatory)*
-
-- Business logic MUST be framework-independent and live in Domain and Application layers.
-- External input MUST be validated; database access MUST use parameterized queries or equivalent safe bindings.
-- Persistence MUST be abstracted so the primary MySQL store can be replaced by another SQL database without changing Domain or Application code.
-- The feature MUST be testable with unit, integration, and API tests without Docker or container-dependent workflows.
+- Frontend code MUST NOT import backend-only packages (`@nestjs/*`, `@prisma/client`).
+- Components SHOULD be server-first (React Server Components) where possible.
+- Client components MUST be explicit (e.g., `\'use client\'` directive).
+- External input MUST be validated via Zod at the API boundary.
+- No Docker or container-dependent workflows.
 
 ## Assumptions
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right assumptions based on reasonable defaults
-  chosen when the feature description did not specify certain details.
--->
-
-- [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
-- [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
-- [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+- The Next.js app uses the App Router (`app/` directory).
+- Tailwind CSS is already configured (or will be added as part of this feature).
+- Backend endpoints from `001-01-architecture` and `003-03-api` are available.
