@@ -7,6 +7,7 @@ import { ErrorMessage } from '../ui/ErrorMessage';
 export function RegisterForm(): JSX.Element {
   const { register } = useAuth();
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'user' | 'company'>('user');
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +17,15 @@ export function RegisterForm(): JSX.Element {
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    register({ email, password, role })
+    const payload: { email: string; password: string; role: 'user' | 'company'; username?: string } = {
+      email,
+      password,
+      role,
+    };
+    if (username.trim()) {
+      payload.username = username.trim();
+    }
+    register(payload)
       .then(() => {
         window.location.href = '/technologies';
       })
@@ -42,6 +51,19 @@ export function RegisterForm(): JSX.Element {
           onChange={(e) => setEmail(e.target.value)}
           required
           autoComplete="email"
+          className="input-field"
+        />
+      </label>
+
+      <label className="block">
+        <span className="label-mono">Username (optional)</span>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          minLength={2}
+          maxLength={100}
+          autoComplete="username"
           className="input-field"
         />
       </label>

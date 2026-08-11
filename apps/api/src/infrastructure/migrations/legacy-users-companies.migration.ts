@@ -71,11 +71,13 @@ export class LegacyUsersCompaniesMigration {
       const user: User = {
         id: crypto.randomUUID(),
         email: legacy.email,
+        username: null,
         passwordHash,
         legacyMd5Hash,
         role: v3Role,
         activationStatus: v3Status,
         companyProfileId: null,
+        credits: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

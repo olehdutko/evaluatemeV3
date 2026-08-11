@@ -12,11 +12,13 @@ datasource db {
 model User {
   id                String            @id @default(uuid()) @db.VarChar(36)
   email             String            @unique @db.VarChar(255)
+  username          String?           @unique @db.VarChar(100)
   passwordHash      String?           @db.VarChar(255)
   legacyMd5Hash     String?           @db.VarChar(255)
   role              String            @db.VarChar(20)
   activationStatus  String            @db.VarChar(20)
   companyProfileId  String?           @unique @db.VarChar(36)
+  credits           Int               @default(0)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 

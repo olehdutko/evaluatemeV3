@@ -11,6 +11,7 @@ describe('ListUsersUseCase', () => {
       findAll: jest.fn(),
       findById: jest.fn(),
       findByEmail: jest.fn(),
+      findByUsername: jest.fn(),
       save: jest.fn(),
     };
 

@@ -3,9 +3,11 @@ import { ActivationStatus, UserRole } from './status.enums';
 
 export interface User extends Entity {
   email: string;
+  username: string | null;
   passwordHash: string | null;
   legacyMd5Hash: string | null;
   role: UserRole;
   activationStatus: ActivationStatus;
   companyProfileId: string | null;
+  credits: number;
 }

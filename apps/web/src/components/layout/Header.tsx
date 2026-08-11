@@ -11,7 +11,7 @@ const publicLinks = [
 ];
 
 export function Header(): JSX.Element {
-  const { isAuthenticated, isLoading, logout } = useAuth();
+  const { isAuthenticated, isLoading, logout, displayName, roleLabel, credits } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -60,14 +60,20 @@ export function Header(): JSX.Element {
                     aria-expanded={userMenuOpen}
                     aria-haspopup="menu"
                   >
-                    Account
+                    <span className="hidden lg:inline">{displayName}</span>
+                    <span className="lg:hidden">Account</span>
                     <span aria-hidden="true">{userMenuOpen ? '▾' : '▸'}</span>
                   </button>
                   {userMenuOpen && (
                     <div
                       role="menu"
-                      className="absolute right-0 top-full mt-2 w-48 bg-bg-primary border border-border-strong shadow-sm"
+                      className="absolute right-0 top-full mt-2 w-56 bg-bg-primary border border-border-strong shadow-sm"
                     >
+                      <div className="px-4 py-3 border-b border-border">
+                        <p className="font-body text-sm text-text-primary truncate">{displayName}</p>
+                        <p className="font-mono text-xs text-accent">{roleLabel}</p>
+                        <p className="font-mono text-xs text-text-secondary mt-1">Credits: {credits}</p>
+                      </div>
                       <Link
                         href="/profile"
                         className="block px-4 py-3 text-sm hover:bg-bg-secondary transition-colors"
@@ -136,6 +142,12 @@ export function Header(): JSX.Element {
               {!isLoading &&
                 (isAuthenticated ? (
                   <>
+                    <div className="px-4 py-3 border-b border-border"
+                    >
+                      <p className="font-body text-lg text-text-primary">{displayName}</p>
+                      <p className="font-mono text-sm text-accent">{roleLabel}</p>
+                      <p className="font-mono text-sm text-text-secondary mt-1">Credits: {credits}</p>
+                    </div>
                     <Link
                       href="/profile"
                       onClick={closeMenu}

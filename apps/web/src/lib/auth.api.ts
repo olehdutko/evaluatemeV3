@@ -1,4 +1,4 @@
-import { apiPost } from './api-client';
+import { apiGet, apiPost } from './api-client';
 import {
   registerRequestSchema,
   registerResponseSchema,
@@ -8,6 +8,7 @@ import {
   refreshResponseSchema,
   logoutRequestSchema,
   emptySuccessSchema,
+  meResponseSchema,
 } from './schemas/auth';
 import type {
   RegisterRequest,
@@ -17,6 +18,7 @@ import type {
   RefreshRequest,
   RefreshResponse,
   LogoutRequest,
+  MeResponse,
 } from './schemas/auth';
 
 export function register(input: RegisterRequest): Promise<RegisterResponse> {
@@ -37,4 +39,8 @@ export function refresh(input: RefreshRequest): Promise<RefreshResponse> {
 
 export function logout(input: LogoutRequest): Promise<void> {
   return apiPost('/api/v1/auth/logout', input, logoutRequestSchema, emptySuccessSchema).then(() => undefined);
+}
+
+export function getMe(): Promise<MeResponse> {
+  return apiGet('/api/v1/auth/me', meResponseSchema);
 }

@@ -1,13 +1,29 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { login, adminLogin, register, logout as apiLogout } from '../auth.api';
-import type { RegisterRequest, LoginRequest } from '../schemas/auth';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { login, adminLogin, register, logout as apiLogout, getMe } from '../auth.api';
+import type { RegisterRequest, LoginRequest, MeResponse } from '../schemas/auth';
+
+type UserRole = 'user' | 'company' | 'admin';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  username: string | null;
+  role: UserRole;
+  credits: number;
+}
 
 interface AuthContextValue {
+  user: UserProfile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isCompany: boolean;
+  isUser: boolean;
   isLoading: boolean;
+  displayName: string;
+  roleLabel: string;
+  credits: number;
   login: (input: LoginRequest) => Promise<void>;
   adminLogin: (input: LoginRequest) => Promise<void>;
   register: (input: RegisterRequest) => Promise<void>;
@@ -16,35 +32,83 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+function toUserProfile(data: MeResponse['data']): UserProfile {
+  return {
+    id: data.id,
+    email: data.email,
+    username: data.username,
+    role: data.role,
+    credits: data.credits,
+  };
+}
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  user: 'Personal account',
+  company: 'Company account',
+  admin: 'Admin account',
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }): JSX.Element {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Server-side rendering cannot read cookies; default to not authenticated.
-    // Middleware handles server-side protection.
-    setIsAuthenticated(false);
-    setIsAdmin(false);
-    setIsLoading(false);
+    let cancelled = false;
+
+    async function restoreSession(): Promise<void> {
+      try {
+        const response = await getMe();
+        if (!cancelled) {
+          setUser(toUserProfile(response.data));
+        }
+      } catch {
+        if (!cancelled) {
+          setUser(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void restoreSession();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleLogin = useCallback(async (input: LoginRequest) => {
-    await login(input);
-    setIsAuthenticated(true);
-    setIsAdmin(false);
+  const refreshUser = useCallback(async (): Promise<UserProfile> => {
+    const response = await getMe();
+    const profile = toUserProfile(response.data);
+    setUser(profile);
+    return profile;
   }, []);
 
-  const handleAdminLogin = useCallback(async (input: LoginRequest) => {
-    await adminLogin(input);
-    setIsAuthenticated(true);
-    setIsAdmin(true);
-  }, []);
+  const handleLogin = useCallback(
+    async (input: LoginRequest) => {
+      await login(input);
+      await refreshUser();
+    },
+    [refreshUser],
+  );
 
-  const handleRegister = useCallback(async (input: RegisterRequest) => {
-    await register(input);
-    await handleLogin({ email: input.email, password: input.password });
-  }, [handleLogin]);
+  const handleAdminLogin = useCallback(
+    async (input: LoginRequest) => {
+      await adminLogin(input);
+      await refreshUser();
+    },
+    [refreshUser],
+  );
+
+  const handleRegister = useCallback(
+    async (input: RegisterRequest) => {
+      await register(input);
+      await handleLogin({ email: input.email, password: input.password });
+    },
+    [handleLogin],
+  );
 
   const handleLogout = useCallback(async () => {
     try {
@@ -52,25 +116,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     } catch {
       // Ignore errors and clear client-side state anyway.
     }
-    setIsAuthenticated(false);
-    setIsAdmin(false);
+    setUser(null);
   }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        isAdmin,
-        isLoading,
-        login: handleLogin,
-        adminLogin: handleAdminLogin,
-        register: handleRegister,
-        logout: handleLogout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user,
+      isAuthenticated: user !== null,
+      isAdmin: user?.role === 'admin',
+      isCompany: user?.role === 'company',
+      isUser: user?.role === 'user',
+      isLoading,
+      displayName: user?.username ?? user?.email ?? '',
+      roleLabel: user ? ROLE_LABELS[user.role] : '',
+      credits: user?.credits ?? 0,
+      login: handleLogin,
+      adminLogin: handleAdminLogin,
+      register: handleRegister,
+      logout: handleLogout,
+    }),
+    [user, isLoading, handleLogin, handleAdminLogin, handleRegister, handleLogout],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

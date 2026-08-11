@@ -39,8 +39,10 @@ describe('Auth endpoint contracts', () => {
       data: {
         id: '550e8400-e29b-41d4-a716-446655440000',
         email: 'user@example.com',
+        username: null,
         role: 'user',
         activationStatus: 'pending',
+        credits: 10,
         createdAt: '2026-08-10T12:00:00Z',
       },
     };

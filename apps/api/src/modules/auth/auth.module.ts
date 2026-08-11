@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { PrismaUserRepository } from '../../infrastructure/prisma/repositories/prisma-user.repository';
 import { BcryptPasswordHasher } from '../../infrastructure/security/bcrypt-password-hasher';
@@ -14,7 +15,13 @@ import { RegisterUseCase } from '../../application/auth/register.use-case';
 import { LoginUseCase } from '../../application/auth/login.use-case';
 import { RefreshUseCase } from '../../application/auth/refresh.use-case';
 import { LogoutUseCase } from '../../application/auth/logout.use-case';
+import { GetMeUseCase } from '../../application/auth/get-me.use-case';
+import { OAuthLoginUseCase } from '../../application/auth/oauth-login.use-case';
+import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repositories/prisma-credit-setting.repository';
+import { GoogleOAuthConfig } from '../../infrastructure/auth/oauth/google-oauth.config';
+import { GoogleOAuthService } from '../../infrastructure/auth/oauth/google-oauth.service';
 import { AuthController } from './auth.controller';
+import { GoogleOAuthController } from './google-oauth.controller';
 import {
   IUserRepository,
   IPasswordHasher,
@@ -23,16 +30,22 @@ import {
   ITokenBlacklist,
   ISecurityAuditLogger,
   IRateLimitStore,
+  ICreditSettingRepository,
 } from '@evaluateme/domain';
 
 @Module({
-  controllers: [AuthController],
+  imports: [ConfigModule],
+  controllers: [AuthController, GoogleOAuthController],
   providers: [
     PrismaService,
     RegisterUseCase,
     LoginUseCase,
     RefreshUseCase,
     LogoutUseCase,
+    GetMeUseCase,
+    OAuthLoginUseCase,
+    GoogleOAuthConfig,
+    GoogleOAuthService,
     LogSecurityEventUseCase,
     JwtAuthGuard,
     RolesGuard,
@@ -43,6 +56,7 @@ import {
     { provide: IJwtStrategy, useClass: JwtStrategyAdapter },
     { provide: ISessionStrategy, useClass: SessionStrategyAdapter },
     { provide: ITokenBlacklist, useClass: PrismaTokenBlacklist },
+    { provide: ICreditSettingRepository, useClass: PrismaCreditSettingRepository },
   ],
   exports: [JwtAuthGuard, IJwtStrategy, ISessionStrategy, RolesGuard, LogSecurityEventUseCase],
 })

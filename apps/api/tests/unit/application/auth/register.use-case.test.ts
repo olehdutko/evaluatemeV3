@@ -1,17 +1,19 @@
 import { createUnitTestModule } from '../../test-module.factory';
 import { RegisterUseCase } from '../../../../src/application/auth/register.use-case';
-import { IUserRepository, IPasswordHasher, UserRole, ActivationStatus } from '@evaluateme/domain';
+import { IUserRepository, IPasswordHasher, ICreditSettingRepository, UserRole, ActivationStatus } from '@evaluateme/domain';
 
 describe('RegisterUseCase', () => {
   let useCase: RegisterUseCase;
   let userRepository: jest.Mocked<IUserRepository>;
   let passwordHasher: jest.Mocked<IPasswordHasher>;
+  let creditSettingRepository: jest.Mocked<ICreditSettingRepository>;
 
   beforeEach(async () => {
     userRepository = {
       findAll: jest.fn(),
       findById: jest.fn(),
       findByEmail: jest.fn(),
+      findByUsername: jest.fn(),
       save: jest.fn().mockImplementation((user) => Promise.resolve(user)),
     };
     passwordHasher = {
@@ -19,12 +21,18 @@ describe('RegisterUseCase', () => {
       verify: jest.fn(),
       isLegacyHash: jest.fn(),
     };
+    creditSettingRepository = {
+      findByKey: jest.fn().mockResolvedValue(null),
+      save: jest.fn(),
+      findAll: jest.fn(),
+    };
 
     const module = await createUnitTestModule({
       providers: [
         RegisterUseCase,
         { provide: IUserRepository, useValue: userRepository },
         { provide: IPasswordHasher, useValue: passwordHasher },
+        { provide: ICreditSettingRepository, useValue: creditSettingRepository },
       ],
     });
 
@@ -42,8 +50,10 @@ describe('RegisterUseCase', () => {
 
     expect(result.success).toBe(true);
     expect(result.data.email).toBe('user@example.com');
+    expect(result.data.username).toBeNull();
     expect(result.data.role).toBe('user');
     expect(result.data.activationStatus).toBe(ActivationStatus.PENDING);
+    expect(result.data.credits).toBe(10);
     expect(userRepository.save).toHaveBeenCalledTimes(1);
   });
 

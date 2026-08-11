@@ -1,9 +1,11 @@
-import { Controller, Post, Body, Req, Res, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Res, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { RegisterUseCase } from '../../application/auth/register.use-case';
 import { LoginUseCase } from '../../application/auth/login.use-case';
 import { RefreshUseCase } from '../../application/auth/refresh.use-case';
 import { LogoutUseCase } from '../../application/auth/logout.use-case';
+import { GetMeUseCase } from '../../application/auth/get-me.use-case';
+import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
 import { RateLimit, RateLimitGuard } from '../../infrastructure/security/rate-limit.guard';
 import { LogSecurityEventUseCase } from '../../application/security/log-security-event.use-case';
@@ -13,6 +15,10 @@ import {
   refreshRequestSchema,
   logoutRequestSchema,
 } from '../../lib/schemas/auth.schema';
+
+interface RequestWithUser extends Request {
+  user?: { sub: string; email: string; role: string };
+}
 
 const ACCESS_TOKEN_COOKIE = 'access_token';
 const REFRESH_TOKEN_COOKIE = 'refresh_token';
@@ -31,13 +37,14 @@ export class AuthController {
     private readonly loginUseCase: LoginUseCase,
     private readonly refreshUseCase: RefreshUseCase,
     private readonly logoutUseCase: LogoutUseCase,
+    private readonly getMeUseCase: GetMeUseCase,
     private readonly audit: LogSecurityEventUseCase,
   ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @RateLimit({ limit: 5, windowMs: 60 * 1000 })
-  async register(@Body(new ZodValidationPipe(registerRequestSchema)) body: { email: string; password: string; role: 'user' | 'company' }) {
+  async register(@Body(new ZodValidationPipe(registerRequestSchema)) body: { email: string; password: string; role: 'user' | 'company'; username?: string }) {
     return this.registerUseCase.execute(body);
   }
 
@@ -124,6 +131,14 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     return { success: true, data: { expiresInSeconds: result.data.expiresInSeconds } };
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getMe(@Req() request: RequestWithUser) {
+    const userId = request.user?.sub ?? '';
+    return this.getMeUseCase.execute(userId);
   }
 
   @Post('logout')
