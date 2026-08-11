@@ -12,13 +12,16 @@ import { UpdateEmailTemplateUseCase } from '../../application/admin/email-templa
 import { ListLandingAdsUseCase } from '../../application/admin/landing-ads/list-landing-ads.use-case';
 import { CreateLandingAdUseCase } from '../../application/admin/landing-ads/create-landing-ad.use-case';
 import { UpdateLandingAdUseCase } from '../../application/admin/landing-ads/update-landing-ad.use-case';
+import { ListUsersUseCase } from '../../application/admin/users/list-users.use-case';
+import { UpdateUserUseCase } from '../../application/admin/users/update-user.use-case';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
 import {
   updateCreditSettingRequestSchema,
   updateEmailTemplateRequestSchema,
   createUpdateLandingAdRequestSchema,
+  updateUserRequestSchema,
 } from '../../lib/schemas/admin.schema';
-import { UserRole, LandingAdPosition } from '@evaluateme/domain';
+import { UserRole, LandingAdPosition, ActivationStatus } from '@evaluateme/domain';
 
 interface RequestWithUser extends Request {
   user?: { sub: string; email: string; role: string };
@@ -38,6 +41,8 @@ export class AdminController {
     private readonly listLandingAdsUseCase: ListLandingAdsUseCase,
     private readonly createLandingAdUseCase: CreateLandingAdUseCase,
     private readonly updateLandingAdUseCase: UpdateLandingAdUseCase,
+    private readonly listUsersUseCase: ListUsersUseCase,
+    private readonly updateUserUseCase: UpdateUserUseCase,
   ) {}
 
   @Get('me')
@@ -114,5 +119,21 @@ export class AdminController {
     },
   ): Promise<ReturnType<UpdateLandingAdUseCase['execute']>> {
     return this.updateLandingAdUseCase.execute({ id, ...body });
+  }
+
+  @Get('users')
+  async users(): Promise<ReturnType<ListUsersUseCase['execute']>> {
+    return this.listUsersUseCase.execute();
+  }
+
+  @Put('users/:id')
+  async updateUser(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(updateUserRequestSchema)) body: {
+      role?: Exclude<UserRole, 'admin'>;
+      activationStatus?: ActivationStatus;
+    },
+  ): Promise<ReturnType<UpdateUserUseCase['execute']>> {
+    return this.updateUserUseCase.execute({ id, ...body });
   }
 }

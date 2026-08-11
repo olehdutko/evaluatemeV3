@@ -9,6 +9,7 @@ describe('GetAdminMeUseCase', () => {
 
   beforeEach(async () => {
     userRepository = {
+      findAll: jest.fn(),
       findById: jest.fn(),
       findByEmail: jest.fn(),
       save: jest.fn(),

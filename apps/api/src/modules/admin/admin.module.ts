@@ -21,6 +21,8 @@ import {
   IEmailTemplateRepository,
   ILandingAdRepository,
 } from '@evaluateme/domain';
+import { ListUsersUseCase } from '../../application/admin/users/list-users.use-case';
+import { UpdateUserUseCase } from '../../application/admin/users/update-user.use-case';
 
 @Module({
   imports: [AuthModule],
@@ -36,6 +38,8 @@ import {
     ListLandingAdsUseCase,
     CreateLandingAdUseCase,
     UpdateLandingAdUseCase,
+    ListUsersUseCase,
+    UpdateUserUseCase,
     { provide: IUserRepository, useClass: PrismaUserRepository },
     { provide: ICreditSettingRepository, useClass: PrismaCreditSettingRepository },
     { provide: IEmailTemplateRepository, useClass: PrismaEmailTemplateRepository },

@@ -9,6 +9,7 @@ describe('RegisterUseCase', () => {
 
   beforeEach(async () => {
     userRepository = {
+      findAll: jest.fn(),
       findById: jest.fn(),
       findByEmail: jest.fn(),
       save: jest.fn().mockImplementation((user) => Promise.resolve(user)),

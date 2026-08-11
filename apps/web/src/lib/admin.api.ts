@@ -4,6 +4,9 @@ import {
   updateCreditSettingRequestSchema,
   updateEmailTemplateRequestSchema,
   createUpdateLandingAdRequestSchema,
+  updateUserRequestSchema,
+  userListSchema,
+  userValueSchema,
 } from './schemas/admin';
 
 export const adminMeSchema = z.object({
@@ -124,4 +127,12 @@ export function createLandingAd(body: z.infer<typeof createUpdateLandingAdReques
 
 export function updateLandingAd(id: string, body: z.infer<typeof createUpdateLandingAdRequestSchema>) {
   return apiPut(`/api/v1/admin/landing-ads/${encodeURIComponent(id)}`, body, createUpdateLandingAdRequestSchema, landingAdValueSchema);
+}
+
+export function getUsers() {
+  return apiGet('/api/v1/admin/users', userListSchema);
+}
+
+export function updateUser(id: string, body: z.infer<typeof updateUserRequestSchema>) {
+  return apiPut(`/api/v1/admin/users/${encodeURIComponent(id)}`, body, updateUserRequestSchema, userValueSchema);
 }

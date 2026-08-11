@@ -21,3 +21,33 @@ export const createUpdateLandingAdRequestSchema = z.object({
   position: landingAdPositionSchema,
   isActive: z.boolean(),
 });
+
+export const updateUserRequestSchema = z.object({
+  role: z.enum(['user', 'company']).optional(),
+  activationStatus: z.enum(['pending', 'active', 'suspended']).optional(),
+});
+
+export const userListSchema = z.object({
+  success: z.literal(true),
+  data: z.array(
+    z.object({
+      id: z.string().uuid(),
+      email: z.string().email(),
+      role: z.enum(['user', 'company', 'admin']),
+      activationStatus: z.enum(['pending', 'active', 'suspended']),
+      createdAt: z.string().datetime(),
+      updatedAt: z.string().datetime(),
+    }),
+  ),
+});
+
+export const userValueSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    id: z.string().uuid(),
+    email: z.string().email(),
+    role: z.enum(['user', 'company', 'admin']),
+    activationStatus: z.enum(['pending', 'active', 'suspended']),
+    updatedAt: z.string().datetime(),
+  }),
+});

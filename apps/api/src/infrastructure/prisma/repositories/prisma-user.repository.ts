@@ -6,6 +6,11 @@ import { IUserRepository, User, UserRole, ActivationStatus } from '@evaluateme/d
 export class PrismaUserRepository implements IUserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAll(): Promise<User[]> {
+    const rows = await this.prisma.user.findMany({ orderBy: { createdAt: 'desc' } });
+    return rows.map((row) => this.toDomain(row));
+  }
+
   async findById(id: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({ where: { id } });
     return user ? this.toDomain(user) : null;
