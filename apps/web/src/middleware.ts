@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/login', '/register', '/api'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/api', '/admin/login'];
 const ADMIN_PATHS = ['/admin'];
 const STATIC_PATH_PREFIXES = ['/_next', '/static', '/favicon.ico'];
 
