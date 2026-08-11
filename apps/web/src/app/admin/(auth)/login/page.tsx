@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { AdminLoginForm } from '../../../components/admin/AdminLoginForm';
+import { AdminLoginForm } from '../../../../components/admin/AdminLoginForm';
 
 export const metadata = {
   title: 'Admin · Log in',
