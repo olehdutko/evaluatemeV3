@@ -119,3 +119,38 @@ export async function apiPost<
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return parsed.data;
 }
+
+export async function apiPut<
+  TRequest extends ZodTypeAny,
+  TResponse extends ZodTypeAny,
+>(
+  path: string,
+  body: z.infer<TRequest>,
+  requestSchema: ZodType<z.infer<TRequest>, TRequest['_output'], TRequest['_input']>,
+  responseSchema: TResponse,
+): Promise<NonNullable<z.infer<TResponse>>> {
+  const validatedRequest: z.infer<TRequest> = requestSchema.parse(body);
+  const url = `${API_BASE_URL}${path}`;
+  const response = await fetchWithAuth(url, {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(validatedRequest),
+  });
+
+  const responseBody: unknown = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new ApiError(response.status, responseBody, `PUT ${path} failed with ${response.status}`);
+  }
+
+  const parsed = responseSchema.safeParse(responseBody);
+  if (!parsed.success) {
+    throw new ApiError(response.status, responseBody, `Invalid response shape for PUT ${path}`);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return parsed.data;
+}

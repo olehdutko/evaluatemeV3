@@ -3,6 +3,7 @@ import { CreditSetting } from '../entities/credit-setting.entity';
 export const ICreditSettingRepository = Symbol('ICreditSettingRepository');
 
 export interface ICreditSettingRepository {
+  findAll(): Promise<CreditSetting[]>;
   findByKey(key: string): Promise<CreditSetting | null>;
   save(setting: CreditSetting): Promise<CreditSetting>;
 }
