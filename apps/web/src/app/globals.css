@@ -18,6 +18,10 @@
   --info: #4a6fa5;
   --border: #d8d4cc;
   --border-strong: #1a1816;
+  --inverted-primary: #faf8f5;
+  --inverted-secondary: #e8e4dc;
+  --inverted-accent: #e08f6f;
+  --inverted-border: #6b6560;
 }
 
 @layer base {
@@ -71,6 +75,10 @@
     @apply bg-[var(--bg-primary)] border border-[var(--border)] transition-colors duration-200;
   }
 
+  .panel.inverted {
+    @apply bg-[var(--text-primary)] border-[var(--inverted-border)];
+  }
+
   .panel-hover:hover {
     @apply border-[var(--border-strong)];
   }
@@ -79,8 +87,16 @@
     @apply w-full bg-[var(--bg-secondary)] border border-[var(--border)] px-4 py-3 text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--accent)] transition-shadow;
   }
 
+  .input-field.inverted {
+    @apply bg-[var(--inverted-secondary)] border-[var(--inverted-border)] text-[var(--inverted-primary)] placeholder-[var(--text-muted)] focus:ring-[var(--inverted-accent)];
+  }
+
   .label-mono {
     @apply block text-xs font-mono uppercase tracking-[0.06em] text-[var(--text-secondary)] mb-2;
+  }
+
+  .label-mono.inverted {
+    @apply text-[var(--inverted-secondary)];
   }
 }
 

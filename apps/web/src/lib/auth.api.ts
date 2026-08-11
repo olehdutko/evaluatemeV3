@@ -27,6 +27,10 @@ export function login(input: LoginRequest): Promise<LoginResponse> {
   return apiPost('/api/v1/auth/login', input, loginRequestSchema, loginResponseSchema);
 }
 
+export function adminLogin(input: LoginRequest): Promise<LoginResponse> {
+  return apiPost('/api/v1/auth/admin-login', input, loginRequestSchema, loginResponseSchema);
+}
+
 export function refresh(input: RefreshRequest): Promise<RefreshResponse> {
   return apiPost('/api/v1/auth/refresh', input, refreshRequestSchema, refreshResponseSchema);
 }

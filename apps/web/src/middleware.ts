@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PUBLIC_PATHS = ['/', '/login', '/register', '/api'];
+const ADMIN_PATHS = ['/admin'];
 const STATIC_PATH_PREFIXES = ['/_next', '/static', '/favicon.ico'];
+
+function isAdminPath(pathname: string): boolean {
+  return ADMIN_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
 
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
@@ -17,7 +22,7 @@ export function middleware(request: NextRequest): NextResponse {
 
   const token = request.cookies.get('access_token')?.value;
   if (!token) {
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = isAdminPath(pathname) ? new URL('/admin/login', request.url) : new URL('/login', request.url);
     return NextResponse.redirect(loginUrl);
   }
 
