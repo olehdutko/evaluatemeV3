@@ -23,6 +23,20 @@ import {
 } from '@evaluateme/domain';
 import { ListUsersUseCase } from '../../application/admin/users/list-users.use-case';
 import { UpdateUserUseCase } from '../../application/admin/users/update-user.use-case';
+import { AdminListTechnologiesUseCase } from '../../application/admin/content/list-technologies.use-case';
+import { CreateTechnologyUseCase } from '../../application/admin/content/create-technology.use-case';
+import { GetTechnologyWithQuestionsUseCase } from '../../application/admin/content/get-technology-with-questions.use-case';
+import { SaveQuestionUseCase } from '../../application/admin/content/save-question.use-case';
+import { PrismaTestRepository } from '../../infrastructure/prisma/repositories/test/prisma-test.repository';
+import {
+  ITechnologyRepository,
+  ITestRepository,
+  IQuestionRepository,
+  IAnswerRepository,
+} from '@evaluateme/domain';
+import { PrismaTechnologyRepository } from '../../infrastructure/prisma/repositories/prisma-technology.repository';
+import { PrismaQuestionRepository } from '../../infrastructure/prisma/repositories/prisma-question.repository';
+import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories/prisma-answer.repository';
 
 @Module({
   imports: [AuthModule],
@@ -40,10 +54,18 @@ import { UpdateUserUseCase } from '../../application/admin/users/update-user.use
     UpdateLandingAdUseCase,
     ListUsersUseCase,
     UpdateUserUseCase,
+    AdminListTechnologiesUseCase,
+    CreateTechnologyUseCase,
+    GetTechnologyWithQuestionsUseCase,
+    SaveQuestionUseCase,
     { provide: IUserRepository, useClass: PrismaUserRepository },
     { provide: ICreditSettingRepository, useClass: PrismaCreditSettingRepository },
     { provide: IEmailTemplateRepository, useClass: PrismaEmailTemplateRepository },
     { provide: ILandingAdRepository, useClass: PrismaLandingAdRepository },
+    { provide: ITechnologyRepository, useClass: PrismaTechnologyRepository },
+    { provide: ITestRepository, useClass: PrismaTestRepository },
+    { provide: IQuestionRepository, useClass: PrismaQuestionRepository },
+    { provide: IAnswerRepository, useClass: PrismaAnswerRepository },
   ],
 })
 export class AdminModule {}

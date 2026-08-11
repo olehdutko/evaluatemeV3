@@ -35,8 +35,25 @@ export class PrismaQuestionRepository implements IQuestionRepository {
     return rows.map(this.mapRow);
   }
 
-  async save(_question: Question): Promise<Question> {
-    throw new Error('Method not implemented.');
+  async save(question: Question): Promise<Question> {
+    const row = await this.prisma.question.upsert({
+      where: { id: question.id },
+      create: {
+        id: question.id,
+        testId: question.testId,
+        content: question.content,
+        type: question.type === 'multiple' ? 'multiple_choice' : 'single_choice',
+        orderIndex: question.orderIndex,
+        score: question.score,
+      },
+      update: {
+        content: question.content,
+        type: question.type === 'multiple' ? 'multiple_choice' : 'single_choice',
+        orderIndex: question.orderIndex,
+        score: question.score,
+      },
+    });
+    return this.mapRow(row);
   }
 
   private mapRow(row: {

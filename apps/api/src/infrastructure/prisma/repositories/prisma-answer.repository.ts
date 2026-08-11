@@ -27,8 +27,23 @@ export class PrismaAnswerRepository implements IAnswerRepository {
     return rows.map(this.mapRow);
   }
 
-  async save(_answer: Answer): Promise<Answer> {
-    throw new Error('Method not implemented.');
+  async save(answer: Answer): Promise<Answer> {
+    const row = await this.prisma.answer.upsert({
+      where: { id: answer.id },
+      create: {
+        id: answer.id,
+        questionId: answer.questionId,
+        content: answer.content,
+        isCorrect: answer.isCorrect,
+        orderIndex: answer.orderIndex,
+      },
+      update: {
+        content: answer.content,
+        isCorrect: answer.isCorrect,
+        orderIndex: answer.orderIndex,
+      },
+    });
+    return this.mapRow(row);
   }
 
   private mapRow(row: {

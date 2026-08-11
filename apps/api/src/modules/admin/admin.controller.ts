@@ -14,6 +14,10 @@ import { CreateLandingAdUseCase } from '../../application/admin/landing-ads/crea
 import { UpdateLandingAdUseCase } from '../../application/admin/landing-ads/update-landing-ad.use-case';
 import { ListUsersUseCase } from '../../application/admin/users/list-users.use-case';
 import { UpdateUserUseCase } from '../../application/admin/users/update-user.use-case';
+import { AdminListTechnologiesUseCase } from '../../application/admin/content/list-technologies.use-case';
+import { CreateTechnologyUseCase } from '../../application/admin/content/create-technology.use-case';
+import { GetTechnologyWithQuestionsUseCase } from '../../application/admin/content/get-technology-with-questions.use-case';
+import { SaveQuestionUseCase } from '../../application/admin/content/save-question.use-case';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
 import {
   updateCreditSettingRequestSchema,
@@ -21,6 +25,10 @@ import {
   createUpdateLandingAdRequestSchema,
   updateUserRequestSchema,
 } from '../../lib/schemas/admin.schema';
+import {
+  createTechnologyRequestSchema,
+  saveQuestionRequestSchema,
+} from '../../lib/schemas/content.schema';
 import { UserRole, LandingAdPosition, ActivationStatus } from '@evaluateme/domain';
 
 interface RequestWithUser extends Request {
@@ -43,6 +51,10 @@ export class AdminController {
     private readonly updateLandingAdUseCase: UpdateLandingAdUseCase,
     private readonly listUsersUseCase: ListUsersUseCase,
     private readonly updateUserUseCase: UpdateUserUseCase,
+    private readonly adminListTechnologiesUseCase: AdminListTechnologiesUseCase,
+    private readonly createTechnologyUseCase: CreateTechnologyUseCase,
+    private readonly getTechnologyWithQuestionsUseCase: GetTechnologyWithQuestionsUseCase,
+    private readonly saveQuestionUseCase: SaveQuestionUseCase,
   ) {}
 
   @Get('me')
@@ -135,5 +147,37 @@ export class AdminController {
     },
   ): Promise<ReturnType<UpdateUserUseCase['execute']>> {
     return this.updateUserUseCase.execute({ id, ...body });
+  }
+
+  @Get('technologies')
+  async technologies(): Promise<ReturnType<AdminListTechnologiesUseCase['execute']>> {
+    return this.adminListTechnologiesUseCase.execute();
+  }
+
+  @Post('technologies')
+  async createTechnology(
+    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name: string; slug?: string; description?: string | null },
+  ): Promise<ReturnType<CreateTechnologyUseCase['execute']>> {
+    return this.createTechnologyUseCase.execute(body);
+  }
+
+  @Get('technologies/:id/questions')
+  async technologyQuestions(@Param('id') id: string): Promise<ReturnType<GetTechnologyWithQuestionsUseCase['execute']>> {
+    return this.getTechnologyWithQuestionsUseCase.execute(id);
+  }
+
+  @Put('questions')
+  async saveQuestion(
+    @Body(new ZodValidationPipe(saveQuestionRequestSchema)) body: {
+      id?: string;
+      testId: string;
+      content: string;
+      type: 'single' | 'multiple';
+      orderIndex: number;
+      score: number;
+      answers: Array<{ id?: string; content: string; isCorrect: boolean; orderIndex: number }>;
+    },
+  ): Promise<ReturnType<SaveQuestionUseCase['execute']>> {
+    return this.saveQuestionUseCase.execute(body);
   }
 }
