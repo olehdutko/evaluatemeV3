@@ -7,17 +7,17 @@ export const metadata = {
 
 export default function AdminLoginPage(): JSX.Element {
   return (
-    <div className="min-h-[calc(100vh-9rem)] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 bg-bg-secondary">
-      <div className="w-full max-w-md">
-        <div className="panel inverted">
-          <div className="border-b border-inverted-border pb-4 mb-6">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-inverted-accent mb-3">Administration</p>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-inverted-primary">Admin Login</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-bg-secondary">
+      <div className="w-full max-w-sm">
+        <div className="panel p-6 sm:p-8">
+          <div className="text-center mb-6">
+            <p className="font-mono text-xs uppercase tracking-[0.12em] text-accent mb-2">EvaluateMe.IT</p>
+            <h1 className="font-display text-xl font-bold text-text-primary">Administration</h1>
           </div>
           <AdminLoginForm />
         </div>
-        <p className="mt-6 text-center text-text-secondary font-body text-sm">
-          Looking for the public site?{' '}
+        <p className="mt-5 text-center text-text-secondary font-body text-sm">
+          Public site?{' '}
           <Link href="/login" className="text-accent hover:text-accent-hover underline underline-offset-4">
             User login
           </Link>

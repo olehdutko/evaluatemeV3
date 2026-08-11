@@ -28,21 +28,22 @@ export function AdminLoginForm(): JSX.Element {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <label className="block">
-        <span className="label-mono inverted">Email</span>
+        <span className="label-mono">Email</span>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           autoComplete="email"
-          className="input-field inverted"
+          className="input-field"
+          placeholder="admin@example.com"
         />
       </label>
 
       <label className="block">
-        <span className="label-mono inverted">Password</span>
+        <span className="label-mono">Password</span>
         <input
           type="password"
           value={password}
@@ -50,11 +51,12 @@ export function AdminLoginForm(): JSX.Element {
           required
           minLength={8}
           autoComplete="current-password"
-          className="input-field inverted"
+          className="input-field"
+          placeholder="••••••••"
         />
       </label>
 
-      {error && <ErrorMessage message={error} inverted />}
+      {error && <ErrorMessage message={error} />}
 
       <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
         {isSubmitting ? 'Logging in…' : 'Log in'}
