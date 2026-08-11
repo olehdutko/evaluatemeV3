@@ -11,7 +11,8 @@
     "start:prod": "node dist/main",
     "lint": "eslint '{src,tests}/**/*.ts'",
     "test": "jest",
-    "test:integration": "jest --config jest.integration.config.js"
+    "test:integration": "jest --config jest.integration.config.js",
+    "create:admin": "ts-node src/scripts/create-admin.ts"
   },
   "dependencies": {
     "@evaluateme/domain": "*",
