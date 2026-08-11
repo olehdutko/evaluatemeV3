@@ -4,7 +4,7 @@
   "private": true,
   "description": "Next.js App Router frontend for EvaluateMe v3",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 4000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
