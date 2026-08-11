@@ -24,6 +24,15 @@ describe('Auth endpoint contracts', () => {
     expect(() => registerRequestSchema.parse(payload)).toThrow();
   });
 
+  it('rejects admin registration through public schema', () => {
+    const payload = {
+      email: 'admin@example.com',
+      password: 'Password123',
+      role: 'admin',
+    };
+    expect(() => registerRequestSchema.parse(payload)).toThrow();
+  });
+
   it('validates a register response', () => {
     const payload = {
       success: true,

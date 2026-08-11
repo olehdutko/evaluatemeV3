@@ -3,10 +3,12 @@ import { successEnvelopeSchema } from './envelope.schema';
 
 export const userRoleSchema = z.enum(['user', 'company', 'admin']);
 
+export const publicUserRoleSchema = z.enum(['user', 'company']);
+
 export const registerRequestSchema = z.object({
   email: z.string().email().max(255),
   password: z.string().min(8).max(100),
-  role: userRoleSchema,
+  role: publicUserRoleSchema,
 });
 
 export const registerResponseSchema = successEnvelopeSchema(

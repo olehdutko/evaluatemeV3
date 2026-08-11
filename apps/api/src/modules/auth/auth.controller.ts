@@ -37,7 +37,7 @@ export class AuthController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @RateLimit({ limit: 5, windowMs: 60 * 1000 })
-  async register(@Body(new ZodValidationPipe(registerRequestSchema)) body: { email: string; password: string; role: 'user' | 'company' | 'admin' }) {
+  async register(@Body(new ZodValidationPipe(registerRequestSchema)) body: { email: string; password: string; role: 'user' | 'company' }) {
     return this.registerUseCase.execute(body);
   }
 

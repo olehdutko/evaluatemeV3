@@ -8,7 +8,7 @@ export function RegisterForm(): JSX.Element {
   const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'user' | 'company' | 'admin'>('user');
+  const [role, setRole] = useState<'user' | 'company'>('user');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,12 +63,11 @@ export function RegisterForm(): JSX.Element {
         <span className="label-mono">Account type</span>
         <select
           value={role}
-          onChange={(e) => setRole(e.target.value as 'user' | 'company' | 'admin')}
+          onChange={(e) => setRole(e.target.value as 'user' | 'company')}
           className="input-field"
         >
           <option value="user">Personal — take tests and track progress</option>
           <option value="company">Company — invite candidates and buy access codes</option>
-          <option value="admin">Admin — manage content and settings</option>
         </select>
       </label>
 
