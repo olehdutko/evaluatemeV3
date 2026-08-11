@@ -6,8 +6,14 @@ import { Roles } from '../../infrastructure/security/roles.decorator';
 import { GetAdminMeUseCase } from '../../application/admin/get-admin-me.use-case';
 import { GetCreditSettingsUseCase } from '../../application/admin/credit-settings/get-credit-settings.use-case';
 import { UpdateCreditSettingUseCase } from '../../application/admin/credit-settings/update-credit-setting.use-case';
+import { ListEmailTemplatesUseCase } from '../../application/admin/email-templates/list-email-templates.use-case';
+import { GetEmailTemplateUseCase } from '../../application/admin/email-templates/get-email-template.use-case';
+import { UpdateEmailTemplateUseCase } from '../../application/admin/email-templates/update-email-template.use-case';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
-import { updateCreditSettingRequestSchema } from '../../lib/schemas/admin.schema';
+import {
+  updateCreditSettingRequestSchema,
+  updateEmailTemplateRequestSchema,
+} from '../../lib/schemas/admin.schema';
 import { UserRole } from '@evaluateme/domain';
 
 interface RequestWithUser extends Request {
@@ -22,6 +28,9 @@ export class AdminController {
     private readonly getAdminMeUseCase: GetAdminMeUseCase,
     private readonly getCreditSettingsUseCase: GetCreditSettingsUseCase,
     private readonly updateCreditSettingUseCase: UpdateCreditSettingUseCase,
+    private readonly listEmailTemplatesUseCase: ListEmailTemplatesUseCase,
+    private readonly getEmailTemplateUseCase: GetEmailTemplateUseCase,
+    private readonly updateEmailTemplateUseCase: UpdateEmailTemplateUseCase,
   ) {}
 
   @Get('me')
@@ -41,5 +50,28 @@ export class AdminController {
     @Req() request: RequestWithUser,
   ): Promise<ReturnType<UpdateCreditSettingUseCase['execute']>> {
     return this.updateCreditSettingUseCase.execute({ key, value: body.value, updatedByUserId: request.user!.sub });
+  }
+
+  @Get('email-templates')
+  async emailTemplates(): Promise<ReturnType<ListEmailTemplatesUseCase['execute']>> {
+    return this.listEmailTemplatesUseCase.execute();
+  }
+
+  @Get('email-templates/:id')
+  async emailTemplate(@Param('id') id: string): Promise<ReturnType<GetEmailTemplateUseCase['execute']>> {
+    return this.getEmailTemplateUseCase.execute(id);
+  }
+
+  @Put('email-templates/:id')
+  async updateEmailTemplate(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(updateEmailTemplateRequestSchema)) body: {
+      subject: string;
+      bodyHtml: string;
+      bodyText?: string | null;
+      variables?: Record<string, string> | null;
+    },
+  ): Promise<ReturnType<UpdateEmailTemplateUseCase['execute']>> {
+    return this.updateEmailTemplateUseCase.execute({ id, ...body });
   }
 }

@@ -2,16 +2,17 @@ interface ErrorMessageProps {
   message: string;
   onRetry?: () => void;
   inverted?: boolean;
+  className?: string;
 }
 
-export function ErrorMessage({ message, onRetry, inverted }: ErrorMessageProps): JSX.Element {
+export function ErrorMessage({ message, onRetry, inverted, className = '' }: ErrorMessageProps): JSX.Element {
   return (
     <div
       className={`border-l-4 p-4 sm:p-6 ${
         inverted
           ? 'border-error bg-error/10'
           : 'border-error bg-error/5'
-      }`}
+      } ${className}`}
       role="alert"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
