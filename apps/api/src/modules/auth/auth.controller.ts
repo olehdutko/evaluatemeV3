@@ -92,6 +92,40 @@ export class AuthController {
     return { success: true, data: { expiresInSeconds: result.data.expiresInSeconds } };
   }
 
+  @Post('admin-login')
+  @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 5, windowMs: 60 * 1000 })
+  async adminLogin(
+    @Body(new ZodValidationPipe(loginRequestSchema)) body: { email: string; password: string },
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const ip = request.ip ?? request.socket?.remoteAddress ?? 'unknown';
+    let result: Awaited<ReturnType<LoginUseCase['execute']>>;
+    try {
+      result = await this.loginUseCase.execute(body, { allowAdmin: true });
+    } catch (err) {
+      await this.audit.execute({
+        eventCode: 'AUTH_ADMIN_LOGIN_FAILURE',
+        outcome: 'failure',
+        ip,
+        email: body.email,
+        path: '/api/v1/auth/admin-login',
+        details: { reason: err instanceof Error ? err.message : 'unknown' },
+      });
+      throw err;
+    }
+    response.cookie(ACCESS_TOKEN_COOKIE, result.data.accessToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: result.data.expiresInSeconds * 1000,
+    });
+    response.cookie(REFRESH_TOKEN_COOKIE, result.data.refreshToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    return { success: true, data: { expiresInSeconds: result.data.expiresInSeconds } };
+  }
+
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @RateLimit({ limit: 20, windowMs: 60 * 1000 })

@@ -7,7 +7,7 @@ import {
   AuthTokens,
   ActivationStatus,
 } from '@evaluateme/domain';
-import { UnauthorizedError, BadRequestError } from '../../infrastructure/errors/app-error';
+import { UnauthorizedError, BadRequestError, ForbiddenError } from '../../infrastructure/errors/app-error';
 
 const ACCESS_TOKEN_EXPIRY_SECONDS = 15 * 60;
 const REFRESH_TOKEN_EXPIRY_SECONDS = 7 * 24 * 60 * 60;
@@ -20,7 +20,10 @@ export class LoginUseCase {
     @Inject(IJwtStrategy) private readonly jwtStrategy: IJwtStrategy,
   ) {}
 
-  async execute(input: { email: string; password: string }): Promise<{ success: true; data: AuthTokens }> {
+  async execute(
+    input: { email: string; password: string },
+    options: { allowAdmin: boolean } = { allowAdmin: false },
+  ): Promise<{ success: true; data: AuthTokens }> {
     const user = await this.userRepository.findByEmail(input.email);
     if (!user) {
       throw new UnauthorizedError();
@@ -30,6 +33,10 @@ export class LoginUseCase {
       throw new UnauthorizedError();
     }
 
+    if (!options.allowAdmin && user.role === 'admin') {
+      throw new ForbiddenError();
+    }
+
     if (!user.passwordHash) {
       throw new BadRequestError({ password: ['Password must be reset after migration'] });
     }
@@ -37,6 +44,10 @@ export class LoginUseCase {
     const valid = await this.passwordHasher.verify(input.password, user.passwordHash);
     if (!valid) {
       throw new UnauthorizedError();
+    }
+
+    if (options.allowAdmin && user.role !== 'admin') {
+      throw new ForbiddenError();
     }
 
     const payload: ITokenPayload = {

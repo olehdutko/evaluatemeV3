@@ -36,7 +36,7 @@ describe('LoginUseCase', () => {
     useCase = module.get<LoginUseCase>(LoginUseCase);
   });
 
-  it('returns tokens for valid credentials', async () => {
+  it('returns tokens for valid user credentials', async () => {
     userRepository.findByEmail.mockResolvedValue({
       id: 'user-1',
       email: 'user@example.com',
@@ -73,5 +73,48 @@ describe('LoginUseCase', () => {
     await expect(
       useCase.execute({ email: 'user@example.com', password: 'Password123' }),
     ).rejects.toThrow('Missing or invalid authentication.');
+  });
+
+  it('rejects admin on public login when allowAdmin is false', async () => {
+    userRepository.findByEmail.mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      passwordHash: 'hashed',
+      role: UserRole.ADMIN,
+      activationStatus: ActivationStatus.ACTIVE,
+    } as never);
+
+    await expect(
+      useCase.execute({ email: 'admin@example.com', password: 'Password123' }, { allowAdmin: false }),
+    ).rejects.toThrow('Authenticated but not authorized.');
+  });
+
+  it('rejects non-admin on admin-only login', async () => {
+    userRepository.findByEmail.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      passwordHash: 'hashed',
+      role: UserRole.USER,
+      activationStatus: ActivationStatus.ACTIVE,
+    } as never);
+
+    await expect(
+      useCase.execute({ email: 'user@example.com', password: 'Password123' }, { allowAdmin: true }),
+    ).rejects.toThrow('Authenticated but not authorized.');
+  });
+
+  it('returns tokens for valid admin credentials on admin-only login', async () => {
+    userRepository.findByEmail.mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      passwordHash: 'hashed',
+      role: UserRole.ADMIN,
+      activationStatus: ActivationStatus.ACTIVE,
+    } as never);
+
+    const result = await useCase.execute({ email: 'admin@example.com', password: 'Password123' }, { allowAdmin: true });
+
+    expect(result.success).toBe(true);
+    expect(result.data.accessToken).toBe('jwt-token');
   });
 });
