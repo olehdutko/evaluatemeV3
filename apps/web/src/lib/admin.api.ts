@@ -1,6 +1,10 @@
 import { z } from 'zod';
-import { apiGet, apiPut } from './api-client';
-import { updateCreditSettingRequestSchema, updateEmailTemplateRequestSchema } from './schemas/admin';
+import { apiGet, apiPost, apiPut } from './api-client';
+import {
+  updateCreditSettingRequestSchema,
+  updateEmailTemplateRequestSchema,
+  createUpdateLandingAdRequestSchema,
+} from './schemas/admin';
 
 export const adminMeSchema = z.object({
   success: z.literal(true),
@@ -84,4 +88,40 @@ export function updateEmailTemplate(
   body: z.infer<typeof updateEmailTemplateRequestSchema>,
 ) {
   return apiPut(`/api/v1/admin/email-templates/${encodeURIComponent(id)}`, body, updateEmailTemplateRequestSchema, emailTemplateDetailSchema);
+}
+
+export const landingAdsSchema = z.object({
+  success: z.literal(true),
+  data: z.array(
+    z.object({
+      id: z.string().uuid(),
+      title: z.string(),
+      position: z.enum(['home_top', 'home_bottom', 'sidebar']),
+      isActive: z.boolean(),
+      updatedAt: z.string().datetime(),
+    }),
+  ),
+});
+
+export const landingAdValueSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+    position: z.enum(['home_top', 'home_bottom', 'sidebar']),
+    isActive: z.boolean(),
+    updatedAt: z.string().datetime(),
+  }),
+});
+
+export function getLandingAds() {
+  return apiGet('/api/v1/admin/landing-ads', landingAdsSchema);
+}
+
+export function createLandingAd(body: z.infer<typeof createUpdateLandingAdRequestSchema>) {
+  return apiPost('/api/v1/admin/landing-ads', body, createUpdateLandingAdRequestSchema, landingAdValueSchema);
+}
+
+export function updateLandingAd(id: string, body: z.infer<typeof createUpdateLandingAdRequestSchema>) {
+  return apiPut(`/api/v1/admin/landing-ads/${encodeURIComponent(id)}`, body, createUpdateLandingAdRequestSchema, landingAdValueSchema);
 }

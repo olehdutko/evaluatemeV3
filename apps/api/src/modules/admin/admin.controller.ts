@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Param, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Body, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { RolesGuard } from '../../infrastructure/security/roles.guard';
@@ -9,12 +9,16 @@ import { UpdateCreditSettingUseCase } from '../../application/admin/credit-setti
 import { ListEmailTemplatesUseCase } from '../../application/admin/email-templates/list-email-templates.use-case';
 import { GetEmailTemplateUseCase } from '../../application/admin/email-templates/get-email-template.use-case';
 import { UpdateEmailTemplateUseCase } from '../../application/admin/email-templates/update-email-template.use-case';
+import { ListLandingAdsUseCase } from '../../application/admin/landing-ads/list-landing-ads.use-case';
+import { CreateLandingAdUseCase } from '../../application/admin/landing-ads/create-landing-ad.use-case';
+import { UpdateLandingAdUseCase } from '../../application/admin/landing-ads/update-landing-ad.use-case';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
 import {
   updateCreditSettingRequestSchema,
   updateEmailTemplateRequestSchema,
+  createUpdateLandingAdRequestSchema,
 } from '../../lib/schemas/admin.schema';
-import { UserRole } from '@evaluateme/domain';
+import { UserRole, LandingAdPosition } from '@evaluateme/domain';
 
 interface RequestWithUser extends Request {
   user?: { sub: string; email: string; role: string };
@@ -31,6 +35,9 @@ export class AdminController {
     private readonly listEmailTemplatesUseCase: ListEmailTemplatesUseCase,
     private readonly getEmailTemplateUseCase: GetEmailTemplateUseCase,
     private readonly updateEmailTemplateUseCase: UpdateEmailTemplateUseCase,
+    private readonly listLandingAdsUseCase: ListLandingAdsUseCase,
+    private readonly createLandingAdUseCase: CreateLandingAdUseCase,
+    private readonly updateLandingAdUseCase: UpdateLandingAdUseCase,
   ) {}
 
   @Get('me')
@@ -73,5 +80,39 @@ export class AdminController {
     },
   ): Promise<ReturnType<UpdateEmailTemplateUseCase['execute']>> {
     return this.updateEmailTemplateUseCase.execute({ id, ...body });
+  }
+
+  @Get('landing-ads')
+  async landingAds(): Promise<ReturnType<ListLandingAdsUseCase['execute']>> {
+    return this.listLandingAdsUseCase.execute();
+  }
+
+  @Post('landing-ads')
+  async createLandingAd(
+    @Body(new ZodValidationPipe(createUpdateLandingAdRequestSchema)) body: {
+      title: string;
+      content?: string | null;
+      imageUrl?: string | null;
+      linkUrl?: string | null;
+      position: LandingAdPosition;
+      isActive: boolean;
+    },
+  ): Promise<ReturnType<CreateLandingAdUseCase['execute']>> {
+    return this.createLandingAdUseCase.execute(body);
+  }
+
+  @Put('landing-ads/:id')
+  async updateLandingAd(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(createUpdateLandingAdRequestSchema)) body: {
+      title: string;
+      content?: string | null;
+      imageUrl?: string | null;
+      linkUrl?: string | null;
+      position: LandingAdPosition;
+      isActive: boolean;
+    },
+  ): Promise<ReturnType<UpdateLandingAdUseCase['execute']>> {
+    return this.updateLandingAdUseCase.execute({ id, ...body });
   }
 }
