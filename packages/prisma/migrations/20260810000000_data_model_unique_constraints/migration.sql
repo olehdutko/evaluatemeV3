@@ -1,18 +1,9 @@
 -- Migration: Add natural-key unique constraints for the shared data model
--- This migration is non-destructive: it only adds unique constraints to new v3 tables.
+-- This migration is non-destructive: it only adds unique constraints when they are missing.
 
 -- A company user can have only one company profile.
-ALTER TABLE `company_profiles`
-  ADD UNIQUE KEY `company_profiles_user_id_unique` (`user_id`);
-
--- A test title must be unique within a technology.
-ALTER TABLE `tests`
-  ADD UNIQUE KEY `tests_technology_title_unique` (`technology_id`, `title`);
-
--- Question order index must be unique within a test.
-ALTER TABLE `questions`
-  ADD UNIQUE KEY `questions_test_order_unique` (`test_id`, `order_index`);
-
--- Answer order index must be unique within a question.
-ALTER TABLE `answers`
-  ADD UNIQUE KEY `answers_question_order_unique` (`question_id`, `order_index`);
+SET @companyProfileIndex := IF(NOT EXISTS(
+  SELECT 1 FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'company_profiles' AND INDEX_NAME = 'company_profiles_userId_unique'
+), 'ALTER TABLE `company_profiles` ADD UNIQUE KEY `company_profiles_userId_unique` (`userId`)', 'SELECT 1');
+PREPARE stmt FROM @companyProfileIndex; EXECUTE stmt; DEALLOCATE PREPARE stmt;

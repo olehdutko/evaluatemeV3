@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
         if (!cancelled) {
           setUser(toUserProfile(response.data));
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
           setUser(null);
         }

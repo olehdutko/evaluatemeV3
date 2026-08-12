@@ -19,11 +19,13 @@
   "devDependencies": {
     "@evaluateme/tsconfig": "*",
     "@prisma/client": "^5.22.0",
+    "@types/bcrypt": "^5.0.2",
     "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "mysql2": "^3.23.3"
   }
 }

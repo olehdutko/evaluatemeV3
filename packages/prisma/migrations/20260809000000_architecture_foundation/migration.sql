@@ -1,26 +1,76 @@
 -- Migration: Add v3 tables and v3 columns to legacy users table
--- This migration is non-destructive: it only creates new tables and adds nullable columns.
+-- This migration is non-destructive: it creates the users table if it does not exist
+-- (fresh v3 database) and only adds nullable columns when the table already exists.
 
--- Add v3 columns to existing legacy users table (non-destructive)
-ALTER TABLE `users`
-  ADD COLUMN `role` VARCHAR(20) NULL,
-  ADD COLUMN `activation_status` VARCHAR(20) NULL,
-  ADD COLUMN `password_hash` VARCHAR(255) NULL,
-  ADD COLUMN `company_profile_id` VARCHAR(36) NULL UNIQUE;
+-- Create the v3 users table if it does not exist. Column names match the Prisma
+-- User model (camelCase) so the generated Prisma Client can query them directly.
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `email` VARCHAR(255) NOT NULL UNIQUE,
+  `username` VARCHAR(100) NULL UNIQUE,
+  `passwordHash` VARCHAR(255) NULL,
+  `legacyMd5Hash` VARCHAR(255) NULL,
+  `role` VARCHAR(20) NOT NULL,
+  `activationStatus` VARCHAR(20) NOT NULL,
+  `companyProfileId` VARCHAR(36) NULL UNIQUE,
+  `credits` INT NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- When migrating an existing legacy database, add any missing nullable columns.
+-- MySQL does not support `IF NOT EXISTS` for `ADD COLUMN`, so we only add
+-- columns that are missing. For a fresh v3 DB the CREATE TABLE above already
+-- includes all columns, making these statements no-ops because the columns exist.
+SET @addRole := IF(NOT EXISTS(
+  SELECT 1 FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'role'
+), 'ALTER TABLE `users` ADD COLUMN `role` VARCHAR(20) NULL', 'SELECT 1');
+PREPARE stmt FROM @addRole; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @addActivation := IF(NOT EXISTS(
+  SELECT 1 FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'activationStatus'
+), 'ALTER TABLE `users` ADD COLUMN `activationStatus` VARCHAR(20) NULL', 'SELECT 1');
+PREPARE stmt FROM @addActivation; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @addPasswordHash := IF(NOT EXISTS(
+  SELECT 1 FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'passwordHash'
+), 'ALTER TABLE `users` ADD COLUMN `passwordHash` VARCHAR(255) NULL', 'SELECT 1');
+PREPARE stmt FROM @addPasswordHash; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @addCompanyProfileId := IF(NOT EXISTS(
+  SELECT 1 FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'companyProfileId'
+), 'ALTER TABLE `users` ADD COLUMN `companyProfileId` VARCHAR(36) NULL UNIQUE', 'SELECT 1');
+PREPARE stmt FROM @addCompanyProfileId; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @addUsername := IF(NOT EXISTS(
+  SELECT 1 FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'username'
+), 'ALTER TABLE `users` ADD COLUMN `username` VARCHAR(100) NULL UNIQUE', 'SELECT 1');
+PREPARE stmt FROM @addUsername; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @addCredits := IF(NOT EXISTS(
+  SELECT 1 FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'credits'
+), 'ALTER TABLE `users` ADD COLUMN `credits` INT NOT NULL DEFAULT 0', 'SELECT 1');
+PREPARE stmt FROM @addCredits; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- New v3 InnoDB tables
 CREATE TABLE IF NOT EXISTS `company_profiles` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `user_id` VARCHAR(36) NOT NULL UNIQUE,
-  `company_name` VARCHAR(255) NOT NULL,
+  `userId` VARCHAR(36) NOT NULL UNIQUE,
+  `companyName` VARCHAR(255) NOT NULL,
   `address` VARCHAR(255) NULL,
   `phone` VARCHAR(50) NULL,
   `country` VARCHAR(100) NULL,
   `occupation` VARCHAR(100) NULL,
-  `available_tests` INT NOT NULL DEFAULT 0,
-  `available_access_codes` INT NOT NULL DEFAULT 0,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `availableTests` INT NOT NULL DEFAULT 0,
+  `availableAccessCodes` INT NOT NULL DEFAULT 0,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `campaigns` (
@@ -28,21 +78,21 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
   `name` VARCHAR(255) NOT NULL,
   `description` TEXT NULL,
   `status` VARCHAR(20) NOT NULL,
-  `created_by_user_id` VARCHAR(36) NOT NULL,
-  `start_date` DATETIME NULL,
-  `end_date` DATETIME NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `createdByUserId` VARCHAR(36) NOT NULL,
+  `startDate` DATETIME NULL,
+  `endDate` DATETIME NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `campaign_history` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `campaign_id` VARCHAR(36) NOT NULL,
+  `campaignId` VARCHAR(36) NOT NULL,
   `status` VARCHAR(20) NOT NULL,
-  `changed_by_user_id` VARCHAR(36) NOT NULL,
-  `changed_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `changedByUserId` VARCHAR(36) NOT NULL,
+  `changedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `technologies` (
@@ -50,153 +100,178 @@ CREATE TABLE IF NOT EXISTS `technologies` (
   `name` VARCHAR(100) NOT NULL UNIQUE,
   `slug` VARCHAR(100) NOT NULL UNIQUE,
   `description` TEXT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
-CREATE TABLE IF NOT EXISTS `tests` (
-  `id` VARCHAR(36) PRIMARY KEY,
-  `title` VARCHAR(255) NOT NULL,
-  `technology_id` VARCHAR(36) NOT NULL,
-  `status` VARCHAR(20) NOT NULL,
-  `duration_minutes` INT NULL,
-  `passing_score` INT NULL,
-  `created_by_user_id` VARCHAR(36) NOT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `questions` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `test_id` VARCHAR(36) NOT NULL,
+  `technologyId` VARCHAR(36) NOT NULL,
   `content` TEXT NOT NULL,
   `type` VARCHAR(20) NOT NULL,
-  `order_index` INT NOT NULL,
+  `orderIndex` INT NOT NULL,
   `score` INT NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `questions_technology_order_unique` (`technologyId`, `orderIndex`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `answers` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `question_id` VARCHAR(36) NOT NULL,
+  `questionId` VARCHAR(36) NOT NULL,
   `content` TEXT NOT NULL,
-  `is_correct` BOOLEAN NOT NULL,
-  `order_index` INT NOT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `isCorrect` BOOLEAN NOT NULL,
+  `orderIndex` INT NOT NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `answers_question_order_unique` (`questionId`, `orderIndex`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `free_sample_questions` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `technology_id` VARCHAR(36) NOT NULL,
+  `technologyId` VARCHAR(36) NOT NULL,
   `content` TEXT NOT NULL,
   `type` VARCHAR(20) NOT NULL,
   `explanation` TEXT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `quiz_sessions` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `userId` VARCHAR(36) NULL,
+  `technologyId` VARCHAR(36) NOT NULL,
+  `accessCodeId` VARCHAR(36) NULL,
+  `status` VARCHAR(20) NOT NULL,
+  `startedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `completedAt` DATETIME NULL,
+  `score` INT NULL,
+  `currentQuestionIndex` INT NOT NULL DEFAULT 0,
+  `questionIdsSnapshot` TEXT NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `user_answers` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `testSessionId` VARCHAR(36) NOT NULL,
+  `questionId` VARCHAR(36) NOT NULL,
+  `answerId` VARCHAR(36) NOT NULL,
+  `isCorrect` BOOLEAN NOT NULL,
+  `answeredAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `user_sessions` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `session_id` VARCHAR(255) NOT NULL,
-  `question_id` VARCHAR(36) NOT NULL,
-  `user_id` VARCHAR(36) NOT NULL,
-  `test_id` VARCHAR(36) NOT NULL,
-  `answer_id` VARCHAR(36) NULL,
+  `sessionId` VARCHAR(255) NOT NULL,
+  `questionId` VARCHAR(36) NOT NULL,
+  `userId` VARCHAR(36) NOT NULL,
+  `technologyId` VARCHAR(36) NOT NULL,
+  `answerId` VARCHAR(36) NULL,
   `status` VARCHAR(20) NOT NULL,
-  `started_at` DATETIME NULL,
-  `completed_at` DATETIME NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY `user_sessions_session_question` (`session_id`, `question_id`)
+  `startedAt` DATETIME NULL,
+  `completedAt` DATETIME NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `user_results` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `result_code` VARCHAR(255) NOT NULL UNIQUE,
-  `user_id` VARCHAR(36) NOT NULL,
-  `test_id` VARCHAR(36) NOT NULL,
+  `resultCode` VARCHAR(255) NOT NULL UNIQUE,
+  `userId` VARCHAR(36) NOT NULL,
+  `technologyId` VARCHAR(36) NOT NULL,
   `score` INT NULL,
-  `max_score` INT NULL,
+  `maxScore` INT NULL,
   `status` VARCHAR(20) NOT NULL,
-  `session_id` VARCHAR(255) NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `sessionId` VARCHAR(255) NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `candidate_sessions` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `session_id` VARCHAR(255) NOT NULL,
-  `question_id` VARCHAR(36) NOT NULL,
-  `candidate_id` VARCHAR(36) NULL,
-  `access_code_id` VARCHAR(36) NOT NULL,
-  `answer_id` VARCHAR(36) NULL,
+  `sessionId` VARCHAR(255) NOT NULL,
+  `questionId` VARCHAR(36) NOT NULL,
+  `candidateId` VARCHAR(36) NULL,
+  `accessCodeId` VARCHAR(36) NOT NULL,
+  `technologyId` VARCHAR(36) NOT NULL,
+  `answerId` VARCHAR(36) NULL,
   `status` VARCHAR(20) NOT NULL,
-  `started_at` DATETIME NULL,
-  `completed_at` DATETIME NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY `candidate_sessions_session_question` (`session_id`, `question_id`)
+  `startedAt` DATETIME NULL,
+  `completedAt` DATETIME NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `candidate_results` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `result_code` VARCHAR(255) NOT NULL UNIQUE,
-  `candidate_id` VARCHAR(36) NULL,
-  `test_id` VARCHAR(36) NOT NULL,
+  `resultCode` VARCHAR(255) NOT NULL UNIQUE,
+  `candidateId` VARCHAR(36) NULL,
+  `technologyId` VARCHAR(36) NOT NULL,
   `score` INT NULL,
-  `max_score` INT NULL,
+  `maxScore` INT NULL,
   `status` VARCHAR(20) NOT NULL,
-  `session_id` VARCHAR(255) NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `sessionId` VARCHAR(255) NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `access_codes` (
   `id` VARCHAR(36) PRIMARY KEY,
   `code` VARCHAR(100) NOT NULL UNIQUE,
-  `company_id` VARCHAR(36) NOT NULL,
-  `test_id` VARCHAR(36) NOT NULL,
+  `companyId` VARCHAR(36) NOT NULL,
+  `technologyId` VARCHAR(36) NOT NULL,
   `status` VARCHAR(20) NOT NULL,
-  `expires_at` DATETIME NULL,
-  `used_at` DATETIME NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `expiresAt` DATETIME NULL,
+  `usedAt` DATETIME NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `orders` (
   `id` VARCHAR(36) PRIMARY KEY,
-  `order_number` VARCHAR(100) NOT NULL UNIQUE,
-  `user_id` VARCHAR(36) NOT NULL,
+  `orderNumber` VARCHAR(100) NOT NULL UNIQUE,
+  `userId` VARCHAR(36) NOT NULL,
   `amount` DECIMAL(10, 2) NOT NULL,
   `currency` VARCHAR(3) NOT NULL DEFAULT 'USD',
   `status` VARCHAR(20) NOT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `email_templates` (
   `id` VARCHAR(36) PRIMARY KEY,
   `name` VARCHAR(100) NOT NULL UNIQUE,
   `subject` VARCHAR(255) NOT NULL,
-  `body_html` TEXT NOT NULL,
-  `body_text` TEXT NULL,
+  `bodyHtml` TEXT NOT NULL,
+  `bodyText` TEXT NULL,
   `variables` TEXT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `landing_ads` (
   `id` VARCHAR(36) PRIMARY KEY,
   `title` VARCHAR(255) NOT NULL,
   `content` TEXT NULL,
-  `image_url` VARCHAR(500) NULL,
-  `link_url` VARCHAR(500) NULL,
+  `imageUrl` VARCHAR(500) NULL,
+  `linkUrl` VARCHAR(500) NULL,
   `position` VARCHAR(20) NOT NULL,
-  `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `isActive` BOOLEAN NOT NULL DEFAULT TRUE,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `credit_settings` (
   `id` VARCHAR(36) PRIMARY KEY,
   `key` VARCHAR(100) NOT NULL UNIQUE,
   `value` TEXT NOT NULL,
-  `updated_by_user_id` VARCHAR(36) NOT NULL,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updatedByUserId` VARCHAR(36) NOT NULL,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `token_blacklist` (
+  `id` VARCHAR(36) PRIMARY KEY,
+  `tokenHash` VARCHAR(255) NOT NULL UNIQUE,
+  `expiresAt` DATETIME NULL,
+  `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -239,14 +240,14 @@ async function seedAdmin(): Promise<void> {
     return;
   }
 
-  // Create admin with a plain password hash that the current password hasher can verify.
-  // IMPORTANT: this is for local development only. In production, always use a proper hash.
+  // Hash password using the same algorithm as the API password hasher.
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
   await prisma.user.create({
     data: {
       id: crypto.randomUUID(),
       email: ADMIN_EMAIL,
       username: 'admin',
-      passwordHash: ADMIN_PASSWORD,
+      passwordHash,
       role: 'admin',
       activationStatus: 'active',
       credits: 0,
