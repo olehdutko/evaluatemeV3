@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getTechnologyQuestions, saveQuestion, deleteQuestion } from '../../../../../lib/admin.api';
 import { ErrorMessage } from '../../../../../components/ui/ErrorMessage';
@@ -62,6 +62,7 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -94,6 +95,7 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
       answers: question.answers.map((a) => ({ ...a })),
     });
     setFormError(null);
+    formRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function resetForm() {
@@ -191,21 +193,23 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
   if (!technology) return <ErrorMessage message={error || 'Technology not found'} className="m-6" />;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <header className="mb-10 border-b border-border pb-6">
-        <p className="font-mono text-xs uppercase tracking-[0.12em] text-accent mb-3">Content · {technology.name}</p>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold text-text-primary">Questions</h1>
+    <div className="h-[calc(100vh-4rem)] flex flex-col -mt-4 -ml-10">
+      <header className="shrink-0 px-6 py-4 border-b border-border bg-bg-primary">
+        <p className="font-mono text-xs uppercase tracking-[0.12em] text-accent mb-1">Content · {technology.name}</p>
+        <h1 className="font-display text-2xl font-bold text-text-primary">Questions</h1>
       </header>
 
-      {error && <ErrorMessage message={error} className="mb-6" />}
+      {error && <ErrorMessage message={error} className="shrink-0 mx-6 mt-4" />}
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        <section>
-          <h2 className="font-display text-xl font-bold text-text-primary mb-4">Existing Questions</h2>
+      <div className="flex-1 flex overflow-hidden">
+        <section className="w-1/2 flex flex-col border-r border-border">
+          <h2 className="shrink-0 px-6 py-3 font-display text-lg font-bold text-text-primary border-b border-border bg-bg-primary">
+            Existing Questions ({technology.questions.length})
+          </h2>
           {technology.questions.length === 0 ? (
-            <p className="text-text-secondary font-body">No questions for this technology yet.</p>
+            <p className="p-6 text-text-secondary font-body">No questions for this technology yet.</p>
           ) : (
-            <ul className="panel divide-y divide-border">
+            <ul className="flex-1 overflow-y-auto divide-y divide-border bg-bg-primary">
               {technology.questions.map((q) => {
                 const isSelected = editingQuestionId === q.id;
                 return (
@@ -252,11 +256,11 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
           )}
         </section>
 
-        <section>
-          <h2 className="font-display text-xl font-bold text-text-primary mb-4">
+        <section ref={formRef} className="w-1/2 flex flex-col overflow-y-auto bg-bg-primary">
+          <h2 className="shrink-0 px-6 py-3 font-display text-lg font-bold text-text-primary border-b border-border">
             {editingQuestionId ? 'Edit Question' : 'Add Question'}
           </h2>
-          <form onSubmit={handleSubmit} className="panel p-6 space-y-5">
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {formError && <ErrorMessage message={formError} />}
 
             <label className="block">
