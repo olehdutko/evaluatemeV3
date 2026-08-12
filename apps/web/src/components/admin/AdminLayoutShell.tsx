@@ -38,17 +38,6 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }): J
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(true);
 
-  const toggleButton = (
-    <button
-      type="button"
-      onClick={() => setIsOpen((prev) => !prev)}
-      aria-label={isOpen ? 'Collapse admin menu' : 'Expand admin menu'}
-      className="flex items-center justify-center w-8 h-8 bg-inverted-border text-inverted-primary rounded hover:bg-inverted-secondary transition-colors"
-    >
-      <ToggleIcon isOpen={isOpen} />
-    </button>
-  );
-
   return (
     <div className="min-h-screen flex relative">
       <aside
@@ -65,7 +54,14 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }): J
               </Link>
               <p className="font-mono text-xs text-inverted-secondary mt-1">Administration</p>
             </div>
-            {toggleButton}
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              aria-label="Collapse admin menu"
+              className="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-inverted-border text-inverted-primary rounded hover:bg-inverted-secondary transition-colors"
+            >
+              <ToggleIcon isOpen={true} />
+            </button>
           </div>
           <nav className="p-4 space-y-1" aria-label="Admin navigation">
             {navLinks.map((link) => {

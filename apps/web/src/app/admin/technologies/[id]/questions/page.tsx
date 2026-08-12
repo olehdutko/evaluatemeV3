@@ -193,7 +193,7 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
   if (!technology) return <ErrorMessage message={error || 'Technology not found'} className="m-6" />;
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col -mt-4 -ml-10">
+    <div className="h-[calc(100vh-4rem)] flex flex-col -mt-4">
       <header className="shrink-0 px-6 py-4 border-b border-border bg-bg-primary">
         <p className="font-mono text-xs uppercase tracking-[0.12em] text-accent mb-1">Content · {technology.name}</p>
         <h1 className="font-display text-2xl font-bold text-text-primary">Questions</h1>
