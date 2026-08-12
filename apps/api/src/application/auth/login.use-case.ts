@@ -26,11 +26,11 @@ export class LoginUseCase {
   ): Promise<{ success: true; data: AuthTokens }> {
     const user = await this.userRepository.findByEmail(input.email);
     if (!user) {
-      throw new UnauthorizedError();
+      throw new UnauthorizedError('No account found with this email.');
     }
 
     if (user.activationStatus === ActivationStatus.SUSPENDED) {
-      throw new UnauthorizedError();
+      throw new UnauthorizedError('Account is suspended.');
     }
 
     if (!options.allowAdmin && user.role === 'admin') {
@@ -43,11 +43,11 @@ export class LoginUseCase {
 
     const valid = await this.passwordHasher.verify(input.password, user.passwordHash);
     if (!valid) {
-      throw new UnauthorizedError();
+      throw new UnauthorizedError('Incorrect password.');
     }
 
     if (options.allowAdmin && user.role !== 'admin') {
-      throw new ForbiddenError();
+      throw new ForbiddenError('This login is reserved for administrators.');
     }
 
     const payload: ITokenPayload = {

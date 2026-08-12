@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, Res, HttpCode, HttpStatus, UseGuards, Inject, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Res, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { RegisterUseCase } from '../../application/auth/register.use-case';
 import { LoginUseCase } from '../../application/auth/login.use-case';
@@ -9,7 +9,6 @@ import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
 import { RateLimit } from '../../infrastructure/security/rate-limit.guard';
 import { LogSecurityEventUseCase } from '../../application/security/log-security-event.use-case';
-import { IRateLimitStore } from '@evaluateme/domain';
 import {
   loginRequestSchema,
   registerRequestSchema,
@@ -39,7 +38,6 @@ export class AuthController {
     private readonly logoutUseCase: LogoutUseCase,
     private readonly getMeUseCase: GetMeUseCase,
     private readonly audit: LogSecurityEventUseCase,
-    @Inject(IRateLimitStore) private readonly rateLimitStore: IRateLimitStore,
   ) {}
 
   @Post('register')
@@ -108,20 +106,11 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const ip = request.ip ?? request.socket?.remoteAddress ?? 'unknown';
-    const rateLimitKey = `admin-login:${ip}`;
-    const rateLimitWindowMs = 60 * 1000;
-    const rateLimitMax = 5;
-
-    const current = await this.rateLimitStore.peek(rateLimitKey, rateLimitWindowMs);
-    if (current && current.count >= rateLimitMax) {
-      throw new HttpException('Rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
-    }
 
     let result: Awaited<ReturnType<LoginUseCase['execute']>>;
     try {
       result = await this.loginUseCase.execute(body, { allowAdmin: true });
     } catch (err) {
-      await this.rateLimitStore.record(rateLimitKey, rateLimitWindowMs, rateLimitMax);
       await this.audit.execute({
         eventCode: 'AUTH_ADMIN_LOGIN_FAILURE',
         outcome: 'failure',

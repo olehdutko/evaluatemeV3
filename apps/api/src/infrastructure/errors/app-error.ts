@@ -28,14 +28,14 @@ export class BadRequestError extends AppError {
 }
 
 export class UnauthorizedError extends AppError {
-  constructor() {
-    super('UNAUTHORIZED', 'Missing or invalid authentication.', 401);
+  constructor(message = 'Missing or invalid authentication.') {
+    super('UNAUTHORIZED', message, 401);
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor() {
-    super('FORBIDDEN', 'Authenticated but not authorized.', 403);
+  constructor(message = 'Authenticated but not authorized.') {
+    super('FORBIDDEN', message, 403);
   }
 }
 
