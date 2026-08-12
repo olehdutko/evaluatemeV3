@@ -104,4 +104,21 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Warm range slider accent matching design system */
+  input[type='range'].accent-accent {
+    accent-color: var(--accent);
+  }
+
+  ::-webkit-slider-thumb {
+    background: var(--accent);
+    border: 2px solid var(--text-primary);
+    border-radius: 9999px;
+  }
+
+  ::-moz-range-thumb {
+    background: var(--accent);
+    border: 2px solid var(--text-primary);
+    border-radius: 9999px;
+  }
 }

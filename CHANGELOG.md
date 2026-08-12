@@ -200,3 +200,17 @@ Options going forward:
 - Progress is calculated from the list's `scrollTop` relative to `scrollHeight - clientHeight`.
 - Bar is rendered directly below the "Existing Questions" heading using the existing accent color.
 - Committed as `14120e1 feat(admin): add scroll progress bar to questions list header`.
+
+## 2026-08-13 — Public landing page with savings calculators
+
+- Replaced the minimal home page with a full marketing landing page based on the legacy `evaluateme.it` design.
+- Added an auto-rotating hero slider with Access Codes, Credits, Result Code, Private and Corporate accounts.
+- Added an "About" feature grid with icons and value propositions.
+- Added interactive savings calculators:
+  - User calculator compares EvaluateMe price ($3/test) vs. other platforms and shows total savings.
+  - Corporate calculator estimates interview costs and shows money saved by filtering candidates with Access Codes.
+- Added a "How it works" showcase with Read More / Read Less details for Access codes, Accounts, Quiz process and Quiz results.
+- Added an animated counters section pulled from `/api/counters` (edge route).
+- Added a "Get in Touch" contact form backed by `/api/contact` (edge route).
+- Copied legacy landing images into `apps/web/public/landing/`.
+- Updated `globals.css` with range-slider accent utilities.
