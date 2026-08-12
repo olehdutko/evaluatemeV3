@@ -8,6 +8,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+seed = "ts-node src/seed.ts"
+
 // ============= v3 Business Entities =============
 
 model User {

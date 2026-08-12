@@ -174,3 +174,22 @@ Options going forward:
 - Verified and marked all Phase 5 (US3) module-boundary tasks as completed in `specs/001-01-architecture/tasks.md`.
 - Confirmed existing implementation covers: contract/integration/unit tests for technologies catalog, `modules.md` catalog, `adr-003-module-boundaries.md`, `Technology` entity, `ITechnologyRepository`, `ListTechnologiesUseCase`, `PrismaTechnologyRepository`, `TechnologiesController`, `TechnologiesModule`, `scripts/check-module-cycles.sh`, and frontend `/technologies` page.
 - Architecture foundation is now fully tracked as complete.
+
+## 2026-08-12 — Email template seed data and HTML preview
+
+- Added `packages/prisma/src/seed.ts` with 6 default email templates:
+  - `welcome_personal` — personal account welcome + email verification.
+  - `welcome_company` — corporate account welcome + email verification.
+  - `password_reset` — password reset request.
+  - `invoice_payment_receipt` — invoice/payment receipt.
+  - `test_invitation` — candidate test invitation with access code.
+  - `test_results` — candidate test results notification.
+- All templates are in English and use placeholder variables such as `{{userName}}`, `{{companyName}}`, `{{verificationLink}}`, `{{resetLink}}`, `{{orderNumber}}`, `{{testName}}`, `{{candidateName}}`, `{{accessCode}}`, `{{score}}`, etc.
+- Added `db:seed` script to `packages/prisma/package.json` and registered `seed = "ts-node src/seed.ts"` in `schema.prisma`.
+- Installed `ts-node` as a dev dependency for the prisma workspace.
+- Seeded templates into the `evaluateme_v3` database; verified with `Seeded 6 email templates.`.
+- Improved `/admin/email-templates` editor:
+  - Added a **Code / Preview** toggle for the HTML body field.
+  - Preview renders the email as a real email using an isolated `iframe` (`sandbox=""`) so styles, colors, buttons, and layout display correctly.
+  - Preview now renders at full editor width with adequate height instead of a narrow column.
+  - Code mode keeps the existing HTML source editor.

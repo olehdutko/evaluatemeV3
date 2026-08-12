@@ -13,12 +13,17 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:status": "prisma migrate status"
+    "db:status": "prisma migrate status",
+    "db:seed": "ts-node src/seed.ts"
   },
   "devDependencies": {
     "@evaluateme/tsconfig": "*",
-    "prisma": "^5.10.0",
-    "@prisma/client": "^5.10.0",
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "mysql2": "^3.23.3"
   }
 }

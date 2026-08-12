@@ -163,16 +163,13 @@ function EmailTemplateEditor({
         <input type="text" value={subject} onChange={(e) => setSubject(e.target.value)} required className="input-field" />
       </label>
 
-      <label className="block">
-        <span className="label-mono">HTML Body</span>
-        <textarea
+      <div className="space-y-2">
+        <HtmlPreviewToggle
+          label="HTML Body"
           value={bodyHtml}
-          onChange={(e) => setBodyHtml(e.target.value)}
-          required
-          rows={12}
-          className="input-field font-mono text-sm"
+          onChange={setBodyHtml}
         />
-      </label>
+      </div>
 
       <label className="block">
         <span className="label-mono">Plain Text Body</span>
@@ -200,5 +197,59 @@ function EmailTemplateEditor({
         </button>
       </div>
     </form>
+  );
+}
+
+function HtmlPreviewToggle({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange?: (value: string) => void;
+}): JSX.Element {
+  const [showPreview, setShowPreview] = useState(false);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="label-mono">{label}</span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowPreview(false)}
+            className={`text-xs font-mono px-3 py-1 rounded ${!showPreview ? 'bg-accent text-white' : 'bg-bg-secondary text-text-secondary'}`}
+          >
+            Code
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowPreview(true)}
+            className={`text-xs font-mono px-3 py-1 rounded ${showPreview ? 'bg-accent text-white' : 'bg-bg-secondary text-text-secondary'}`}
+          >
+            Preview
+          </button>
+        </div>
+      </div>
+      {showPreview ? (
+        <div className="border border-border rounded-lg overflow-hidden bg-white">
+          <iframe
+            title="HTML preview"
+            srcDoc={value}
+            sandbox=""
+            className="w-full min-h-[400px]"
+          />
+        </div>
+      ) : (
+        <textarea
+          value={value}
+          onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+          required
+          rows={12}
+          className="input-field font-mono text-sm"
+        />
+      )}
+    </div>
   );
 }
