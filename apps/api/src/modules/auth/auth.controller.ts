@@ -7,7 +7,7 @@ import { LogoutUseCase } from '../../application/auth/logout.use-case';
 import { GetMeUseCase } from '../../application/auth/get-me.use-case';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
-import { RateLimit, RateLimitGuard } from '../../infrastructure/security/rate-limit.guard';
+import { RateLimit } from '../../infrastructure/security/rate-limit.guard';
 import { LogSecurityEventUseCase } from '../../application/security/log-security-event.use-case';
 import { IRateLimitStore } from '@evaluateme/domain';
 import {
@@ -31,7 +31,6 @@ const COOKIE_OPTIONS = {
 };
 
 @Controller('/api/v1/auth')
-@UseGuards(RateLimitGuard)
 export class AuthController {
   constructor(
     private readonly registerUseCase: RegisterUseCase,
