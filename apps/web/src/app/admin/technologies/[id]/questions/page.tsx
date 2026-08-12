@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getTechnologyQuestions, saveQuestion, deleteQuestion, deleteAnswer } from '../../../../../lib/admin.api';
+import { getTechnologyQuestions, saveQuestion, deleteQuestion } from '../../../../../lib/admin.api';
 import { ErrorMessage } from '../../../../../components/ui/ErrorMessage';
 
 interface AnswerInput {
@@ -60,7 +60,6 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
-  const [deletingAnswerId, setDeletingAnswerId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -83,7 +82,7 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
       .finally(() => setLoading(false));
   }
 
-  function startEdit(question: QuestionDetail) {
+  function selectQuestion(question: QuestionDetail) {
     setEditingQuestionId(question.id);
     setForm({
       id: question.id,
@@ -95,7 +94,6 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
       answers: question.answers.map((a) => ({ ...a })),
     });
     setFormError(null);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function resetForm() {
@@ -189,26 +187,6 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
       .finally(() => setDeletingQuestionId(null));
   }
 
-  function handleDeleteAnswer(answerId: string, questionId: string) {
-    if (!confirm('Are you sure you want to delete this answer?')) return;
-    setDeletingAnswerId(answerId);
-    deleteAnswer(answerId)
-      .then(() => {
-        if (!id) return;
-        return getTechnologyQuestions(id).then((response) => {
-          setTechnology(response.data);
-          if (editingQuestionId === questionId && form) {
-            setForm({
-              ...form,
-              answers: form.answers.filter((a) => a.id !== answerId),
-            });
-          }
-        });
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to delete answer'))
-      .finally(() => setDeletingAnswerId(null));
-  }
-
   if (loading) return <p className="p-8 text-text-secondary font-body">Loading…</p>;
   if (!technology) return <ErrorMessage message={error || 'Technology not found'} className="m-6" />;
 
@@ -228,9 +206,25 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
             <p className="text-text-secondary font-body">No questions for this technology yet.</p>
           ) : (
             <ul className="panel divide-y divide-border">
-              {technology.questions.map((q) => (
-                <li key={q.id} className="px-5 py-4">
-                  <div className="flex items-start justify-between gap-4">
+              {technology.questions.map((q) => {
+                const isSelected = editingQuestionId === q.id;
+                return (
+                  <li
+                    key={q.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => selectQuestion(q)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        selectQuestion(q);
+                      }
+                    }}
+                    className={`px-5 py-4 cursor-pointer transition-colors outline-none ${
+                      isSelected ? 'bg-bg-secondary ring-2 ring-inset ring-accent' : 'hover:bg-bg-secondary'
+                    }`}
+                    aria-pressed={isSelected}
+                  >
                     <div className="min-w-0">
                       <p className="font-body text-text-primary font-bold">
                         {q.orderIndex}. {q.content}
@@ -239,48 +233,21 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
                         {q.type === 'single' ? 'Single choice' : 'Multiple choice'} · {q.score} point{q.score !== 1 ? 's' : ''}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(q)}
-                        className="btn-secondary text-sm py-2 px-3"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteQuestion(q.id)}
-                        disabled={deletingQuestionId === q.id}
-                        className="btn-secondary text-sm py-2 px-3 text-red-600 hover:text-red-700 disabled:opacity-50"
-                      >
-                        {deletingQuestionId === q.id ? 'Deleting…' : 'Delete'}
-                      </button>
-                    </div>
-                  </div>
-                  <ul className="mt-3 space-y-2">
-                    {q.answers.map((a) => (
-                      <li
-                        key={a.id || a.orderIndex}
-                        className={`flex items-center justify-between gap-3 font-mono text-sm ${a.isCorrect ? 'text-success' : 'text-text-secondary'}`}
-                      >
-                        <span>
-                          {a.isCorrect ? '✓ ' : '○ '}{a.content}
-                        </span>
-                        {a.id && (
-                          <button
-                            type="button"
-                            onClick={() => a.id && handleDeleteAnswer(a.id, q.id)}
-                            disabled={deletingAnswerId === a.id || q.answers.length <= 2}
-                            className="text-error text-xs disabled:opacity-50"
-                          >
-                            {deletingAnswerId === a.id ? 'Deleting…' : 'Remove'}
-                          </button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
+                    <ul className="mt-3 space-y-2">
+                      {q.answers.map((a) => (
+                        <li
+                          key={a.id || a.orderIndex}
+                          className={`flex items-center justify-between gap-3 font-mono text-sm ${a.isCorrect ? 'text-success' : 'text-text-secondary'}`}
+                        >
+                          <span>
+                            {a.isCorrect ? '✓ ' : '○ '}{a.content}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
@@ -387,19 +354,29 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <button type="submit" disabled={saving} className="btn-primary disabled:opacity-50">
                 {saving ? 'Saving…' : editingQuestionId ? 'Update Question' : 'Save Question'}
               </button>
               {editingQuestionId && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  disabled={saving}
-                  className="btn-secondary disabled:opacity-50"
-                >
-                  Cancel
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    disabled={saving}
+                    className="btn-secondary disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteQuestion(editingQuestionId)}
+                    disabled={saving || deletingQuestionId === editingQuestionId}
+                    className="btn-secondary text-error hover:text-red-700 disabled:opacity-50"
+                  >
+                    {deletingQuestionId === editingQuestionId ? 'Deleting…' : 'Delete Question'}
+                  </button>
+                </>
               )}
             </div>
           </form>
