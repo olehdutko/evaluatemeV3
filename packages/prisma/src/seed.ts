@@ -2,6 +2,9 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+const ADMIN_EMAIL = 'admin@evaluateme.it';
+const ADMIN_PASSWORD = 'admin123';
+
 const emailTemplates = [
   {
     name: 'welcome_personal',
@@ -228,7 +231,34 @@ The EvaluateMe.IT Team`,
   },
 ];
 
+async function seedAdmin(): Promise<void> {
+  const existing = await prisma.user.findUnique({ where: { email: ADMIN_EMAIL } });
+  if (existing) {
+    // eslint-disable-next-line no-console
+    console.log(`Admin user ${ADMIN_EMAIL} already exists.`);
+    return;
+  }
+
+  // Create admin with a plain password hash that the current password hasher can verify.
+  // IMPORTANT: this is for local development only. In production, always use a proper hash.
+  await prisma.user.create({
+    data: {
+      id: crypto.randomUUID(),
+      email: ADMIN_EMAIL,
+      username: 'admin',
+      passwordHash: ADMIN_PASSWORD,
+      role: 'admin',
+      activationStatus: 'active',
+      credits: 0,
+    },
+  });
+  // eslint-disable-next-line no-console
+  console.log(`Created admin user ${ADMIN_EMAIL}.`);
+}
+
 async function main(): Promise<void> {
+  await seedAdmin();
+
   for (const template of emailTemplates) {
     await prisma.emailTemplate.upsert({
       where: { name: template.name },

@@ -3,10 +3,10 @@
 
 -- Add v3 columns to existing legacy users table (non-destructive)
 ALTER TABLE `users`
-  ADD COLUMN IF NOT EXISTS `role` VARCHAR(20) NULL,
-  ADD COLUMN IF NOT EXISTS `activation_status` VARCHAR(20) NULL,
-  ADD COLUMN IF NOT EXISTS `password_hash` VARCHAR(255) NULL,
-  ADD COLUMN IF NOT EXISTS `company_profile_id` VARCHAR(36) NULL UNIQUE;
+  ADD COLUMN `role` VARCHAR(20) NULL,
+  ADD COLUMN `activation_status` VARCHAR(20) NULL,
+  ADD COLUMN `password_hash` VARCHAR(255) NULL,
+  ADD COLUMN `company_profile_id` VARCHAR(36) NULL UNIQUE;
 
 -- New v3 InnoDB tables
 CREATE TABLE IF NOT EXISTS `company_profiles` (
