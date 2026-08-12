@@ -29,10 +29,10 @@ import { UpdateTechnologyUseCase } from '../../application/admin/content/update-
 import { DeleteTechnologyUseCase } from '../../application/admin/content/delete-technology.use-case';
 import { GetTechnologyWithQuestionsUseCase } from '../../application/admin/content/get-technology-with-questions.use-case';
 import { SaveQuestionUseCase } from '../../application/admin/content/save-question.use-case';
-import { PrismaTestRepository } from '../../infrastructure/prisma/repositories/test/prisma-test.repository';
+import { DeleteQuestionUseCase } from '../../application/admin/content/delete-question.use-case';
+import { DeleteAnswerUseCase } from '../../application/admin/content/delete-answer.use-case';
 import {
   ITechnologyRepository,
-  ITestRepository,
   IQuestionRepository,
   IAnswerRepository,
 } from '@evaluateme/domain';
@@ -62,12 +62,13 @@ import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories
     DeleteTechnologyUseCase,
     GetTechnologyWithQuestionsUseCase,
     SaveQuestionUseCase,
+    DeleteQuestionUseCase,
+    DeleteAnswerUseCase,
     { provide: IUserRepository, useClass: PrismaUserRepository },
     { provide: ICreditSettingRepository, useClass: PrismaCreditSettingRepository },
     { provide: IEmailTemplateRepository, useClass: PrismaEmailTemplateRepository },
     { provide: ILandingAdRepository, useClass: PrismaLandingAdRepository },
     { provide: ITechnologyRepository, useClass: PrismaTechnologyRepository },
-    { provide: ITestRepository, useClass: PrismaTestRepository },
     { provide: IQuestionRepository, useClass: PrismaQuestionRepository },
     { provide: IAnswerRepository, useClass: PrismaAnswerRepository },
   ],

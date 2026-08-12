@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  ITestSessionRepository,
+  IQuizSessionRepository,
   IAnswerRepository,
   IQuestionRepository,
 } from '@evaluateme/domain';
@@ -17,7 +17,7 @@ export interface SubmitAnswerResult {
 @Injectable()
 export class SubmitAnswerUseCase {
   constructor(
-    @Inject(ITestSessionRepository) private readonly testSessionRepository: ITestSessionRepository,
+    @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
     @Inject(IAnswerRepository) private readonly answerRepository: IAnswerRepository,
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
   ) {}
@@ -27,12 +27,12 @@ export class SubmitAnswerUseCase {
     questionId: string,
     answerId: string,
   ): Promise<{ success: true; data: SubmitAnswerResult }> {
-    const session = await this.testSessionRepository.findById(sessionId);
+    const session = await this.quizSessionRepository.findById(sessionId);
     if (!session) {
-      throw new NotFoundError('test session');
+      throw new NotFoundError('quiz session');
     }
     if (session.status !== 'in_progress') {
-      throw new BadRequestError({ session: ['Test session is not active'] });
+      throw new BadRequestError({ session: ['Quiz session is not active'] });
     }
 
     const answer = await this.answerRepository.findById(answerId);
@@ -40,7 +40,7 @@ export class SubmitAnswerUseCase {
       throw new BadRequestError({ answer: ['Invalid answer'] });
     }
 
-    await this.testSessionRepository.addAnswer({
+    await this.quizSessionRepository.addAnswer({
       testSessionId: sessionId,
       questionId,
       answerId,
@@ -48,23 +48,23 @@ export class SubmitAnswerUseCase {
       answeredAt: new Date(),
     });
 
-    const allQuestions = await this.questionRepository.findByTestId(session.testId);
-    const answers = await this.testSessionRepository.findAnswersBySessionId(sessionId);
-    const correctCount = answers.filter((a) => a.isCorrect).length;
+    const allQuestions = await this.questionRepository.findByTechnologyId(session.technologyId);
+    const answers = await this.quizSessionRepository.findAnswersBySessionId(sessionId);
+    const correctCount = answers.filter((a: { isCorrect: boolean }) => a.isCorrect).length;
     const totalAnswered = answers.length;
     const currentScore = Math.round((correctCount / allQuestions.length) * 100);
     const nextIndex = totalAnswered < allQuestions.length ? totalAnswered : null;
     const isComplete = nextIndex === null;
 
     if (isComplete) {
-      await this.testSessionRepository.update(sessionId, {
+      await this.quizSessionRepository.update(sessionId, {
         status: 'completed',
         completedAt: new Date(),
         score: currentScore,
         currentQuestionIndex: totalAnswered,
       });
     } else {
-      await this.testSessionRepository.update(sessionId, {
+      await this.quizSessionRepository.update(sessionId, {
         currentQuestionIndex: nextIndex,
       });
     }

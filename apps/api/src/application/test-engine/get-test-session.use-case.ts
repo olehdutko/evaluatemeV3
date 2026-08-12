@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ITestSessionRepository, IQuestionRepository, IAnswerRepository } from '@evaluateme/domain';
+import { IQuizSessionRepository, IQuestionRepository, IAnswerRepository } from '@evaluateme/domain';
 import { NotFoundError } from '../../infrastructure/errors/app-error';
 
-export interface TestSessionState {
+export interface QuizSessionState {
   sessionId: string;
   status: string;
   currentQuestionIndex: number;
@@ -19,19 +19,19 @@ export interface TestSessionState {
 @Injectable()
 export class GetTestSessionUseCase {
   constructor(
-    @Inject(ITestSessionRepository) private readonly testSessionRepository: ITestSessionRepository,
+    @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(IAnswerRepository) private readonly answerRepository: IAnswerRepository,
   ) {}
 
-  async execute(sessionId: string): Promise<{ success: true; data: TestSessionState }> {
-    const session = await this.testSessionRepository.findById(sessionId);
+  async execute(sessionId: string): Promise<{ success: true; data: QuizSessionState }> {
+    const session = await this.quizSessionRepository.findById(sessionId);
     if (!session) {
-      throw new NotFoundError('test session');
+      throw new NotFoundError('quiz session');
     }
 
-    const questions = await this.questionRepository.findByTestId(session.testId);
-    const answers = await this.answerRepository.findByQuestionIds(questions.map((q) => q.id));
+    const questions = await this.questionRepository.findByTechnologyId(session.technologyId);
+    const answers = await this.answerRepository.findByQuestionIds(questions.map((q: { id: string }) => q.id));
 
     return {
       success: true,
@@ -40,14 +40,14 @@ export class GetTestSessionUseCase {
         status: session.status,
         currentQuestionIndex: session.currentQuestionIndex,
         score: session.score ?? null,
-        questions: questions.map((q) => ({
+        questions: questions.map((q: { id: string; content: string; type: string; orderIndex: number }) => ({
           id: q.id,
           content: q.content,
           type: q.type,
           orderIndex: q.orderIndex,
           answers: answers
-            .filter((a) => a.questionId === q.id)
-            .map((a) => ({ id: a.id, content: a.content, orderIndex: a.orderIndex })),
+            .filter((a: { questionId: string }) => a.questionId === q.id)
+            .map((a: { id: string; content: string; orderIndex: number }) => ({ id: a.id, content: a.content, orderIndex: a.orderIndex })),
         })),
       },
     };

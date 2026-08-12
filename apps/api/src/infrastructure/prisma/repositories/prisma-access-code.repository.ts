@@ -23,7 +23,7 @@ export class PrismaAccessCodeRepository implements IAccessCodeRepository {
         id: accessCode.id,
         code: accessCode.code,
         companyId: accessCode.companyId,
-        testId: accessCode.testId,
+        technologyId: accessCode.technologyId,
         status: accessCode.status,
         expiresAt: accessCode.expiresAt,
         usedAt: accessCode.usedAt,
@@ -40,7 +40,7 @@ export class PrismaAccessCodeRepository implements IAccessCodeRepository {
     id: string;
     code: string;
     companyId: string;
-    testId: string;
+    technologyId: string;
     status: string;
     expiresAt: Date | null;
     usedAt: Date | null;
@@ -51,7 +51,7 @@ export class PrismaAccessCodeRepository implements IAccessCodeRepository {
       id: row.id,
       code: row.code,
       companyId: row.companyId,
-      testId: row.testId,
+      technologyId: row.technologyId,
       status: row.status as AccessCode['status'],
       expiresAt: row.expiresAt,
       usedAt: row.usedAt,

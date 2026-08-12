@@ -1,14 +1,12 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../../node_modules/@prisma/client"
+  output   = "../../node_modules/.prisma/client"
 }
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
-
-seed = "ts-node src/seed.ts"
 
 // ============= v3 Business Entities =============
 
@@ -76,36 +74,22 @@ model Technology {
   slug        String   @unique @db.VarChar(100)
   description String?  @db.Text
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("technologies")
 }
 
-model Test {
-  id              String   @id @default(uuid()) @db.VarChar(36)
-  title           String   @db.VarChar(255)
-  technologyId    String   @db.VarChar(36)
-  status          String   @db.VarChar(20)
-  durationMinutes Int?
-  passingScore    Int?
-  createdByUserId String   @db.VarChar(36)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([technologyId, title])
-  @@map("tests")
-}
-
 model Question {
-  id          String   @id @default(uuid()) @db.VarChar(36)
-  testId      String   @db.VarChar(36)
-  content     String   @db.Text
-  type        String   @db.VarChar(20)
-  orderIndex  Int
-  score       Int      @default(1)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(uuid()) @db.VarChar(36)
+  technologyId String   @db.VarChar(36)
+  content      String   @db.Text
+  type         String   @db.VarChar(20)
+  orderIndex   Int
+  score        Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  @@unique([testId, orderIndex])
+  @@unique([technologyId, orderIndex])
   @@map("questions")
 }
 
@@ -121,20 +105,21 @@ model Answer {
   @@map("answers")
 }
 
-model TestSession {
+model QuizSession {
   id                   String    @id @default(uuid()) @db.VarChar(36)
   userId               String?   @db.VarChar(36)
-  testId               String    @db.VarChar(36)
+  technologyId         String    @db.VarChar(36)
   accessCodeId         String?   @db.VarChar(36)
   status               String    @db.VarChar(20)
   startedAt            DateTime  @default(now())
   completedAt          DateTime?
   score                Int?
   currentQuestionIndex Int       @default(0)
+  questionIdsSnapshot  String?   @db.Text
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  @@map("test_sessions")
+  @@map("quiz_sessions")
 }
 
 model UserAnswer {
@@ -166,7 +151,7 @@ model UserSession {
   sessionId     String    @db.VarChar(255)
   questionId    String    @db.VarChar(36)
   userId        String    @db.VarChar(36)
-  testId        String    @db.VarChar(36)
+  technologyId  String    @db.VarChar(36)
   answerId      String?   @db.VarChar(36)
   status        String    @db.VarChar(20)
   startedAt     DateTime?
@@ -181,7 +166,7 @@ model UserResult {
   id          String    @id @default(uuid()) @db.VarChar(36)
   resultCode  String    @unique @db.VarChar(255)
   userId      String    @db.VarChar(36)
-  testId      String    @db.VarChar(36)
+  technologyId String   @db.VarChar(36)
   score       Int?
   maxScore    Int?
   status      String    @db.VarChar(20)
@@ -198,6 +183,7 @@ model CandidateSession {
   questionId    String    @db.VarChar(36)
   candidateId   String?   @db.VarChar(36)
   accessCodeId  String    @db.VarChar(36)
+  technologyId  String    @db.VarChar(36)
   answerId      String?   @db.VarChar(36)
   status        String    @db.VarChar(20)
   startedAt     DateTime?
@@ -212,7 +198,7 @@ model CandidateResult {
   id          String    @id @default(uuid()) @db.VarChar(36)
   resultCode  String    @unique @db.VarChar(255)
   candidateId String?   @db.VarChar(36)
-  testId      String    @db.VarChar(36)
+  technologyId String   @db.VarChar(36)
   score       Int?
   maxScore    Int?
   status      String    @db.VarChar(20)
@@ -227,7 +213,7 @@ model AccessCode {
   id              String    @id @default(uuid()) @db.VarChar(36)
   code            String    @unique @db.VarChar(100)
   companyId       String    @db.VarChar(36)
-  testId          String    @db.VarChar(36)
+  technologyId    String    @db.VarChar(36)
   status          String    @db.VarChar(20)
   expiresAt       DateTime?
   usedAt          DateTime?

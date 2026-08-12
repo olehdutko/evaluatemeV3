@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   ITechnologyRepository,
   IQuestionRepository,
-  ITestSessionRepository,
+  IQuizSessionRepository,
   Question,
 } from '@evaluateme/domain';
 import { NotFoundError } from '../../infrastructure/errors/app-error';
@@ -20,7 +20,7 @@ export class StartTestUseCase {
   constructor(
     @Inject(ITechnologyRepository) private readonly technologyRepository: ITechnologyRepository,
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
-    @Inject(ITestSessionRepository) private readonly testSessionRepository: ITestSessionRepository,
+    @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
   ) {}
 
   async execute(userId: string, technologySlug: string): Promise<{ success: true; data: StartTestResult }> {
@@ -29,7 +29,7 @@ export class StartTestUseCase {
       throw new NotFoundError('technology');
     }
 
-    const questions = await this.questionRepository.findByTestIdRandomized(
+    const questions = await this.questionRepository.findByTechnologyIdRandomized(
       technology.id,
       DEFAULT_QUESTION_COUNT,
     );
@@ -37,9 +37,9 @@ export class StartTestUseCase {
       throw new NotFoundError('questions for technology');
     }
 
-    const session = await this.testSessionRepository.create({
+    const session = await this.quizSessionRepository.create({
       userId,
-      testId: technology.id,
+      technologyId: technology.id,
       status: 'in_progress',
       startedAt: new Date(),
       currentQuestionIndex: 0,

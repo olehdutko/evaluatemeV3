@@ -37,28 +37,19 @@ export const technologyWithQuestionsSchema = z.object({
     name: z.string(),
     slug: z.string(),
     description: z.string().nullable(),
-    tests: z.array(
+    questions: z.array(
       z.object({
         id: z.string().uuid(),
-        title: z.string(),
-        status: z.string(),
-        durationMinutes: z.number().int().nullable(),
-        passingScore: z.number().int().nullable(),
-        questions: z.array(
+        content: z.string(),
+        type: z.enum(['single', 'multiple']),
+        orderIndex: z.number().int(),
+        score: z.number().int(),
+        answers: z.array(
           z.object({
             id: z.string().uuid(),
             content: z.string(),
-            type: z.enum(['single', 'multiple']),
+            isCorrect: z.boolean(),
             orderIndex: z.number().int(),
-            score: z.number().int(),
-            answers: z.array(
-              z.object({
-                id: z.string().uuid(),
-                content: z.string(),
-                isCorrect: z.boolean(),
-                orderIndex: z.number().int(),
-              }),
-            ),
           }),
         ),
       }),
@@ -75,7 +66,7 @@ export const answerInputSchema = z.object({
 
 export const saveQuestionRequestSchema = z.object({
   id: z.string().uuid().optional(),
-  testId: z.string().uuid(),
+  technologyId: z.string().uuid(),
   content: z.string().min(1).max(5000),
   type: z.enum(['single', 'multiple']),
   orderIndex: z.number().int().min(0),

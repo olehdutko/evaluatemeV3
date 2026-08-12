@@ -20,7 +20,7 @@ export const startTestResponseSchema = successEnvelopeSchema(
     questions: z.array(
       z.object({
         id: z.string().uuid(),
-        testId: z.string().uuid(),
+        technologyId: z.string().uuid(),
         content: z.string(),
         type: z.enum(['single', 'multiple']),
         orderIndex: z.number().int(),

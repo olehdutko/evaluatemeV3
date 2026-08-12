@@ -3,7 +3,7 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { PrismaTechnologyRepository } from '../../infrastructure/prisma/repositories/prisma-technology.repository';
 import { PrismaQuestionRepository } from '../../infrastructure/prisma/repositories/prisma-question.repository';
 import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories/prisma-answer.repository';
-import { PrismaTestSessionRepository } from '../../infrastructure/prisma/repositories/prisma-test-session.repository';
+import { PrismaQuizSessionRepository } from '../../infrastructure/prisma/repositories/prisma-quiz-session.repository';
 import { PrismaAccessCodeRepository } from '../../infrastructure/prisma/repositories/prisma-access-code.repository';
 import { StartTestUseCase } from '../../application/test-engine/start-test.use-case';
 import { SubmitAnswerUseCase } from '../../application/test-engine/submit-answer.use-case';
@@ -16,7 +16,7 @@ import {
   ITechnologyRepository,
   IQuestionRepository,
   IAnswerRepository,
-  ITestSessionRepository,
+  IQuizSessionRepository,
   IAccessCodeRepository,
 } from '@evaluateme/domain';
 
@@ -32,7 +32,7 @@ import {
     { provide: ITechnologyRepository, useClass: PrismaTechnologyRepository },
     { provide: IQuestionRepository, useClass: PrismaQuestionRepository },
     { provide: IAnswerRepository, useClass: PrismaAnswerRepository },
-    { provide: ITestSessionRepository, useClass: PrismaTestSessionRepository },
+    { provide: IQuizSessionRepository, useClass: PrismaQuizSessionRepository },
     { provide: IAccessCodeRepository, useClass: PrismaAccessCodeRepository },
   ],
 })

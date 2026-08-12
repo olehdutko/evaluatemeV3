@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getTechnologyQuestions, saveQuestion } from '../../../../../lib/admin.api';
+import { getTechnologyQuestions, saveQuestion, deleteQuestion, deleteAnswer } from '../../../../../lib/admin.api';
 import { ErrorMessage } from '../../../../../components/ui/ErrorMessage';
 
 interface AnswerInput {
@@ -14,7 +14,7 @@ interface AnswerInput {
 
 interface QuestionInput {
   id?: string;
-  testId?: string;
+  technologyId: string;
   content: string;
   type: 'single' | 'multiple';
   orderIndex: number;
@@ -22,17 +22,13 @@ interface QuestionInput {
   answers: AnswerInput[];
 }
 
-interface QuestionDetail extends QuestionInput {
+interface QuestionDetail {
   id: string;
-}
-
-interface TestDetail {
-  id: string;
-  title: string;
-  status: string;
-  durationMinutes: number | null;
-  passingScore: number | null;
-  questions: QuestionDetail[];
+  content: string;
+  type: 'single' | 'multiple';
+  orderIndex: number;
+  score: number;
+  answers: AnswerInput[];
 }
 
 interface TechnologyDetail {
@@ -40,11 +36,11 @@ interface TechnologyDetail {
   name: string;
   slug: string;
   description: string | null;
-  tests: TestDetail[];
+  questions: QuestionDetail[];
 }
 
-const emptyQuestion = (testId: string): QuestionInput => ({
-  testId,
+const emptyQuestion = (technologyId: string): QuestionInput => ({
+  technologyId,
   content: '',
   type: 'single',
   orderIndex: 1,
@@ -59,30 +55,56 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [technology, setTechnology] = useState<TechnologyDetail | null>(null);
-  const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
   const [form, setForm] = useState<QuestionInput | null>(null);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
+  const [deletingAnswerId, setDeletingAnswerId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
-    getTechnologyQuestions(id)
-      .then((response) => {
-        setTechnology(response.data);
-        if (response.data.tests.length > 0) {
-          setSelectedTestId(response.data.tests[0].id);
-        }
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load technology'))
-      .finally(() => setLoading(false));
+    loadTechnology(id);
   }, [id]);
 
-  useEffect(() => {
-    if (selectedTestId) {
-      setForm(emptyQuestion(selectedTestId));
+  function loadTechnology(technologyId: string) {
+    setLoading(true);
+    getTechnologyQuestions(technologyId)
+      .then((response) => {
+        setTechnology(response.data);
+        if (!form) {
+          setForm(emptyQuestion(technologyId));
+        }
+        setError(null);
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load questions'))
+      .finally(() => setLoading(false));
+  }
+
+  function startEdit(question: QuestionDetail) {
+    setEditingQuestionId(question.id);
+    setForm({
+      id: question.id,
+      technologyId: id ?? '',
+      content: question.content,
+      type: question.type,
+      orderIndex: question.orderIndex,
+      score: question.score,
+      answers: question.answers.map((a) => ({ ...a })),
+    });
+    setFormError(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetForm() {
+    setEditingQuestionId(null);
+    if (id) {
+      setForm(emptyQuestion(id));
     }
-  }, [selectedTestId]);
+    setFormError(null);
+  }
 
   function addAnswer() {
     setForm((prev) => {
@@ -98,6 +120,11 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
     setForm((prev) => {
       if (!prev) return null;
       const answers = prev.answers.map((a, i) => (i === index ? { ...a, ...patch } : a));
+      if (prev.type === 'single' && patch.isCorrect) {
+        answers.forEach((a, i) => {
+          if (i !== index) a.isCorrect = false;
+        });
+      }
       return { ...prev, answers };
     });
   }
@@ -111,12 +138,22 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!form || !form.testId) return;
+    if (!form || !form.technologyId) return;
+
+    if (form.answers.filter((a) => a.isCorrect).length === 0) {
+      setFormError('At least one answer must be marked correct.');
+      return;
+    }
+    if (form.type === 'single' && form.answers.filter((a) => a.isCorrect).length !== 1) {
+      setFormError('Single-choice questions must have exactly one correct answer.');
+      return;
+    }
+
     setSaving(true);
-    setError(null);
+    setFormError(null);
     const payload = {
       id: form.id,
-      testId: form.testId,
+      technologyId: form.technologyId,
       content: form.content,
       type: form.type,
       orderIndex: form.orderIndex,
@@ -125,15 +162,51 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
     };
     saveQuestion(payload)
       .then(() => {
-        if (!id || !form.testId) return;
-        const testId = form.testId;
+        if (!id) return;
         return getTechnologyQuestions(id).then((response) => {
           setTechnology(response.data);
-          setForm(emptyQuestion(testId));
+          resetForm();
         });
       })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to save question'))
+      .catch((err) => setFormError(err instanceof Error ? err.message : 'Failed to save question'))
       .finally(() => setSaving(false));
+  }
+
+  function handleDeleteQuestion(questionId: string) {
+    if (!confirm('Are you sure you want to delete this question?')) return;
+    setDeletingQuestionId(questionId);
+    deleteQuestion(questionId)
+      .then(() => {
+        if (!id) return;
+        return getTechnologyQuestions(id).then((response) => {
+          setTechnology(response.data);
+          if (editingQuestionId === questionId) {
+            resetForm();
+          }
+        });
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to delete question'))
+      .finally(() => setDeletingQuestionId(null));
+  }
+
+  function handleDeleteAnswer(answerId: string, questionId: string) {
+    if (!confirm('Are you sure you want to delete this answer?')) return;
+    setDeletingAnswerId(answerId);
+    deleteAnswer(answerId)
+      .then(() => {
+        if (!id) return;
+        return getTechnologyQuestions(id).then((response) => {
+          setTechnology(response.data);
+          if (editingQuestionId === questionId && form) {
+            setForm({
+              ...form,
+              answers: form.answers.filter((a) => a.id !== answerId),
+            });
+          }
+        });
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to delete answer'))
+      .finally(() => setDeletingAnswerId(null));
   }
 
   if (loading) return <p className="p-8 text-text-secondary font-body">Loading…</p>;
@@ -151,149 +224,185 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
       <div className="grid lg:grid-cols-2 gap-8">
         <section>
           <h2 className="font-display text-xl font-bold text-text-primary mb-4">Existing Questions</h2>
-          {technology.tests.length === 0 ? (
-            <p className="text-text-secondary font-body">No tests for this technology yet.</p>
+          {technology.questions.length === 0 ? (
+            <p className="text-text-secondary font-body">No questions for this technology yet.</p>
           ) : (
-            <div className="space-y-6">
-              {technology.tests.map((test) => (
-                <div key={test.id} className="panel p-5">
-                  <h3 className="font-display font-bold text-text-primary mb-3">{test.title}</h3>
-                  {test.questions.length === 0 ? (
-                    <p className="text-text-secondary font-body text-sm">No questions yet.</p>
-                  ) : (
-                    <ul className="space-y-3">
-                      {test.questions.map((q) => (
-                        <li key={q.id} className="border-b border-border last:border-0 pb-3">
-                          <p className="font-body text-text-primary">{q.orderIndex}. {q.content}</p>
-                          <ul className="mt-2 space-y-1">
-                            {q.answers.map((a) => (
-                              <li
-                                key={a.id || a.orderIndex}
-                                className={`font-mono text-xs ${a.isCorrect ? 'text-success' : 'text-text-secondary'}`}
-                              >
-                                {a.isCorrect ? '✓ ' : '○ '}{a.content}
-                              </li>
-                            ))}
-                          </ul>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+            <ul className="panel divide-y divide-border">
+              {technology.questions.map((q) => (
+                <li key={q.id} className="px-5 py-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-body text-text-primary font-bold">
+                        {q.orderIndex}. {q.content}
+                      </p>
+                      <p className="text-text-secondary font-mono text-xs mt-1">
+                        {q.type === 'single' ? 'Single choice' : 'Multiple choice'} · {q.score} point{q.score !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(q)}
+                        className="btn-secondary text-sm py-2 px-3"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteQuestion(q.id)}
+                        disabled={deletingQuestionId === q.id}
+                        className="btn-secondary text-sm py-2 px-3 text-red-600 hover:text-red-700 disabled:opacity-50"
+                      >
+                        {deletingQuestionId === q.id ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                  <ul className="mt-3 space-y-2">
+                    {q.answers.map((a) => (
+                      <li
+                        key={a.id || a.orderIndex}
+                        className={`flex items-center justify-between gap-3 font-mono text-sm ${a.isCorrect ? 'text-success' : 'text-text-secondary'}`}
+                      >
+                        <span>
+                          {a.isCorrect ? '✓ ' : '○ '}{a.content}
+                        </span>
+                        {a.id && (
+                          <button
+                            type="button"
+                            onClick={() => a.id && handleDeleteAnswer(a.id, q.id)}
+                            disabled={deletingAnswerId === a.id || q.answers.length <= 2}
+                            className="text-error text-xs disabled:opacity-50"
+                          >
+                            {deletingAnswerId === a.id ? 'Deleting…' : 'Remove'}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </section>
 
         <section>
-          <h2 className="font-display text-xl font-bold text-text-primary mb-4">Add Question</h2>
-          {technology.tests.length === 0 ? (
-            <p className="text-text-secondary font-body">Create a test for this technology before adding questions.</p>
-          ) : (
-            <form onSubmit={handleSubmit} className="panel p-6 space-y-5">
+          <h2 className="font-display text-xl font-bold text-text-primary mb-4">
+            {editingQuestionId ? 'Edit Question' : 'Add Question'}
+          </h2>
+          <form onSubmit={handleSubmit} className="panel p-6 space-y-5">
+            {formError && <ErrorMessage message={formError} />}
+
+            <label className="block">
+              <span className="label-mono">Question</span>
+              <textarea
+                value={form?.content ?? ''}
+                onChange={(e) => setForm((prev) => (prev ? { ...prev, content: e.target.value } : null))}
+                required
+                rows={3}
+                className="input-field"
+              />
+            </label>
+
+            <div className="grid sm:grid-cols-3 gap-4">
               <label className="block">
-                <span className="label-mono">Test</span>
+                <span className="label-mono">Type</span>
                 <select
-                  value={selectedTestId ?? ''}
-                  onChange={(e) => setSelectedTestId(e.target.value)}
+                  value={form?.type ?? 'single'}
+                  onChange={(e) => {
+                    const type = e.target.value as 'single' | 'multiple';
+                    setForm((prev) => {
+                      if (!prev) return null;
+                      let answers = prev.answers;
+                      if (type === 'single') {
+                        answers = prev.answers.map((a, i) => ({ ...a, isCorrect: i === 0 }));
+                      }
+                      return { ...prev, type, answers };
+                    });
+                  }}
                   className="input-field"
                 >
-                  {technology.tests.map((test) => (
-                    <option key={test.id} value={test.id}>{test.title}</option>
-                  ))}
+                  <option value="single">Single choice</option>
+                  <option value="multiple">Multiple choice</option>
                 </select>
               </label>
-
               <label className="block">
-                <span className="label-mono">Question</span>
-                <textarea
-                  value={form?.content ?? ''}
-                  onChange={(e) => setForm((prev) => (prev ? { ...prev, content: e.target.value } : null))}
-                  required
-                  rows={3}
+                <span className="label-mono">Order</span>
+                <input
+                  type="number"
+                  min={0}
+                  value={form?.orderIndex ?? 1}
+                  onChange={(e) => setForm((prev) => (prev ? { ...prev, orderIndex: parseInt(e.target.value, 10) || 0 } : null))}
                   className="input-field"
                 />
               </label>
+              <label className="block">
+                <span className="label-mono">Score</span>
+                <input
+                  type="number"
+                  min={1}
+                  value={form?.score ?? 1}
+                  onChange={(e) => setForm((prev) => (prev ? { ...prev, score: parseInt(e.target.value, 10) || 1 } : null))}
+                  className="input-field"
+                />
+              </label>
+            </div>
 
-              <div className="grid sm:grid-cols-3 gap-4">
-                <label className="block">
-                  <span className="label-mono">Type</span>
-                  <select
-                    value={form?.type ?? 'single'}
-                    onChange={(e) => setForm((prev) => (prev ? { ...prev, type: e.target.value as 'single' | 'multiple' } : null))}
-                    className="input-field"
-                  >
-                    <option value="single">Single choice</option>
-                    <option value="multiple">Multiple choice</option>
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="label-mono">Order</span>
+            <div className="space-y-3">
+              <p className="label-mono">Answers</p>
+              {form?.answers.map((answer, index) => (
+                <div key={index} className="flex gap-3 items-start">
                   <input
-                    type="number"
-                    min={0}
-                    value={form?.orderIndex ?? 1}
-                    onChange={(e) => setForm((prev) => (prev ? { ...prev, orderIndex: parseInt(e.target.value, 10) || 0 } : null))}
-                    className="input-field"
+                    type="text"
+                    value={answer.content}
+                    onChange={(e) => updateAnswer(index, { content: e.target.value })}
+                    placeholder={`Answer ${index + 1}`}
+                    required
+                    className="input-field flex-1"
                   />
-                </label>
-                <label className="block">
-                  <span className="label-mono">Score</span>
-                  <input
-                    type="number"
-                    min={1}
-                    value={form?.score ?? 1}
-                    onChange={(e) => setForm((prev) => (prev ? { ...prev, score: parseInt(e.target.value, 10) || 1 } : null))}
-                    className="input-field"
-                  />
-                </label>
-              </div>
-
-              <div className="space-y-3">
-                <p className="label-mono">Answers</p>
-                {form?.answers.map((answer, index) => (
-                  <div key={index} className="flex gap-3 items-start">
+                  <label className="flex items-center gap-2 pt-3">
                     <input
-                      type="text"
-                      value={answer.content}
-                      onChange={(e) => updateAnswer(index, { content: e.target.value })}
-                      placeholder={`Answer ${index + 1}`}
-                      required
-                      className="input-field flex-1"
+                      type="checkbox"
+                      checked={answer.isCorrect}
+                      onChange={(e) => updateAnswer(index, { isCorrect: e.target.checked })}
+                      className="h-5 w-5 accent-accent"
                     />
-                    <label className="flex items-center gap-2 pt-3">
-                      <input
-                        type="checkbox"
-                        checked={answer.isCorrect}
-                        onChange={(e) => updateAnswer(index, { isCorrect: e.target.checked })}
-                        className="h-5 w-5 accent-accent"
-                      />
-                      <span className="text-sm font-mono text-text-secondary">Correct</span>
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => removeAnswer(index)}
-                      disabled={form.answers.length <= 2}
-                      className="text-error font-mono text-sm px-2 disabled:opacity-50"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+                    <span className="text-sm font-mono text-text-secondary">Correct</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeAnswer(index)}
+                    disabled={form.answers.length <= 2}
+                    className="text-error font-mono text-sm px-2 disabled:opacity-50"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addAnswer}
+                className="btn-secondary text-sm py-2 px-4"
+              >
+                Add Answer
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button type="submit" disabled={saving} className="btn-primary disabled:opacity-50">
+                {saving ? 'Saving…' : editingQuestionId ? 'Update Question' : 'Save Question'}
+              </button>
+              {editingQuestionId && (
                 <button
                   type="button"
-                  onClick={addAnswer}
-                  className="btn-secondary text-sm py-2 px-4"
+                  onClick={resetForm}
+                  disabled={saving}
+                  className="btn-secondary disabled:opacity-50"
                 >
-                  Add Answer
+                  Cancel
                 </button>
-              </div>
-
-              <button type="submit" disabled={saving} className="btn-primary disabled:opacity-50">
-                {saving ? 'Saving…' : 'Save Question'}
-              </button>
-            </form>
-          )}
+              )}
+            </div>
+          </form>
         </section>
       </div>
     </div>

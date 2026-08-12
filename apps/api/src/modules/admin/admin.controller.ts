@@ -20,6 +20,8 @@ import { UpdateTechnologyUseCase } from '../../application/admin/content/update-
 import { DeleteTechnologyUseCase } from '../../application/admin/content/delete-technology.use-case';
 import { GetTechnologyWithQuestionsUseCase } from '../../application/admin/content/get-technology-with-questions.use-case';
 import { SaveQuestionUseCase } from '../../application/admin/content/save-question.use-case';
+import { DeleteQuestionUseCase } from '../../application/admin/content/delete-question.use-case';
+import { DeleteAnswerUseCase } from '../../application/admin/content/delete-answer.use-case';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
 import {
   updateCreditSettingRequestSchema,
@@ -59,6 +61,8 @@ export class AdminController {
     private readonly deleteTechnologyUseCase: DeleteTechnologyUseCase,
     private readonly getTechnologyWithQuestionsUseCase: GetTechnologyWithQuestionsUseCase,
     private readonly saveQuestionUseCase: SaveQuestionUseCase,
+    private readonly deleteQuestionUseCase: DeleteQuestionUseCase,
+    private readonly deleteAnswerUseCase: DeleteAnswerUseCase,
   ) {}
 
   @Get('me')
@@ -187,7 +191,7 @@ export class AdminController {
   async saveQuestion(
     @Body(new ZodValidationPipe(saveQuestionRequestSchema)) body: {
       id?: string;
-      testId: string;
+      technologyId: string;
       content: string;
       type: 'single' | 'multiple';
       orderIndex: number;
@@ -196,5 +200,15 @@ export class AdminController {
     },
   ): Promise<ReturnType<SaveQuestionUseCase['execute']>> {
     return this.saveQuestionUseCase.execute(body);
+  }
+
+  @Delete('questions/:id')
+  async deleteQuestion(@Param('id') id: string): Promise<ReturnType<DeleteQuestionUseCase['execute']>> {
+    return this.deleteQuestionUseCase.execute(id);
+  }
+
+  @Delete('answers/:id')
+  async deleteAnswer(@Param('id') id: string): Promise<ReturnType<DeleteAnswerUseCase['execute']>> {
+    return this.deleteAnswerUseCase.execute(id);
   }
 }

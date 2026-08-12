@@ -5,7 +5,7 @@ export interface UserSession extends Entity {
   sessionId: string;
   questionId: string;
   userId: string;
-  testId: string;
+  technologyId: string;
   answerId: string | null;
   status: SessionStatus;
   startedAt: Date | null;
@@ -17,6 +17,7 @@ export interface CandidateSession extends Entity {
   questionId: string;
   candidateId: string | null;
   accessCodeId: string;
+  technologyId: string;
   answerId: string | null;
   status: SessionStatus;
   startedAt: Date | null;

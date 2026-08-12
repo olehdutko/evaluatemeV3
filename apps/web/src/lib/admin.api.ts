@@ -170,28 +170,19 @@ export const technologyWithQuestionsSchema = z.object({
     name: z.string(),
     slug: z.string(),
     description: z.string().nullable(),
-    tests: z.array(
+    questions: z.array(
       z.object({
         id: z.string().uuid(),
-        title: z.string(),
-        status: z.string(),
-        durationMinutes: z.number().int().nullable(),
-        passingScore: z.number().int().nullable(),
-        questions: z.array(
+        content: z.string(),
+        type: z.enum(['single', 'multiple']),
+        orderIndex: z.number().int(),
+        score: z.number().int(),
+        answers: z.array(
           z.object({
             id: z.string().uuid(),
             content: z.string(),
-            type: z.enum(['single', 'multiple']),
+            isCorrect: z.boolean(),
             orderIndex: z.number().int(),
-            score: z.number().int(),
-            answers: z.array(
-              z.object({
-                id: z.string().uuid(),
-                content: z.string(),
-                isCorrect: z.boolean(),
-                orderIndex: z.number().int(),
-              }),
-            ),
           }),
         ),
       }),
@@ -234,5 +225,13 @@ export function getTechnologyQuestions(id: string) {
 
 export function saveQuestion(body: z.infer<typeof saveQuestionRequestSchema>) {
   return apiPut('/api/v1/admin/questions', body, saveQuestionRequestSchema, questionValueSchema);
+}
+
+export function deleteQuestion(id: string) {
+  return apiDelete(`/api/v1/admin/questions/${encodeURIComponent(id)}`, emptySuccessSchema);
+}
+
+export function deleteAnswer(id: string) {
+  return apiDelete(`/api/v1/admin/answers/${encodeURIComponent(id)}`, emptySuccessSchema);
 }
 

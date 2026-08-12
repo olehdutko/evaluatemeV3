@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { IQuestionRepository, IAnswerRepository, Answer } from '@evaluateme/domain';
+import { Question } from '@evaluateme/domain';
 import { BadRequestError, UnprocessableError } from '../../../infrastructure/errors/app-error';
 
 export interface SaveQuestionInput {
   id?: string;
-  testId: string;
+  technologyId: string;
   content: string;
   type: 'single' | 'multiple';
   orderIndex: number;
@@ -60,14 +61,14 @@ export class SaveQuestionUseCase {
     const now = new Date();
     const savedQuestion = await this.questionRepository.save({
       id: questionId,
-      testId: input.testId,
+      technologyId: input.technologyId,
       content,
       type: input.type,
       orderIndex: input.orderIndex,
       score: input.score,
       createdAt: now,
       updatedAt: now,
-    });
+    } as Question);
 
     await Promise.all(
       answers.map((a) =>

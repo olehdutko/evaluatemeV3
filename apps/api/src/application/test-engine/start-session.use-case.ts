@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto';
 import {
   IAccessCodeRepository,
   IQuestionRepository,
-  ITestSessionRepository,
+  IQuizSessionRepository,
   ISessionStrategy,
   Question,
 } from '@evaluateme/domain';
@@ -22,7 +22,7 @@ export class StartSessionUseCase {
   constructor(
     @Inject(IAccessCodeRepository) private readonly accessCodeRepository: IAccessCodeRepository,
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
-    @Inject(ITestSessionRepository) private readonly testSessionRepository: ITestSessionRepository,
+    @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
     @Inject(ISessionStrategy) private readonly sessionStrategy: ISessionStrategy,
   ) {}
 
@@ -38,15 +38,15 @@ export class StartSessionUseCase {
       throw new BadRequestError({ accessCode: ['Access code has expired'] });
     }
 
-    const questions = await this.questionRepository.findByTestIdRandomized(code.testId, DEFAULT_QUESTION_COUNT);
+    const questions = await this.questionRepository.findByTechnologyIdRandomized(code.technologyId, DEFAULT_QUESTION_COUNT);
     if (questions.length === 0) {
-      throw new NotFoundError('questions for test');
+      throw new NotFoundError('questions for technology');
     }
 
     const candidateId = `candidate-${randomUUID()}`;
-    const session = await this.testSessionRepository.create({
+    const session = await this.quizSessionRepository.create({
       userId: null,
-      testId: code.testId,
+      technologyId: code.technologyId,
       accessCodeId: code.id,
       status: 'in_progress',
       startedAt: new Date(),

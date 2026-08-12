@@ -46,6 +46,10 @@ export class PrismaAnswerRepository implements IAnswerRepository {
     return this.mapRow(row);
   }
 
+  async delete(id: string): Promise<void> {
+    await this.prisma.answer.delete({ where: { id } });
+  }
+
   private mapRow(row: {
     id: string;
     questionId: string;
@@ -61,7 +65,6 @@ export class PrismaAnswerRepository implements IAnswerRepository {
       isCorrect: row.isCorrect,
       orderIndex: row.orderIndex,
       createdAt: row.createdAt,
-      updatedAt: row.createdAt,
     };
   }
 }

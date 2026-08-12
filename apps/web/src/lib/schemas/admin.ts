@@ -37,7 +37,7 @@ export const answerInputSchema = z.object({
 
 export const saveQuestionRequestSchema = z.object({
   id: z.string().uuid().optional(),
-  testId: z.string().uuid(),
+  technologyId: z.string().uuid(),
   content: z.string().min(1).max(5000),
   type: z.enum(['single', 'multiple']),
   orderIndex: z.number().int().min(0),
