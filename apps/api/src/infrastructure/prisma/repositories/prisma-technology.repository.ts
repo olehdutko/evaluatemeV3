@@ -21,6 +21,11 @@ export class PrismaTechnologyRepository implements ITechnologyRepository {
     return row ? this.toDomain(row) : null;
   }
 
+  async findByName(name: string): Promise<Technology | null> {
+    const row = await this.prisma.technology.findUnique({ where: { name } });
+    return row ? this.toDomain(row) : null;
+  }
+
   async save(technology: Technology): Promise<Technology> {
     const row = await this.prisma.technology.upsert({
       where: { id: technology.id },
@@ -37,6 +42,10 @@ export class PrismaTechnologyRepository implements ITechnologyRepository {
       },
     });
     return this.toDomain(row);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.technology.delete({ where: { id } });
   }
 
   private toDomain(raw: unknown): Technology {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { RolesGuard } from '../../infrastructure/security/roles.guard';
@@ -16,6 +16,8 @@ import { ListUsersUseCase } from '../../application/admin/users/list-users.use-c
 import { UpdateUserUseCase } from '../../application/admin/users/update-user.use-case';
 import { AdminListTechnologiesUseCase } from '../../application/admin/content/list-technologies.use-case';
 import { CreateTechnologyUseCase } from '../../application/admin/content/create-technology.use-case';
+import { UpdateTechnologyUseCase } from '../../application/admin/content/update-technology.use-case';
+import { DeleteTechnologyUseCase } from '../../application/admin/content/delete-technology.use-case';
 import { GetTechnologyWithQuestionsUseCase } from '../../application/admin/content/get-technology-with-questions.use-case';
 import { SaveQuestionUseCase } from '../../application/admin/content/save-question.use-case';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
@@ -53,6 +55,8 @@ export class AdminController {
     private readonly updateUserUseCase: UpdateUserUseCase,
     private readonly adminListTechnologiesUseCase: AdminListTechnologiesUseCase,
     private readonly createTechnologyUseCase: CreateTechnologyUseCase,
+    private readonly updateTechnologyUseCase: UpdateTechnologyUseCase,
+    private readonly deleteTechnologyUseCase: DeleteTechnologyUseCase,
     private readonly getTechnologyWithQuestionsUseCase: GetTechnologyWithQuestionsUseCase,
     private readonly saveQuestionUseCase: SaveQuestionUseCase,
   ) {}
@@ -159,6 +163,19 @@ export class AdminController {
     @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name: string; slug?: string; description?: string | null },
   ): Promise<ReturnType<CreateTechnologyUseCase['execute']>> {
     return this.createTechnologyUseCase.execute(body);
+  }
+
+  @Put('technologies/:id')
+  async updateTechnology(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name?: string; slug?: string; description?: string | null },
+  ): Promise<ReturnType<UpdateTechnologyUseCase['execute']>> {
+    return this.updateTechnologyUseCase.execute({ id, ...body });
+  }
+
+  @Delete('technologies/:id')
+  async deleteTechnology(@Param('id') id: string): Promise<ReturnType<DeleteTechnologyUseCase['execute']>> {
+    return this.deleteTechnologyUseCase.execute(id);
   }
 
   @Get('technologies/:id/questions')

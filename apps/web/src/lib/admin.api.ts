@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { apiGet, apiPost, apiPut } from './api-client';
+import { apiGet, apiPost, apiPut, apiDelete } from './api-client';
 import {
   updateCreditSettingRequestSchema,
   updateEmailTemplateRequestSchema,
@@ -199,6 +199,10 @@ export const technologyWithQuestionsSchema = z.object({
   }),
 });
 
+export const emptySuccessSchema = z.object({
+  success: z.literal(true),
+});
+
 export const questionValueSchema = z.object({
   success: z.literal(true),
   data: z.object({
@@ -214,6 +218,14 @@ export function getTechnologies() {
 
 export function createTechnology(body: z.infer<typeof createTechnologyRequestSchema>) {
   return apiPost('/api/v1/admin/technologies', body, createTechnologyRequestSchema, technologyValueSchema);
+}
+
+export function updateTechnology(id: string, body: z.infer<typeof createTechnologyRequestSchema>) {
+  return apiPut(`/api/v1/admin/technologies/${encodeURIComponent(id)}`, body, createTechnologyRequestSchema, technologyValueSchema);
+}
+
+export function deleteTechnology(id: string) {
+  return apiDelete(`/api/v1/admin/technologies/${encodeURIComponent(id)}`, emptySuccessSchema);
 }
 
 export function getTechnologyQuestions(id: string) {

@@ -24,8 +24,8 @@ export const createUpdateLandingAdRequestSchema = z.object({
 
 export const createTechnologyRequestSchema = z.object({
   name: z.string().min(1).max(100),
-  slug: z.string().min(1).max(100).optional(),
-  description: z.string().max(5000).nullable().optional(),
+  slug: z.string().min(1).max(100).optional().or(z.literal('')),
+  description: z.string().max(5000).nullable().optional().or(z.literal('')),
 });
 
 export const answerInputSchema = z.object({

@@ -154,3 +154,28 @@ export async function apiPut<
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return parsed.data;
 }
+
+export async function apiDelete<TResponse extends ZodTypeAny>(
+  path: string,
+  responseSchema: TResponse,
+): Promise<NonNullable<z.infer<TResponse>>> {
+  const url = `${API_BASE_URL}${path}`;
+  const response = await fetchWithAuth(url, {
+    method: 'DELETE',
+    headers: { Accept: 'application/json' },
+  });
+
+  const responseBody: unknown = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new ApiError(response.status, responseBody, `DELETE ${path} failed with ${response.status}`);
+  }
+
+  const parsed = responseSchema.safeParse(responseBody);
+  if (!parsed.success) {
+    throw new ApiError(response.status, responseBody, `Invalid response shape for DELETE ${path}`);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return parsed.data;
+}

@@ -33,9 +33,14 @@ export class CreateTechnologyUseCase {
       throw new BadRequestError({ slug: ['Slug is required'] });
     }
 
-    const existing = await this.repository.findBySlug(slug);
-    if (existing) {
+    const existingSlug = await this.repository.findBySlug(slug);
+    if (existingSlug) {
       throw new ConflictError('A technology with this slug already exists.');
+    }
+
+    const existingName = await this.repository.findByName(name);
+    if (existingName) {
+      throw new ConflictError('A technology with this name already exists.');
     }
 
     const saved = await this.repository.save({

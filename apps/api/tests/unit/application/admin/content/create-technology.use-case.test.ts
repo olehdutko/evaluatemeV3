@@ -12,7 +12,9 @@ describe('CreateTechnologyUseCase', () => {
       findById: jest.fn(),
       findAll: jest.fn(),
       findBySlug: jest.fn(),
+      findByName: jest.fn(),
       save: jest.fn().mockImplementation((tech) => Promise.resolve(tech)),
+      delete: jest.fn(),
     };
 
     const module = await createUnitTestModule({

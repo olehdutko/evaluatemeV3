@@ -51,8 +51,14 @@ class FakeTechnologyRepository implements ITechnologyRepository {
   async findBySlug(slug: string): Promise<Technology | null> {
     return slug === tech.slug ? tech : null;
   }
+  async findByName(): Promise<Technology | null> {
+    return null;
+  }
   async save(t: Technology): Promise<Technology> {
     return t;
+  }
+  async delete(): Promise<void> {
+    // no-op
   }
 }
 

@@ -20,7 +20,9 @@ describe('ListTechnologiesUseCase', () => {
       ]),
       findById: jest.fn(),
       findBySlug: jest.fn(),
+      findByName: jest.fn(),
       save: jest.fn(),
+      delete: jest.fn(),
     };
 
     const module = await createUnitTestModule({

@@ -25,6 +25,8 @@ import { ListUsersUseCase } from '../../application/admin/users/list-users.use-c
 import { UpdateUserUseCase } from '../../application/admin/users/update-user.use-case';
 import { AdminListTechnologiesUseCase } from '../../application/admin/content/list-technologies.use-case';
 import { CreateTechnologyUseCase } from '../../application/admin/content/create-technology.use-case';
+import { UpdateTechnologyUseCase } from '../../application/admin/content/update-technology.use-case';
+import { DeleteTechnologyUseCase } from '../../application/admin/content/delete-technology.use-case';
 import { GetTechnologyWithQuestionsUseCase } from '../../application/admin/content/get-technology-with-questions.use-case';
 import { SaveQuestionUseCase } from '../../application/admin/content/save-question.use-case';
 import { PrismaTestRepository } from '../../infrastructure/prisma/repositories/test/prisma-test.repository';
@@ -56,6 +58,8 @@ import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories
     UpdateUserUseCase,
     AdminListTechnologiesUseCase,
     CreateTechnologyUseCase,
+    UpdateTechnologyUseCase,
+    DeleteTechnologyUseCase,
     GetTechnologyWithQuestionsUseCase,
     SaveQuestionUseCase,
     { provide: IUserRepository, useClass: PrismaUserRepository },
