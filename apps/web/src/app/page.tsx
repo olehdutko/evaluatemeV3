@@ -370,12 +370,9 @@ export default function HomePage(): JSX.Element {
                   {heroSlides[activeSlide].description}
                 </p>
               </div>
-              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4">
+              <div className="mt-8 sm:mt-10">
                 <Link href="/technologies" className="btn-primary text-center">
                   Browse technologies
-                </Link>
-                <Link href="/register" className="btn-secondary text-center">
-                  Create an account
                 </Link>
               </div>
             </div>
