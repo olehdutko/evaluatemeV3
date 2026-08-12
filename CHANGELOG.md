@@ -193,3 +193,10 @@ Options going forward:
   - Preview renders the email as a real email using an isolated `iframe` (`sandbox=""`) so styles, colors, buttons, and layout display correctly.
   - Preview now renders at full editor width with adequate height instead of a narrow column.
   - Code mode keeps the existing HTML source editor.
+
+## 2026-08-12 — Admin questions list scroll progress bar
+
+- Added a scroll progress bar to the questions list header on `/admin/technologies/[id]/questions`.
+- Progress is calculated from the list's `scrollTop` relative to `scrollHeight - clientHeight`.
+- Bar is rendered directly below the "Existing Questions" heading using the existing accent color.
+- Committed as `14120e1 feat(admin): add scroll progress bar to questions list header`.
