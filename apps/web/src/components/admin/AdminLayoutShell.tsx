@@ -21,16 +21,14 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }): J
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Sidebar container: width animates from 16rem (open) to 0 (closed) */}
+    <div className="min-h-screen flex">
       <aside
-        className={`relative bg-text-primary text-inverted-primary border-r border-inverted-border flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
           isOpen ? 'w-64 opacity-100' : 'w-0 opacity-0'
         }`}
         aria-hidden={!isOpen}
       >
-        {/* Inner wrapper keeps the sidebar content at a fixed 16rem width so it doesn't squash */}
-        <div className="w-64 min-h-screen flex flex-col">
+        <div className="w-64 min-h-screen flex flex-col bg-text-primary text-inverted-primary border-r border-inverted-border">
           <div className="p-6 border-b border-inverted-border">
             <Link href="/admin/dashboard" className="font-display font-bold text-lg">
               EvaluateMe<span className="font-mono text-xs text-inverted-accent">.IT</span>
@@ -72,31 +70,30 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }): J
         </div>
       </aside>
 
-      {/* Toggle button anchored to the left edge of the main content */}
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-label={isOpen ? 'Collapse admin menu' : 'Expand admin menu'}
-        className="fixed top-4 left-0 z-50 flex items-center justify-center w-8 h-10 bg-text-primary text-inverted-primary border border-l-0 border-inverted-border rounded-r-md hover:bg-inverted-border transition-all duration-300"
-        style={{ transform: isOpen ? 'translateX(16rem)' : 'translateX(0)' }}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-          aria-hidden="true"
+      <main className="flex-1 min-w-0 relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-label={isOpen ? 'Collapse admin menu' : 'Expand admin menu'}
+          className={`absolute top-4 z-40 flex items-center justify-center w-8 h-10 bg-text-primary text-inverted-primary border border-l-0 border-inverted-border rounded-r-md hover:bg-inverted-border transition-all duration-300 ${
+            isOpen ? 'left-0' : 'left-0'
+          }`}
         >
-          <path
-            fillRule="evenodd"
-            d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </button>
-
-      <main className="flex-1 min-w-0 transition-all duration-300">
-        <div className={`transition-all duration-300 ${isOpen ? 'lg:pl-0' : ''}`}>{children}</div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+        <div className="pl-10 pt-4">{children}</div>
       </main>
     </div>
   );
