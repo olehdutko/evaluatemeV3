@@ -10,8 +10,9 @@ export interface UpdateCreditSettingInput {
 }
 
 const KNOWN_KEYS = new Set([
-  'test_price_usd',
-  'access_code_price_usd',
+  'test_price_credits',
+  'access_code_price_credits',
+  'credit_to_usd_rate',
   'base_credits_per_user',
   'bonus_credits_new_user',
 ]);

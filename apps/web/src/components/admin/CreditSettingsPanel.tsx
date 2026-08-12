@@ -13,8 +13,9 @@ interface SettingRow {
 }
 
 const labels: Record<string, string> = {
-  test_price_usd: 'Price per test (USD)',
-  access_code_price_usd: 'Price per access code (USD)',
+  test_price_credits: 'Price per test (credits)',
+  access_code_price_credits: 'Price per access code (credits)',
+  credit_to_usd_rate: 'Credit to USD rate (USD per credit)',
   base_credits_per_user: 'Base credits per user',
   bonus_credits_new_user: 'Bonus credits for new users',
 };
