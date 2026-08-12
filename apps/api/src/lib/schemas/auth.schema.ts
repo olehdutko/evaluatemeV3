@@ -36,13 +36,13 @@ export const loginResponseSchema = successEnvelopeSchema(
 );
 
 export const refreshRequestSchema = z.object({
-  refreshToken: z.string().min(1),
+  refreshToken: z.string(),
 });
 
 export const refreshResponseSchema = loginResponseSchema;
 
 export const logoutRequestSchema = z.object({
-  refreshToken: z.string().min(1),
+  refreshToken: z.string(),
 });
 
 export const logoutResponseSchema = successEnvelopeSchema(z.object({}));
