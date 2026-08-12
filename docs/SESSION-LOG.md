@@ -16,37 +16,50 @@ EvaluateMe.IT v3.0 — Clean Architecture monorepo with NestJS backend and Next.
   - `specs/002-02-data-model` — ✅ Complete (25/25 tasks)
   - `specs/003-03-api` — ✅ Complete (12/12 tasks)
   - `specs/004-04-frontend` — ✅ Complete (19/19 tasks)
-- **Active feature**: None
-- **Next work**: Begin next feature spec (`005-05-auth` recommended)
+  - `specs/005-05-auth` — ✅ Complete (JWT auth, httpOnly cookies, refresh, persistent token blacklist)
+  - `specs/006-06-security` — ✅ Complete (rate limiting, security headers, RBAC, audit logging)
+  - `specs/008-08-test-engine` — ✅ Complete (test sessions, candidate access-code flow, results)
+  - `specs/012-12-admin` — ✅ Foundation, pricing/credits, landing ads, user management, content management complete. Email templates completed in this session.
+- **Active feature**: `specs/012-12-admin` (Email templates, seed data, preview UX)
+- **Next work**: Close remaining `012-12-admin` Phase 6 polish tasks (2FA future-work doc, full test run) or begin next feature spec.
 
-## Feature 004-04-frontend — Summary
+## Feature 012-12-admin — Current Session Summary (2026-08-12)
 
-- Created shared `RootLayout` in `apps/web/src/app/layout.tsx` with `Header` and `Footer`.
-- Added typed API client in `apps/web/src/lib/api-client.ts` with `apiGet`, `apiPost`, and `ApiError`.
-- Added `api-error.schema.ts` for error envelope parsing.
-- Updated `health.api.ts` and `technology.api.ts` to use the new client.
-- Added reusable UI components: `PageHeader`, `Loading`, `ErrorMessage`, `StatusBadge`.
-- Updated public pages: `/`, `/technologies`, `/health` with consistent layout and error handling.
-- Added unit tests for layout, API client, and UI components.
-- Added integration smoke test for the home page.
-- Added Jest setup file and updated `jest.config.js` to include `.test.tsx` and `@testing-library/jest-dom`.
+- Created `packages/prisma/src/seed.ts` with 6 default email templates (English):
+  - `welcome_personal`, `welcome_company`, `password_reset`, `invoice_payment_receipt`, `test_invitation`, `test_results`.
+- Registered Prisma seed (`seed = "ts-node src/seed.ts"`) and added `db:seed` script to `packages/prisma/package.json`.
+- Installed `ts-node` in the prisma workspace.
+- Seeded templates into the `evaluateme_v3` database successfully.
+- Improved `/admin/email-templates` editor UX:
+  - Added **Code / Preview** toggle for the HTML body field.
+  - Preview renders the email as a real email via an isolated `iframe` (`sandbox=""`).
+  - Preview now renders at full editor width with adequate height.
+- Updated `CHANGELOG.md` with detailed entry for this session.
+- Committed all changes as `de7424e`.
+
+## Previously Completed Admin Work (2026-08-11 / 2026-08-12)
+
+- Admin foundation: admin login, role guard, dashboard, layout, middleware protection.
+- Credit settings and technology pricing management.
+- Landing ads management.
+- User management: list users, search/filter, role/status updates, company bonus controls.
+- Content management: technology CRUD, question/answer editor.
+- Email template CRUD endpoints and admin editor page.
+- Design-system refresh (warm-brutalist UI) applied across public and admin pages.
 
 ## Last Verification Results
 
-Run on 2026-08-10:
+Run on 2026-08-12:
 
 | Command | Result |
 |---------|--------|
-| `npm run build` | ✅ Pass |
-| `npm run lint` | ✅ Pass |
-| `npm run typecheck` | ✅ Pass |
-| `npm run db:generate` | ✅ Pass |
-| `npm run test` | ✅ Pass |
-| `npm run test:integration` | ✅ Pass (7 API + 2 web integration tests) |
-| `bash scripts/check-module-cycles.sh` | ✅ No cycles |
+| `npm run build --workspace=apps/web` | ✅ Pass |
+| `npm run db:seed --workspace=packages/prisma` | ✅ Pass (6 templates seeded) |
+| `git commit` | ✅ `de7424e` |
 
 ## Notes for Next Session
 
-1. Feature `004-04-frontend` is complete and committed.
-2. Recommended next feature: `005-05-auth` to implement registration/login endpoints.
-3. Maintain existing CI gates.
+1. Email templates feature is complete and seeded; admin editor preview UX is polished.
+2. `specs/012-12-admin/tasks.md` still has all checkboxes unchecked despite implementation being done — recommend marking relevant tasks complete.
+3. Remaining Phase 6 polish: run full `npm run build`, `npm run test`, `npm run test:integration`, update `CHANGELOG.md`.
+4. 2FA future work can be documented in `docs/roadmap/admin-2fa.md` when needed.
