@@ -20,6 +20,12 @@ const config: Config = {
           hover: 'var(--accent-hover)',
           soft: 'var(--accent-soft)',
         },
+        inverted: {
+          primary: 'var(--inverted-primary)',
+          secondary: 'var(--inverted-secondary)',
+          accent: 'var(--inverted-accent)',
+          border: 'var(--inverted-border)',
+        },
         success: 'var(--success)',
         error: 'var(--error)',
         warning: 'var(--warning)',
