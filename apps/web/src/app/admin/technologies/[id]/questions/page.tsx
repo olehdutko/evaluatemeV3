@@ -62,12 +62,31 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const formRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     if (!id) return;
     loadTechnology(id);
   }, [id]);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+
+    function handleScroll(): void {
+      const currentList = listRef.current;
+      if (!currentList) return;
+      const max = currentList.scrollHeight - currentList.clientHeight;
+      const value = max > 0 ? (currentList.scrollTop / max) * 100 : 0;
+      setScrollProgress(value);
+    }
+
+    list.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => list.removeEventListener('scroll', handleScroll);
+  }, [technology?.questions.length]);
 
   function loadTechnology(technologyId: string) {
     setLoading(true);
@@ -203,13 +222,22 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
 
       <div className="flex-1 flex overflow-hidden">
         <section className="w-1/2 flex flex-col border-r border-border">
-          <h2 className="shrink-0 px-6 py-3 font-display text-lg font-bold text-text-primary border-b border-border bg-bg-primary">
-            Existing Questions ({technology.questions.length})
-          </h2>
+          <div className="shrink-0 border-b border-border bg-bg-primary">
+            <h2 className="px-6 py-3 font-display text-lg font-bold text-text-primary">
+              Existing Questions ({technology.questions.length})
+            </h2>
+            <div className="h-1 w-full bg-bg-secondary">
+              <div
+                className="h-full bg-accent transition-all duration-150"
+                style={{ width: `${scrollProgress}%` }}
+                aria-hidden="true"
+              />
+            </div>
+          </div>
           {technology.questions.length === 0 ? (
             <p className="p-6 text-text-secondary font-body">No questions for this technology yet.</p>
           ) : (
-            <ul className="flex-1 overflow-y-auto divide-y divide-border bg-bg-primary">
+            <ul ref={listRef} className="flex-1 overflow-y-auto divide-y divide-border bg-bg-primary">
               {technology.questions.map((q) => {
                 const isSelected = editingQuestionId === q.id;
                 return (
