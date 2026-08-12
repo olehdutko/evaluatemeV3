@@ -75,9 +75,7 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }): J
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           aria-label={isOpen ? 'Collapse admin menu' : 'Expand admin menu'}
-          className={`absolute top-4 z-40 flex items-center justify-center w-8 h-10 bg-text-primary text-inverted-primary border border-l-0 border-inverted-border rounded-r-md hover:bg-inverted-border transition-all duration-300 ${
-            isOpen ? 'left-0' : 'left-0'
-          }`}
+          className="absolute bottom-8 left-0 z-40 flex items-center justify-center w-8 h-10 bg-text-primary text-inverted-primary border border-l-0 border-inverted-border rounded-r-md hover:bg-inverted-border transition-all duration-300"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
