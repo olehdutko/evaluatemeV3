@@ -370,11 +370,7 @@ export default function HomePage(): JSX.Element {
                   {heroSlides[activeSlide].description}
                 </p>
               </div>
-              <div className="mt-8 sm:mt-10">
-                <Link href="/technologies" className="btn-primary text-center">
-                  Browse technologies
-                </Link>
-              </div>
+
             </div>
             <div className="relative aspect-[4/3] w-full">
               {heroSlides.map((slide, index) => (
