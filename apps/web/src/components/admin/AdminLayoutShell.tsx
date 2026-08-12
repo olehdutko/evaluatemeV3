@@ -23,12 +23,12 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }): J
   return (
     <div className="min-h-screen flex">
       <aside
-        className={`flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? 'w-64 opacity-100' : 'w-0 opacity-0'
+        className={`relative flex-shrink-0 transition-all duration-300 ease-in-out ${
+          isOpen ? 'w-64' : 'w-0'
         }`}
         aria-hidden={!isOpen}
       >
-        <div className="w-64 min-h-screen flex flex-col bg-text-primary text-inverted-primary border-r border-inverted-border">
+        <div className="w-64 min-h-screen flex flex-col bg-text-primary text-inverted-primary border-r border-inverted-border overflow-hidden">
           <div className="p-6 border-b border-inverted-border">
             <Link href="/admin/dashboard" className="font-display font-bold text-lg">
               EvaluateMe<span className="font-mono text-xs text-inverted-accent">.IT</span>
@@ -68,14 +68,12 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }): J
             </button>
           </div>
         </div>
-      </aside>
 
-      <main className="flex-1 min-w-0 relative">
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           aria-label={isOpen ? 'Collapse admin menu' : 'Expand admin menu'}
-          className="absolute bottom-8 left-0 z-40 flex items-center justify-center w-8 h-10 bg-text-primary text-inverted-primary border border-l-0 border-inverted-border rounded-r-md hover:bg-inverted-border transition-all duration-300"
+          className="absolute top-4 -right-8 z-40 flex items-center justify-center w-8 h-10 bg-text-primary text-inverted-primary border border-l-0 border-inverted-border rounded-r-md hover:bg-inverted-border transition-all duration-300"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -91,8 +89,9 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }): J
             />
           </svg>
         </button>
-        <div className="pl-10 pt-4">{children}</div>
-      </main>
+      </aside>
+
+      <main className="flex-1 min-w-0 pl-10">{children}</main>
     </div>
   );
 }
