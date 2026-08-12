@@ -17,19 +17,8 @@ export class ApiError extends Error {
   }
 }
 
-function redirectToLogin(): void {
-  if (typeof window !== 'undefined') {
-    window.location.assign('/login');
-  }
-}
-
 async function performRefresh(): Promise<void> {
-  try {
-    await refresh({ refreshToken: '' });
-  } catch (err) {
-    redirectToLogin();
-    throw err;
-  }
+  await refresh({ refreshToken: '' });
 }
 
 async function getRefreshPromise(): Promise<void> {
