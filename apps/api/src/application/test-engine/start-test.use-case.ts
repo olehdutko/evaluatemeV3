@@ -3,9 +3,11 @@ import {
   ITechnologyRepository,
   IQuestionRepository,
   IQuizSessionRepository,
+  IUserRepository,
   Question,
+  UserRole,
 } from '@evaluateme/domain';
-import { NotFoundError } from '../../infrastructure/errors/app-error';
+import { NotFoundError, ForbiddenError } from '../../infrastructure/errors/app-error';
 
 const DEFAULT_QUESTION_COUNT = 20;
 
@@ -21,12 +23,26 @@ export class StartTestUseCase {
     @Inject(ITechnologyRepository) private readonly technologyRepository: ITechnologyRepository,
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
+    @Inject(IUserRepository) private readonly userRepository: IUserRepository,
   ) {}
 
   async execute(userId: string, technologySlug: string): Promise<{ success: true; data: StartTestResult }> {
-    const technology = await this.technologyRepository.findBySlug(technologySlug);
+    const [user, technology] = await Promise.all([
+      this.userRepository.findById(userId),
+      this.technologyRepository.findBySlug(technologySlug),
+    ]);
+
+    if (!user) {
+      throw new NotFoundError('user');
+    }
+
     if (!technology) {
       throw new NotFoundError('technology');
+    }
+
+    // Admin users can start tests for free for application testing purposes.
+    if (user.role !== UserRole.ADMIN && user.credits < 1) {
+      throw new ForbiddenError('Insufficient credits to start a test.');
     }
 
     const questions = await this.questionRepository.findByTechnologyIdRandomized(

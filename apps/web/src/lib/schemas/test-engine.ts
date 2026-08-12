@@ -62,6 +62,7 @@ export const submitAnswerResponseSchema = z.object({
     totalAnswered: z.number().int(),
     nextQuestionIndex: z.number().int().nullable(),
     isComplete: z.boolean(),
+    resultCode: z.string().nullable().optional(),
   }),
 });
 
