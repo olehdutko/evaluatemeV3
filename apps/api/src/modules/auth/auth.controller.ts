@@ -28,6 +28,10 @@ const COOKIE_OPTIONS = {
   sameSite: 'lax' as const,
   path: '/',
 };
+const CLEAR_COOKIE_OPTIONS = {
+  ...COOKIE_OPTIONS,
+  maxAge: 0,
+};
 
 @Controller('/api/v1/auth')
 export class AuthController {
@@ -156,8 +160,8 @@ export class AuthController {
     } catch {
       // Ignore invalid/expired refresh tokens; clearing cookies is enough for client logout.
     }
-    response.clearCookie(ACCESS_TOKEN_COOKIE, COOKIE_OPTIONS);
-    response.clearCookie(REFRESH_TOKEN_COOKIE, COOKIE_OPTIONS);
+    response.clearCookie(ACCESS_TOKEN_COOKIE, CLEAR_COOKIE_OPTIONS);
+    response.clearCookie(REFRESH_TOKEN_COOKIE, CLEAR_COOKIE_OPTIONS);
     return { success: true };
   }
 }

@@ -112,10 +112,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
 
   const clearAuthCookies = useCallback(() => {
     if (typeof document === 'undefined') return;
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    const domains = isLocalhost ? [''] : ['', hostname, `.${hostname}`];
+    const paths = ['/', '/api'];
     const secureSuffix = window.location.protocol === 'https:' ? '; Secure' : '';
     const expires = 'expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    document.cookie = `access_token=; path=/; ${expires}; SameSite=Lax${secureSuffix}`;
-    document.cookie = `refresh_token=; path=/; ${expires}; SameSite=Lax${secureSuffix}`;
+    for (const name of ['access_token', 'refresh_token']) {
+      for (const path of paths) {
+        for (const domain of domains) {
+          const domainPart = domain ? `; domain=${domain}` : '';
+          document.cookie = `${name}=; path=${path}; ${expires}${domainPart}; SameSite=Lax${secureSuffix}`;
+        }
+      }
+    }
   }, []);
 
   const handleLogout = useCallback(async () => {
@@ -126,7 +136,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     }
     clearAuthCookies();
     setUser(null);
-    window.location.reload();
+    // Hard navigation to bypass any client-side caches and force server to see cleared cookies.
+    window.location.href = '/?logged-out=1';
   }, [clearAuthCookies]);
 
   const value = useMemo<AuthContextValue>(
