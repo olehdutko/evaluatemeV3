@@ -116,7 +116,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     } catch {
       // Ignore errors and clear client-side state anyway.
     }
+    // Force-clear cookies in case backend logout did not clear them (e.g. invalid/expired tokens).
+    if (typeof document !== 'undefined') {
+      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+    }
     setUser(null);
+    window.location.href = '/';
   }, []);
 
   const value = useMemo<AuthContextValue>(

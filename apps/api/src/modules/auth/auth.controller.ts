@@ -149,8 +149,12 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const refreshToken = body.refreshToken || request.cookies[REFRESH_TOKEN_COOKIE] || '';
-    if (refreshToken) {
-      await this.logoutUseCase.execute(refreshToken);
+    try {
+      if (refreshToken) {
+        await this.logoutUseCase.execute(refreshToken);
+      }
+    } catch {
+      // Ignore invalid/expired refresh tokens; clearing cookies is enough for client logout.
     }
     response.clearCookie(ACCESS_TOKEN_COOKIE, COOKIE_OPTIONS);
     response.clearCookie(REFRESH_TOKEN_COOKIE, COOKIE_OPTIONS);
