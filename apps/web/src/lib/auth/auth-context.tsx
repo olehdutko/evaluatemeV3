@@ -110,20 +110,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     [handleLogin],
   );
 
+  const clearAuthCookies = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    const secureSuffix = window.location.protocol === 'https:' ? '; Secure' : '';
+    const expires = 'expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    document.cookie = `access_token=; path=/; ${expires}; SameSite=Lax${secureSuffix}`;
+    document.cookie = `refresh_token=; path=/; ${expires}; SameSite=Lax${secureSuffix}`;
+  }, []);
+
   const handleLogout = useCallback(async () => {
     try {
       await apiLogout({ refreshToken: '' });
     } catch {
       // Ignore errors and clear client-side state anyway.
     }
-    // Force-clear cookies in case backend logout did not clear them (e.g. invalid/expired tokens).
-    if (typeof document !== 'undefined') {
-      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
-      document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
-    }
+    clearAuthCookies();
     setUser(null);
-    window.location.href = '/';
-  }, []);
+    window.location.reload();
+  }, [clearAuthCookies]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
