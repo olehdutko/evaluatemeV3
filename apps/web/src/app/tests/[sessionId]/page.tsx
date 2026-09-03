@@ -15,6 +15,7 @@ export default function TestSessionPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
   const loadSession = useCallback(() => {
     getTestSession(sessionId)
@@ -47,7 +48,29 @@ export default function TestSessionPage(): JSX.Element {
     return <></>;
   }
 
+  const totalQuestions = state.questions.length;
+  const current = state.currentQuestionIndex + 1;
   const question = state.questions[state.currentQuestionIndex];
+  const durationMinutes = state.durationMinutes ?? Math.max(1, totalQuestions * 2);
+
+  if (!hasStarted) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <div className="panel accent p-6 sm:p-8 lg:p-10 text-center space-y-6">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-text-primary">
+            Ready to start?
+          </h1>
+          <p className="font-body text-text-secondary max-w-prose mx-auto">
+            Once you click "Let's start" button, a timer will be started. You have to answer {totalQuestions} questions in {durationMinutes} minutes.
+          </p>
+          <Button variant="primary" onClick={() => setHasStarted(true)} className="w-full sm:w-auto">
+            Let&apos;s start
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!question) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -74,9 +97,6 @@ export default function TestSessionPage(): JSX.Element {
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to submit answer'))
       .finally(() => setIsSubmitting(false));
   }
-
-  const totalQuestions = state.questions.length;
-  const current = state.currentQuestionIndex + 1;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">

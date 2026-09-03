@@ -65,6 +65,7 @@ export const testSessionStateResponseSchema = successEnvelopeSchema(
     status: z.string(),
     currentQuestionIndex: z.number().int(),
     score: z.number().int().nullable().optional(),
+    durationMinutes: z.number().int().min(1).optional(),
     questions: z.array(
       z.object({
         id: z.string().uuid(),

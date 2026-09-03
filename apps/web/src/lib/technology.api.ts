@@ -4,6 +4,8 @@ import {
   TechnologyResponse,
   technologyDetailResponseSchema,
   TechnologyDetailResponse,
+  technologyPreviewResponseSchema,
+  TechnologyPreviewResponse,
 } from './schemas/technology';
 
 export async function fetchTechnologies(): Promise<TechnologyResponse> {
@@ -12,4 +14,8 @@ export async function fetchTechnologies(): Promise<TechnologyResponse> {
 
 export async function fetchTechnologyBySlug(slug: string): Promise<TechnologyDetailResponse> {
   return apiGet(`/api/v1/technologies/${encodeURIComponent(slug)}`, technologyDetailResponseSchema);
+}
+
+export async function fetchTechnologyPreview(slug: string): Promise<TechnologyPreviewResponse> {
+  return apiGet(`/api/v1/technologies/${encodeURIComponent(slug)}/preview`, technologyPreviewResponseSchema);
 }

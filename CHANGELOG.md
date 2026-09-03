@@ -325,3 +325,16 @@ Options going forward:
 ### Deferred
 - Real quiz session creation and result email dispatch until the quiz engine is fully implemented.
 - Real payment processing on `/buy-credits`.
+
+## [2026-09-04]
+
+### Added
+- Technology preview endpoint () returns sample question with answers, question count, duration and credit price.
+- Quiz settings keys  and  seeded with defaults (20 questions, 2 minutes per question).
+- Technology detail page shows sample question, quiz question count, time limit and price for personal users.
+- Confirmation dialog before starting a personal quiz displays the real credit price and only deducts credits after the user clicks "Yes".
+- Test session page displays a start screen with the configured question count and duration before the timer begins.
+
+### Changed
+-  now triggers a parent-provided confirmation flow instead of immediately deducting credits.
+-  and  use cases read question count and duration from credit settings.
