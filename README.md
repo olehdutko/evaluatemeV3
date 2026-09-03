@@ -73,3 +73,4 @@ Run these from the repository root:
 ## Governance
 
 This project follows the constitution in `.specify/memory/constitution.md`.
+
