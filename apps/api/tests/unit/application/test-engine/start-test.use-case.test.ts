@@ -2,10 +2,14 @@ import { StartTestUseCase } from '../../../../src/application/test-engine/start-
 import {
   ITechnologyRepository,
   IQuestionRepository,
-  ITestSessionRepository,
+  IQuizSessionRepository,
+  IUserRepository,
+  ICreditSettingRepository,
   Technology,
   Question,
-  TestSession,
+  QuizSession,
+  User,
+  CreditSetting,
 } from '@evaluateme/domain';
 
 const now = new Date();
@@ -21,7 +25,7 @@ const tech: Technology = {
 
 const question: Question = {
   id: 'q-1',
-  testId: 'tech-1',
+  technologyId: 'tech-1',
   content: 'What is 2+2?',
   type: 'single',
   orderIndex: 0,
@@ -30,15 +34,36 @@ const question: Question = {
   updatedAt: now,
 };
 
-const session: TestSession = {
+const session: QuizSession = {
   id: 'session-1',
   userId: 'user-1',
-  testId: 'tech-1',
+  technologyId: 'tech-1',
   status: 'in_progress',
   startedAt: new Date(),
   currentQuestionIndex: 0,
   createdAt: new Date(),
   updatedAt: new Date(),
+};
+
+const user: User = {
+  id: 'user-1',
+  email: 'test@example.com',
+  username: null,
+  passwordHash: 'hash',
+  legacyMd5Hash: null,
+  role: 'user',
+  activationStatus: 'active',
+  companyProfileId: null,
+  credits: 10,
+  firstName: null,
+  lastName: null,
+  middleName: null,
+  birthDate: null,
+  country: null,
+  city: null,
+  phone: null,
+  createdAt: now,
+  updatedAt: now,
 };
 
 class FakeTechnologyRepository implements ITechnologyRepository {
@@ -63,28 +88,37 @@ class FakeTechnologyRepository implements ITechnologyRepository {
 }
 
 class FakeQuestionRepository implements IQuestionRepository {
-  async findByTestId(): Promise<Question[]> {
+  async findAll(): Promise<Question[]> {
     return [question];
   }
   async findById(): Promise<Question | null> {
     return null;
   }
-  async findByTestIdRandomized(): Promise<Question[]> {
+  async findByTechnologyId(): Promise<Question[]> {
+    return [question];
+  }
+  async findByTechnologyIdRandomized(): Promise<Question[]> {
     return [question];
   }
   async save(q: Question): Promise<Question> {
     return q;
   }
+  async delete(): Promise<void> {
+    // no-op
+  }
 }
 
-class FakeTestSessionRepository implements ITestSessionRepository {
-  async create(s: Omit<TestSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<TestSession> {
+class FakeQuizSessionRepository implements IQuizSessionRepository {
+  async create(s: Omit<QuizSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<QuizSession> {
     return { ...session, ...s };
   }
-  async findById(): Promise<TestSession | null> {
+  async findAll(): Promise<QuizSession[]> {
+    return [];
+  }
+  async findById(): Promise<QuizSession | null> {
     return null;
   }
-  async update(id: string, data: Partial<TestSession>): Promise<TestSession> {
+  async update(id: string, data: Partial<QuizSession>): Promise<QuizSession> {
     return { ...session, ...data, id };
   }
   async addAnswer(): Promise<never> {
@@ -95,11 +129,49 @@ class FakeTestSessionRepository implements ITestSessionRepository {
   }
 }
 
+class FakeUserRepository implements IUserRepository {
+  async findAll(): Promise<User[]> {
+    return [];
+  }
+  async findById(id: string): Promise<User | null> {
+    return id === user.id ? user : null;
+  }
+  async findByEmail(): Promise<User | null> {
+    return null;
+  }
+  async findByUsername(): Promise<User | null> {
+    return null;
+  }
+  async save(u: User): Promise<User> {
+    return u;
+  }
+  async delete(): Promise<void> {
+    // no-op
+  }
+}
+
+class FakeCreditSettingRepository implements ICreditSettingRepository {
+  async findByKey(key: string): Promise<CreditSetting | null> {
+    if (key === 'test_question_count') {
+      return { id: 'cs-1', key, value: '20', updatedByUserId: 'admin-1', createdAt: now, updatedAt: now };
+    }
+    return null;
+  }
+  async findAll(): Promise<CreditSetting[]> {
+    return [];
+  }
+  async save(s: CreditSetting): Promise<CreditSetting> {
+    return s;
+  }
+}
+
 describe('StartTestUseCase', () => {
   const useCase = new StartTestUseCase(
     new FakeTechnologyRepository(),
     new FakeQuestionRepository(),
-    new FakeTestSessionRepository(),
+    new FakeQuizSessionRepository(),
+    new FakeUserRepository(),
+    new FakeCreditSettingRepository(),
   );
 
   it('creates a test session for an existing technology', async () => {
