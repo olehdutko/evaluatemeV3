@@ -20,7 +20,10 @@ export function LoginForm(): JSX.Element {
         window.location.href = '/technologies';
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Login failed');
+        const message = err instanceof Error ? err.message : 'Login failed';
+        // eslint-disable-next-line no-console
+        console.error('Login error:', message);
+        setError(message.includes('401') || message.includes('Unauthorized') || message.includes('No account') || message.includes('Incorrect password') ? 'Incorrect email or password.' : message);
       })
       .finally(() => {
         setIsSubmitting(false);
@@ -41,7 +44,7 @@ export function LoginForm(): JSX.Element {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            autoComplete="email"
+            autoComplete="off"
             className="input-field"
             placeholder="you@example.com"
           />
@@ -62,7 +65,12 @@ export function LoginForm(): JSX.Element {
         </label>
       </div>
 
-      {error && <ErrorMessage message={error} />}
+      {error && (
+        <>
+          <ErrorMessage message={error} />
+          <p className="text-error font-body">{error}</p>
+        </>
+      )}
 
       <button
         type="submit"
