@@ -305,3 +305,23 @@ Options going forward:
 - Added a "Get in Touch" contact form backed by `/api/contact` (edge route).
 - Copied legacy landing images into `apps/web/public/landing/`.
 - Updated `globals.css` with range-slider accent utilities.
+
+## 2026-09-03 — Quiz start flow, Result Code, Dashboard and buy credits stub
+
+### Added
+- Personal users can start a quiz from `/technologies`; credits are checked/deducted and a modal offers buying more credits when balance is insufficient.
+- `/buy-credits` stub page for purchasing credits.
+- Personal `/dashboard` with test result cards, copyable Result Code and detailed result page with charts.
+- Public `/result` page to view any quiz result by Result Code.
+- Home page Result Code lookup section redirecting to `/result?code=...`.
+- Backend endpoints `GET /api/v1/me/results`, `GET /api/v1/me/results/:resultCode`, `POST /api/v1/tests/personal/start` and `GET /api/v1/public/results/:resultCode`.
+- `quiz_result` email template and `SendQuizResultEmailUseCase` ready for future completion flow.
+- 5 generated test results for `test.user@example.com`.
+
+### Changed
+- `Header` now shows **Dashboard** and **Buy credits** links for personal users.
+- `middleware.ts` keeps `/result` public.
+
+### Deferred
+- Real quiz session creation and result email dispatch until the quiz engine is fully implemented.
+- Real payment processing on `/buy-credits`.

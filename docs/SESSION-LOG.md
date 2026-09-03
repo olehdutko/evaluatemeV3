@@ -2,7 +2,7 @@
 
 ## Last Updated
 
-2026-09-02 (extended profile fields + logout fix)
+2026-09-03 (quiz start flow, Result Code, Dashboard, buy credits stub)
 
 ## Repository
 
@@ -155,3 +155,85 @@ Run on 2026-09-02:
 - `apps/web/src/components/layout/Header.tsx` (renders from context)
 - `apps/api/src/modules/auth/auth.controller.ts` (already returns `Max-Age=0` clear cookies)
 - `apps/api/src/application/auth/logout.use-case.ts` (already blacklists refresh token)
+
+
+## Current Session — Quiz start flow, Result Code and Dashboard (2026-09-03)
+
+### Completed
+- **Quiz start flow for personal users**
+  - Added backend `StartPersonalQuizUseCase` at `apps/api/src/application/test-engine/start-personal-quiz.use-case.ts`.
+  - Endpoint `POST /api/v1/tests/personal/start` checks the user's role, reads `test_price_credits` from credit settings, skips deduction for `0` credits, rejects with `402 Payment Required` when balance is insufficient, and deducts credits otherwise.
+  - Wired `ICreditSettingRepository` into `TestEngineModule`.
+  - Seeded a default `test_price_credits = 1` in `credit_settings`.
+  - Frontend `TechnologiesPage` and technology detail page show **Start quiz** button for logged-in personal users; insufficient credits open a modal offering to buy more credits.
+  - Added reusable `Modal` component and `BuyCreditsPrompt`.
+
+- **Buy credits UI (stub)**
+  - Added **Buy credits** link in `Header` for personal users (desktop + mobile).
+  - Created `/buy-credits` page with quantity selector (range + number input, 1–1000), price calculation and stub **Buy credits** button.
+  - The insufficient-credits modal also links to `/buy-credits`.
+
+- **Personal Dashboard with test results**
+  - Backend `MeModule` with `GET /api/v1/me/results` and `GET /api/v1/me/results/:resultCode` (auth required).
+  - Frontend `/dashboard` lists result cards with score, percentage, progress bar and copyable Result Code.
+  - Frontend `/dashboard/results/[resultCode]` shows detailed result with overall score bar, donut chart, correct/incorrect breakdown and question list.
+  - Added **Dashboard** link in `Header` for personal users.
+
+- **Result Code public lookup**
+  - Backend `GET /api/v1/public/results/:resultCode` returns result details without authentication.
+  - Created `/result` full page (public) with result code input and full result view.
+  - Home page has a “View a quiz result” section that redirects to `/result?code=...`.
+  - Added `quiz_result` email template to seed and DB for future email notifications.
+  - Added `SendQuizResultEmailUseCase` ready to be invoked when a real quiz completion flow is implemented.
+
+- **Test data**
+  - Generated 5 fake completed quiz results for `test.user@example.com` across C#, React JS, JS, Swift and CSS.
+  - Set password `UserPassword123!` for `test.user@example.com` so the account can be used for manual testing.
+
+### Stubs / deferred for later
+- **Actual quiz/session creation**: `StartPersonalQuizUseCase` only reserves credits; it does not create a `QuizSession` or questions yet. The user explicitly asked to ignore the real quiz for now.
+- **Payment processing**: `/buy-credits` button simulates purchase with a timeout and shows a stub message. Real payment/checkout integration is deferred.
+- **Email sending on quiz completion**: `SendQuizResultEmailUseCase` is implemented and wired with the `quiz_result` template, but it is not yet called by any completion flow because the quiz engine is still a stub.
+- **Partially correct scoring**: current detail view marks answers only as Correct/Incorrect. The domain supports more nuanced scoring, but the generated test data uses `isCorrect` boolean only.
+
+### Files added or significantly changed
+- Backend:
+  - `apps/api/src/application/test-engine/start-personal-quiz.use-case.ts`
+  - `apps/api/src/application/test-engine/send-quiz-result-email.use-case.ts`
+  - `apps/api/src/application/me/get-my-results.use-case.ts`
+  - `apps/api/src/application/me/get-my-result-detail.use-case.ts`
+  - `apps/api/src/application/public-info/get-public-result-by-code.use-case.ts`
+  - `apps/api/src/modules/me/me.controller.ts`
+  - `apps/api/src/modules/me/me.module.ts`
+  - `apps/api/src/modules/public-info/public-result.controller.ts`
+  - `apps/api/src/modules/public-info/public-info.module.ts`
+  - `apps/api/src/lib/schemas/me.schema.ts`
+- Frontend:
+  - `apps/web/src/app/technologies/page.tsx`
+  - `apps/web/src/app/technologies/[slug]/start/page.tsx`
+  - `apps/web/src/app/dashboard/page.tsx`
+  - `apps/web/src/app/dashboard/results/[resultCode]/page.tsx`
+  - `apps/web/src/app/buy-credits/page.tsx`
+  - `apps/web/src/app/result/page.tsx`
+  - `apps/web/src/components/quiz/StartQuizButton.tsx`
+  - `apps/web/src/components/quiz/BuyCreditsPrompt.tsx`
+  - `apps/web/src/components/ui/Modal.tsx`
+  - `apps/web/src/components/layout/Header.tsx`
+  - `apps/web/src/lib/me.api.ts`
+  - `apps/web/src/lib/schemas/me.ts`
+  - `apps/web/src/lib/public-result.api.ts`
+  - `apps/web/src/lib/schemas/public-result.ts`
+- Data / seed:
+  - `packages/prisma/src/seed.ts`
+  - `apps/api/src/scripts/generate-user-results.ts`
+
+### Verification
+- `npm run build` — ✅ Pass
+- `npm run test -w apps/api -- --testPathPattern=auth` — ✅ 10 suites / 39 tests passed
+- Manual API smoke tests for `/api/v1/me/results`, `/api/v1/public/results/:resultCode` and `/api/v1/tests/personal/start` — ✅ Pass
+
+### Notes for next session
+- `/buy-credits` needs a real payment integration (Stripe, PayPal, etc.).
+- The quiz engine needs to create real `QuizSession` records and invoke `SendQuizResultEmailUseCase` after completion.
+- The dashboard detail page currently shows donut chart + score bar; refine charts if a charting library is adopted.
+- Consider caching or pagination for `/api/v1/me/results` if a user accumulates many results.
