@@ -15,7 +15,7 @@ export function LoginForm(): JSX.Element {
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    login({ email, password })
+    login({ email: email.trim(), password: password.trim() })
       .then(() => {
         window.location.href = '/technologies';
       })
@@ -55,7 +55,7 @@ export function LoginForm(): JSX.Element {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={8}
-            autoComplete="current-password"
+            autoComplete="off"
             className="input-field"
             placeholder="Enter your password"
           />
