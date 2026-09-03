@@ -18,6 +18,10 @@ const labels: Record<string, string> = {
   credit_to_usd_rate: 'Credit to USD rate (USD per credit)',
   base_credits_per_user: 'Base credits per user',
   bonus_credits_new_user: 'Bonus credits for new users',
+  personal_credit_price: 'Personal credit price (USD)',
+  company_access_code_price: 'Company access code price (USD)',
+  personal_bonus_credits_default: 'Personal bonus credits default',
+  company_bonus_credits_default: 'Company bonus credits default',
 };
 
 export function CreditSettingsPanel(): JSX.Element {
@@ -170,7 +174,7 @@ function NewSettingCard({
           disabled={isSaving || value.trim().length === 0}
           className="btn-primary text-sm py-2 px-4 disabled:opacity-50"
         >
-          {isSaving ? 'Saving…' : 'Create'}
+          {isSaving ? 'Saving…' : 'Set'}
         </button>
       </div>
     </div>

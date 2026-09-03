@@ -14,3 +14,10 @@ export const technologyResponseSchema = z.object({
 });
 
 export type TechnologyResponse = z.infer<typeof technologyResponseSchema>;
+
+export const technologyDetailResponseSchema = z.object({
+  success: z.literal(true),
+  data: technologySchema,
+});
+
+export type TechnologyDetailResponse = z.infer<typeof technologyDetailResponseSchema>;

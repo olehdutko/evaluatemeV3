@@ -3,6 +3,7 @@ import { UserAnswer } from '../entities/user-answer.entity';
 
 export interface IQuizSessionRepository {
   create(session: Omit<QuizSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<QuizSession>;
+  findAll(): Promise<QuizSession[]>;
   findById(id: string): Promise<QuizSession | null>;
   update(id: string, data: Partial<QuizSession>): Promise<QuizSession>;
   addAnswer(answer: Omit<UserAnswer, 'id' | 'createdAt' | 'updatedAt'>): Promise<UserAnswer>;

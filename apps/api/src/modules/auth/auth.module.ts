@@ -16,8 +16,16 @@ import { LoginUseCase } from '../../application/auth/login.use-case';
 import { RefreshUseCase } from '../../application/auth/refresh.use-case';
 import { LogoutUseCase } from '../../application/auth/logout.use-case';
 import { GetMeUseCase } from '../../application/auth/get-me.use-case';
+import { UpdateProfileUseCase } from '../../application/auth/update-profile.use-case';
+import { ChangePasswordUseCase } from '../../application/auth/change-password.use-case';
+import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.use-case';
+import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
 import { OAuthLoginUseCase } from '../../application/auth/oauth-login.use-case';
 import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repositories/prisma-credit-setting.repository';
+import { PrismaPasswordResetTokenRepository } from '../../infrastructure/prisma/repositories/prisma-password-reset-token.repository';
+import { ConsoleEmailService } from '../../infrastructure/email/console-email.service';
+import { NodemailerEmailService } from '../../infrastructure/email/nodemailer-email.service';
+import { PrismaEmailTemplateRepository } from '../../infrastructure/prisma/repositories/prisma-email-template.repository';
 import { GoogleOAuthConfig } from '../../infrastructure/auth/oauth/google-oauth.config';
 import { GoogleOAuthService } from '../../infrastructure/auth/oauth/google-oauth.service';
 import { AuthController } from './auth.controller';
@@ -31,6 +39,9 @@ import {
   ISecurityAuditLogger,
   IRateLimitStore,
   ICreditSettingRepository,
+  IPasswordResetTokenRepository,
+  IEmailService,
+  IEmailTemplateRepository,
 } from '@evaluateme/domain';
 
 @Module({
@@ -43,6 +54,10 @@ import {
     RefreshUseCase,
     LogoutUseCase,
     GetMeUseCase,
+    UpdateProfileUseCase,
+    ChangePasswordUseCase,
+    ForgotPasswordUseCase,
+    ResetPasswordUseCase,
     OAuthLoginUseCase,
     GoogleOAuthConfig,
     GoogleOAuthService,
@@ -57,6 +72,9 @@ import {
     { provide: ISessionStrategy, useClass: SessionStrategyAdapter },
     { provide: ITokenBlacklist, useClass: PrismaTokenBlacklist },
     { provide: ICreditSettingRepository, useClass: PrismaCreditSettingRepository },
+    { provide: IPasswordResetTokenRepository, useClass: PrismaPasswordResetTokenRepository },
+    { provide: IEmailTemplateRepository, useClass: PrismaEmailTemplateRepository },
+    { provide: IEmailService, useClass: process.env.SMTP_HOST ? NodemailerEmailService : ConsoleEmailService },
   ],
   exports: [JwtAuthGuard, IJwtStrategy, ISessionStrategy, RolesGuard, LogSecurityEventUseCase],
 })

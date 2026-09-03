@@ -50,3 +50,9 @@ export class UnprocessableError extends AppError {
     super('UNPROCESSABLE_ENTITY', message, 422);
   }
 }
+
+export class PaymentRequiredError extends AppError {
+  constructor(message = 'Payment required to proceed.') {
+    super('PAYMENT_REQUIRED', message, 402);
+  }
+}

@@ -4,6 +4,7 @@ export const IQuestionRepository = Symbol('IQuestionRepository');
 export const IAnswerRepository = Symbol('IAnswerRepository');
 
 export interface IQuestionRepository {
+  findAll(): Promise<Question[]>;
   findById(id: string): Promise<Question | null>;
   findByTechnologyId(technologyId: string): Promise<Question[]>;
   findByTechnologyIdRandomized(technologyId: string, limit: number): Promise<Question[]>;

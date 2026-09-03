@@ -41,6 +41,13 @@ export class OAuthLoginUseCase {
         activationStatus: ActivationStatus.ACTIVE,
         companyProfileId: null,
         credits: 0,
+        firstName: null,
+        lastName: null,
+        middleName: null,
+        birthDate: null,
+        country: null,
+        city: null,
+        phone: null,
         createdAt: now,
         updatedAt: now,
       });

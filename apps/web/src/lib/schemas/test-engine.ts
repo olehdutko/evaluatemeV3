@@ -1,4 +1,16 @@
 import { z } from 'zod';
+import { successEnvelopeSchema } from './envelope.schema';
+
+
+export const startPersonalQuizRequestSchema = z.object({});
+
+export const startPersonalQuizResponseSchema = successEnvelopeSchema(
+  z.object({
+    reserved: z.literal(true),
+    price: z.number().int().min(0),
+    remainingCredits: z.number().int().min(0),
+  }),
+);
 
 export const startTestRequestSchema = z.object({
   technologySlug: z.string().min(1),
@@ -66,6 +78,8 @@ export const submitAnswerResponseSchema = z.object({
   }),
 });
 
+export type StartPersonalQuizRequest = z.infer<typeof startPersonalQuizRequestSchema>;
+export type StartPersonalQuizResponse = z.infer<typeof startPersonalQuizResponseSchema>;
 export type StartTestRequest = z.infer<typeof startTestRequestSchema>;
 export type StartTestResponse = z.infer<typeof startTestResponseSchema>;
 export type TestSessionStateResponse = z.infer<typeof testSessionStateResponseSchema>;

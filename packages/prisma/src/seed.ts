@@ -114,6 +114,32 @@ The EvaluateMe.IT Team`,
     variables: JSON.stringify({ userName: 'string', resetLink: 'string' }),
   },
   {
+    name: 'password_changed',
+    subject: 'Your EvaluateMe.IT password was changed',
+    bodyHtml: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Your password was changed</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+  <h2 style="color: #4f46e5;">Password changed</h2>
+  <p>Hello {{userName}},</p>
+  <p>Your EvaluateMe.IT password was just changed. If this was not you, please contact support immediately.</p>
+  <p>Best regards,<br>The EvaluateMe.IT Team</p>
+</body>
+</html>`,
+    bodyText: `Password changed
+
+Hello {{userName}},
+
+Your EvaluateMe.IT password was just changed. If this was not you, please contact support immediately.
+
+Best regards,
+The EvaluateMe.IT Team`,
+    variables: JSON.stringify({ userName: 'string' }),
+  },
+  {
     name: 'invoice_payment_receipt',
     subject: 'Your EvaluateMe.IT invoice #{{orderNumber}}',
     bodyHtml: `<!DOCTYPE html>
@@ -229,6 +255,43 @@ The EvaluateMe.IT Team`,
       maxScore: 'string',
       status: 'string',
     }),
+  },
+  {
+    name: 'quiz_result',
+    subject: 'Your EvaluateMe.IT quiz result',
+    bodyHtml: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Your quiz result</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+  <h2 style="color: #4f46e5;">Your quiz result is ready</h2>
+  <p>Hello {{userName}},</p>
+  <p>You have completed the <strong>{{technologyName}}</strong> quiz.</p>
+  <p>Your score: <strong>{{score}} / {{maxScore}}</strong></p>
+  <p>Your unique result code is:</p>
+  <p style="font-family: monospace; font-size: 18px; background: #f3f4f6; padding: 12px; border-radius: 6px; display: inline-block;">{{resultCode}}</p>
+  <p>You can view and share your result using this link:</p>
+  <p><a href="{{resultLink}}" style="background: #4f46e5; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; display: inline-block;">View result</a></p>
+  <p>Or open: <a href="{{resultLink}}">{{resultLink}}</a></p>
+  <p>Best regards,<br>The EvaluateMe.IT Team</p>
+</body>
+</html>`,
+    bodyText: `Your quiz result is ready
+
+Hello {{userName}},
+
+You have completed the {{technologyName}} quiz.
+Your score: {{score}} / {{maxScore}}
+
+Your unique result code: {{resultCode}}
+
+View and share your result: {{resultLink}}
+
+Best regards,
+The EvaluateMe.IT Team`,
+    variables: JSON.stringify({ userName: 'string', technologyName: 'string', score: 'string', maxScore: 'string', resultCode: 'string', resultLink: 'string' }),
   },
 ];
 

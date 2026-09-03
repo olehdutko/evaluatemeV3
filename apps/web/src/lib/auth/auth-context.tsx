@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import { login, adminLogin, register, logout as apiLogout, getMe } from '../auth.api';
+import { login, adminLogin, register, getMe } from '../auth.api';
+import { setLogoutInProgress } from '../api-client';
 import type { RegisterRequest, LoginRequest, MeResponse } from '../schemas/auth';
 
 type UserRole = 'user' | 'company' | 'admin';
@@ -12,6 +13,13 @@ export interface UserProfile {
   username: string | null;
   role: UserRole;
   credits: number;
+  firstName: string | null;
+  lastName: string | null;
+  middleName: string | null;
+  birthDate: string | null;
+  country: string | null;
+  city: string | null;
+  phone: string | null;
 }
 
 interface AuthContextValue {
@@ -28,6 +36,7 @@ interface AuthContextValue {
   adminLogin: (input: LoginRequest) => Promise<void>;
   register: (input: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<UserProfile>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -39,6 +48,13 @@ function toUserProfile(data: MeResponse['data']): UserProfile {
     username: data.username,
     role: data.role,
     credits: data.credits,
+    firstName: data.firstName ?? null,
+    lastName: data.lastName ?? null,
+    middleName: data.middleName ?? null,
+    birthDate: data.birthDate ?? null,
+    country: data.country ?? null,
+    city: data.city ?? null,
+    phone: data.phone ?? null,
   };
 }
 
@@ -56,6 +72,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     let cancelled = false;
 
     async function restoreSession(): Promise<void> {
+      // If we just logged out, do not attempt to restore the session. The cookies
+      // may still be clearing and an automatic refresh-on-401 would re-create the
+      // session before the reload finishes.
+      const isPostLogout = typeof window !== 'undefined' && window.location.search.includes('logged-out=1');
+      if (isPostLogout) {
+        if (!cancelled) {
+          setUser(null);
+          setIsLoading(false);
+        }
+        return;
+      }
+
       try {
         const response = await getMe();
         if (!cancelled) {
@@ -106,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     async (input: RegisterRequest) => {
       await register(input);
       await handleLogin({ email: input.email, password: input.password });
+      // refreshUser already runs inside handleLogin, so the new profile fields are loaded.
     },
     [handleLogin],
   );
@@ -129,15 +158,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
   }, []);
 
   const handleLogout = useCallback(async () => {
+    setLogoutInProgress(true);
+    setUser(null);
     try {
-      await apiLogout({ refreshToken: '' });
+      // Use a plain fetch here instead of apiLogout/fetchWithAuth so that an automatic
+      // refresh-on-401 cannot recreate the session before the logout completes.
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken: '' }),
+      });
     } catch {
       // Ignore errors and clear client-side state anyway.
     }
     clearAuthCookies();
-    setUser(null);
-    // Hard navigation to bypass any client-side caches and force server to see cleared cookies.
-    window.location.href = '/?logged-out=1';
+    // Give the browser time to apply the Set-Cookie clear headers from the logout
+    // response before the reload reads cookie state. Then force a full page reload so
+    // the server sees cleared cookies. Use replace() to prevent the back button from
+    // returning to the authenticated state. The logged-out=1 flag tells AuthProvider to
+    // skip its automatic session restore and avoid a race-condition refresh.
+    setTimeout(() => {
+      window.location.replace('/?logged-out=1');
+    }, 400);
   }, [clearAuthCookies]);
 
   const value = useMemo<AuthContextValue>(
@@ -155,6 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
       adminLogin: handleAdminLogin,
       register: handleRegister,
       logout: handleLogout,
+      refreshUser,
     }),
     [user, isLoading, handleLogin, handleAdminLogin, handleRegister, handleLogout],
   );

@@ -25,7 +25,7 @@ export default function LoginPage(): JSX.Element {
       {/* Right: form */}
       <section className="flex items-start lg:items-center justify-center px-4 sm:px-6 lg:px-12 xl:px-16 py-12 lg:py-16 lg:w-1/2 bg-bg-primary">
         <div className="w-full max-w-md">
-          <div className="panel accent space-y-6">
+          <div className="panel accent p-6 sm:p-8 space-y-6">
             <LoginForm />
             <div className="relative border-t border-border pt-6">
               <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 bg-bg-primary px-2 font-mono text-xs text-text-secondary">
@@ -38,6 +38,10 @@ export default function LoginPage(): JSX.Element {
             Don&apos;t have an account?{' '}
             <Link href="/register" className="text-accent hover:text-accent-hover underline underline-offset-4">
               Sign up
+            </Link>
+            {' · '}
+            <Link href="/forgot-password" className="text-accent hover:text-accent-hover underline underline-offset-4">
+              Forgot password?
             </Link>
           </p>
         </div>

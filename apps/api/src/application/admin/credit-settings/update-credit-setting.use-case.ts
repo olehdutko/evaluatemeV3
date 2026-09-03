@@ -15,6 +15,11 @@ const KNOWN_KEYS = new Set([
   'credit_to_usd_rate',
   'base_credits_per_user',
   'bonus_credits_new_user',
+  'test_price_usd',
+  'personal_credit_price',
+  'company_access_code_price',
+  'personal_bonus_credits_default',
+  'company_bonus_credits_default',
 ]);
 
 @Injectable()

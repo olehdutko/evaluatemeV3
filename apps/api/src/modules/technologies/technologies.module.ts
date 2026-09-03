@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TechnologiesController } from './technologies.controller';
 import { ListTechnologiesUseCase } from '../../application/technologies/list-technologies.use-case';
+import { GetTechnologyUseCase } from '../../application/technologies/get-technology.use-case';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { PrismaTechnologyRepository } from '../../infrastructure/prisma/repositories/prisma-technology.repository';
 import { ITechnologyRepository } from '@evaluateme/domain';
@@ -10,6 +11,7 @@ import { ITechnologyRepository } from '@evaluateme/domain';
   providers: [
     PrismaService,
     ListTechnologiesUseCase,
+    GetTechnologyUseCase,
     {
       provide: ITechnologyRepository,
       useClass: PrismaTechnologyRepository,

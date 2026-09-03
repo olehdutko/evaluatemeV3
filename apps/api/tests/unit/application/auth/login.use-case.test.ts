@@ -60,7 +60,7 @@ describe('LoginUseCase', () => {
 
     await expect(
       useCase.execute({ email: 'user@example.com', password: 'Password123' }),
-    ).rejects.toThrow('Missing or invalid authentication.');
+    ).rejects.toThrow('No account found with this email.');
   });
 
   it('rejects suspended users', async () => {
@@ -74,7 +74,7 @@ describe('LoginUseCase', () => {
 
     await expect(
       useCase.execute({ email: 'user@example.com', password: 'Password123' }),
-    ).rejects.toThrow('Missing or invalid authentication.');
+    ).rejects.toThrow('Account is suspended.');
   });
 
   it('rejects admin on public login when allowAdmin is false', async () => {
@@ -102,7 +102,7 @@ describe('LoginUseCase', () => {
 
     await expect(
       useCase.execute({ email: 'user@example.com', password: 'Password123' }, { allowAdmin: true }),
-    ).rejects.toThrow('Authenticated but not authorized.');
+    ).rejects.toThrow('This login is reserved for administrators.');
   });
 
   it('returns tokens for valid admin credentials on admin-only login', async () => {

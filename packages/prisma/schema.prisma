@@ -20,6 +20,13 @@ model User {
   activationStatus  String            @db.VarChar(20)
   companyProfileId  String?           @unique @db.VarChar(36)
   credits           Int               @default(0)
+  firstName         String?           @db.VarChar(100)
+  lastName          String?           @db.VarChar(100)
+  middleName        String?           @db.VarChar(100)
+  birthDate         DateTime?         @db.Date
+  country           String?           @db.VarChar(100)
+  city              String?           @db.VarChar(100)
+  phone             String?           @db.VarChar(50)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -247,6 +254,19 @@ model EmailTemplate {
   updatedAt DateTime @updatedAt
 
   @@map("email_templates")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  userId    String    @db.VarChar(36)
+  tokenHash String    @unique @db.VarChar(255)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 model LandingAd {

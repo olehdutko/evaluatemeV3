@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from './api-client';
+import { apiGet, apiPost, apiPut } from './api-client';
 import {
   registerRequestSchema,
   registerResponseSchema,
@@ -9,6 +9,14 @@ import {
   logoutRequestSchema,
   emptySuccessSchema,
   meResponseSchema,
+  updateProfileRequestSchema,
+  updateProfileResponseSchema,
+  changePasswordRequestSchema,
+  changePasswordResponseSchema,
+  forgotPasswordRequestSchema,
+  forgotPasswordResponseSchema,
+  resetPasswordRequestSchema,
+  resetPasswordResponseSchema,
 } from './schemas/auth';
 import type {
   RegisterRequest,
@@ -19,6 +27,14 @@ import type {
   RefreshResponse,
   LogoutRequest,
   MeResponse,
+  UpdateProfileRequest,
+  UpdateProfileResponse,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
 } from './schemas/auth';
 
 export function register(input: RegisterRequest): Promise<RegisterResponse> {
@@ -43,4 +59,20 @@ export function logout(input: LogoutRequest): Promise<void> {
 
 export function getMe(): Promise<MeResponse> {
   return apiGet('/api/v1/auth/me', meResponseSchema);
+}
+
+export function updateProfile(input: UpdateProfileRequest): Promise<UpdateProfileResponse> {
+  return apiPut('/api/v1/auth/me', input, updateProfileRequestSchema, updateProfileResponseSchema);
+}
+
+export function changePassword(input: ChangePasswordRequest): Promise<ChangePasswordResponse> {
+  return apiPost('/api/v1/auth/change-password', input, changePasswordRequestSchema, changePasswordResponseSchema);
+}
+
+export function forgotPassword(input: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+  return apiPost('/api/v1/auth/forgot-password', input, forgotPasswordRequestSchema, forgotPasswordResponseSchema);
+}
+
+export function resetPassword(input: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+  return apiPost('/api/v1/auth/reset-password', input, resetPasswordRequestSchema, resetPasswordResponseSchema);
 }

@@ -23,6 +23,11 @@ export class PrismaQuizSessionRepository implements IQuizSessionRepository {
     return this.mapSession(row);
   }
 
+  async findAll(): Promise<QuizSession[]> {
+    const rows = await this.prisma.quizSession.findMany({ orderBy: { createdAt: 'desc' } });
+    return rows.map((row) => this.mapSession(row));
+  }
+
   async findById(id: string): Promise<QuizSession | null> {
     const row = await this.prisma.quizSession.findUnique({ where: { id } });
     return row ? this.mapSession(row) : null;

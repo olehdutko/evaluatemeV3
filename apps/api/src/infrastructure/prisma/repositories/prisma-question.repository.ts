@@ -6,9 +6,14 @@ import { IQuestionRepository, Question } from '@evaluateme/domain';
 export class PrismaQuestionRepository implements IQuestionRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAll(): Promise<Question[]> {
+    const rows = await this.prisma.question.findMany({ orderBy: { createdAt: 'desc' } });
+    return rows.map((row) => this.mapRow(row));
+  }
+
   async findByTechnologyId(technologyId: string): Promise<Question[]> {
     const rows = await this.prisma.question.findMany({
-      where: { technologyId },
+      where: technologyId ? { technologyId } : {},
       orderBy: { orderIndex: 'asc' },
     });
     return rows.map(this.mapRow);

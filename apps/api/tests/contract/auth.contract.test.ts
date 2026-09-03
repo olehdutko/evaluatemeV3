@@ -11,6 +11,11 @@ describe('Auth endpoint contracts', () => {
       email: 'user@example.com',
       password: 'Password123',
       role: 'user',
+      username: 'johndoe',
+      firstName: 'John',
+      lastName: 'Doe',
+      birthDate: '1990-01-01',
+      country: 'UA',
     };
     expect(() => registerRequestSchema.parse(payload)).not.toThrow();
   });
@@ -39,10 +44,18 @@ describe('Auth endpoint contracts', () => {
       data: {
         id: '550e8400-e29b-41d4-a716-446655440000',
         email: 'user@example.com',
-        username: null,
+        username: 'johndoe',
         role: 'user',
         activationStatus: 'pending',
         credits: 10,
+        companyName: null,
+        firstName: 'John',
+        lastName: 'Doe',
+        middleName: null,
+        birthDate: '1990-01-01',
+        country: 'UA',
+        city: null,
+        phone: null,
         createdAt: '2026-08-10T12:00:00Z',
       },
     };

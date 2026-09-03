@@ -11,7 +11,7 @@ const publicLinks = [
 ];
 
 export function Header(): JSX.Element {
-  const { isAuthenticated, isLoading, logout, displayName, roleLabel, credits } = useAuth();
+  const { isAuthenticated, logout, displayName, roleLabel, credits, user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -46,67 +46,82 @@ export function Header(): JSX.Element {
                 {link.label}
               </Link>
             ))}
+            {user?.role === 'user' && (
+              <Link
+                href="/dashboard"
+                className="font-body text-text-secondary hover:text-text-primary underline-offset-4 decoration-1 hover:underline transition-colors"
+              >
+                Dashboard
+              </Link>
+            )}
+            {user?.role === 'user' && (
+              <Link
+                href="/buy-credits"
+                className="font-mono text-xs uppercase tracking-wider text-accent hover:text-text-primary underline-offset-4 decoration-1 hover:underline transition-colors"
+              >
+                Buy credits
+              </Link>
+            )}
           </nav>
 
           {/* Desktop auth */}
           <div className="hidden md:flex items-center gap-4">
-            {!isLoading &&
-              (isAuthenticated ? (
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setUserMenuOpen((prev) => !prev)}
-                    className="flex items-center gap-2 font-mono text-sm text-text-secondary hover:text-text-primary"
-                    aria-expanded={userMenuOpen}
-                    aria-haspopup="menu"
+            {isAuthenticated ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-2 font-mono text-sm text-text-secondary hover:text-text-primary"
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="menu"
+                >
+                  <span className="hidden lg:inline">{displayName}</span>
+                  <span className="lg:hidden">Account</span>
+                  <span aria-hidden="true">{userMenuOpen ? '▾' : '▸'}</span>
+                </button>
+                {userMenuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-2 w-56 bg-bg-primary border border-border-strong shadow-sm"
                   >
-                    <span className="hidden lg:inline">{displayName}</span>
-                    <span className="lg:hidden">Account</span>
-                    <span aria-hidden="true">{userMenuOpen ? '▾' : '▸'}</span>
-                  </button>
-                  {userMenuOpen && (
-                    <div
-                      role="menu"
-                      className="absolute right-0 top-full mt-2 w-56 bg-bg-primary border border-border-strong shadow-sm"
-                    >
-                      <div className="px-4 py-3 border-b border-border">
-                        <p className="font-body text-sm text-text-primary truncate">{displayName}</p>
-                        <p className="font-mono text-xs text-accent">{roleLabel}</p>
-                        <p className="font-mono text-xs text-text-secondary mt-1">Credits: {credits}</p>
-                      </div>
-                      <Link
-                        href="/profile"
-                        className="block px-4 py-3 text-sm hover:bg-bg-secondary transition-colors"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        Profile
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          void logout();
-                        }}
-                        className="block w-full text-left px-4 py-3 text-sm hover:bg-bg-secondary transition-colors"
-                      >
-                        Log out
-                      </button>
+                    <div className="px-4 py-3 border-b border-border">
+                      <p className="font-body text-sm text-text-primary truncate">{displayName}</p>
+                      <p className="font-mono text-xs text-accent">{roleLabel}</p>
+                      <p className="font-mono text-xs text-text-secondary mt-1">Credits: {credits}</p>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="font-mono text-sm uppercase tracking-wider text-text-secondary hover:text-text-primary"
-                  >
-                    Log in
-                  </Link>
-                  <Link href="/register" className="btn-primary text-sm py-2 px-4">
-                    Sign up
-                  </Link>
-                </>
-              ))}
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-3 text-sm hover:bg-bg-secondary transition-colors"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        void logout();
+                      }}
+                      className="block w-full text-left px-4 py-3 text-sm hover:bg-bg-secondary transition-colors"
+                    >
+                      Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="font-mono text-sm uppercase tracking-wider text-text-secondary hover:text-text-primary"
+                >
+                  Log in
+                </Link>
+                <Link href="/register" className="btn-primary text-sm py-2 px-4">
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -139,43 +154,55 @@ export function Header(): JSX.Element {
               </Link>
             ))}
             <div className="pt-6 flex flex-col gap-3">
-              {!isLoading &&
-                (isAuthenticated ? (
-                  <>
-                    <div className="px-4 py-3 border-b border-border"
-                    >
-                      <p className="font-body text-lg text-text-primary">{displayName}</p>
-                      <p className="font-mono text-sm text-accent">{roleLabel}</p>
-                      <p className="font-mono text-sm text-text-secondary mt-1">Credits: {credits}</p>
-                    </div>
-                    <Link
-                      href="/profile"
-                      onClick={closeMenu}
-                      className="btn-secondary text-center"
-                    >
-                      Profile
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        closeMenu();
-                        void logout();
-                      }}
-                      className="btn-secondary text-center"
-                    >
-                      Log out
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/login" onClick={closeMenu} className="btn-secondary text-center">
-                      Log in
-                    </Link>
-                    <Link href="/register" onClick={closeMenu} className="btn-primary text-center">
-                      Sign up
-                    </Link>
-                  </>
-                ))}
+              {isAuthenticated ? (
+                <>
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="font-body text-lg text-text-primary">{displayName}</p>
+                    <p className="font-mono text-sm text-accent">{roleLabel}</p>
+                    <p className="font-mono text-sm text-text-secondary mt-1">Credits: {credits}</p>
+                  </div>
+                  <Link
+                    href="/dashboard"
+                    onClick={closeMenu}
+                    className="btn-secondary text-center"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/buy-credits"
+                    onClick={closeMenu}
+                    className="btn-primary text-center"
+                  >
+                    Buy credits
+                  </Link>
+                  <Link
+                    href="/profile"
+                    onClick={closeMenu}
+                    className="btn-secondary text-center"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMenu();
+                      void logout();
+                    }}
+                    className="btn-secondary text-center"
+                  >
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" onClick={closeMenu} className="btn-secondary text-center">
+                    Log in
+                  </Link>
+                  <Link href="/register" onClick={closeMenu} className="btn-primary text-center">
+                    Sign up
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>

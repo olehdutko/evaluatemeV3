@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 
+
 interface CounterItem {
   value: number;
   label: string;
@@ -263,6 +264,52 @@ function Icon({ name }: { name: string }): JSX.Element {
   }
 }
 
+
+function ResultCodeLookupSection(): JSX.Element {
+  const [code, setCode] = useState('');
+
+  function handleSubmit(): void {
+    const trimmed = code.trim();
+    if (!trimmed) return;
+    window.location.href = `/result?code=${encodeURIComponent(trimmed)}`;
+  }
+
+  return (
+    <section id="result-code" className="bg-bg-primary py-16 sm:py-20 lg:py-28 border-y border-border">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8 sm:mb-10">
+          <p className="font-mono text-xs uppercase tracking-[0.12em] text-accent mb-3">Result Lookup</p>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold text-text-primary">View a quiz result</h2>
+          <p className="mt-3 text-text-secondary font-body">Enter a Result Code to see the quiz result.</p>
+        </div>
+        <div className="panel accent p-6 sm:p-8 space-y-5">
+          <label htmlFor="home-result-code" className="label-mono">Result code</label>
+          <form
+            onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+            className="flex gap-3"
+          >
+            <input
+              id="home-result-code"
+              type="text"
+              value={code}
+              onChange={(e) => { setCode(e.target.value); }}
+              placeholder="Enter result code" // e.g. USR-...
+              className="input-field flex-1"
+            />
+            <button
+              type="submit"
+              disabled={code.trim().length === 0}
+              className="btn-primary disabled:opacity-50"
+            >
+              View result
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HomePage(): JSX.Element {
   const [activeSlide, setActiveSlide] = useState(0);
   const [calcTab, setCalcTab] = useState<'user' | 'corporate'>('user');
@@ -275,6 +322,7 @@ export default function HomePage(): JSX.Element {
   const [failedInterviews, setFailedInterviews] = useState(5);
   const [expandedShowcase, setExpandedShowcase] = useState<Record<string, boolean>>({});
   const [counters, setCounters] = useState<Record<string, CounterItem> | null>(null);
+  const [myPrice, setMyPrice] = useState<number | null>(null);
   const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [contactError, setContactError] = useState<string | null>(null);
 
@@ -292,6 +340,17 @@ export default function HomePage(): JSX.Element {
           testsPassed: { value: 8932, label: 'Passed tests' },
         });
       });
+
+    fetch('/api/credit-price')
+      .then((res) => res.json())
+      .then((payload: { success?: boolean; data?: { price?: number } }) => {
+        if (payload.success && typeof payload.data?.price === 'number') {
+          setMyPrice(payload.data.price);
+        }
+      })
+      .catch(() => {
+        setMyPrice(3);
+      });
   }, []);
 
   useEffect(() => {
@@ -302,10 +361,11 @@ export default function HomePage(): JSX.Element {
   }, []);
 
   const userSavings = useMemo(() => {
-    const myTotal = 3 * testCount;
+    const pricePerTest = myPrice ?? 3;
+    const myTotal = pricePerTest * testCount;
     const otherTotal = otherPrice * testCount;
-    return { myTotal, otherTotal, savings: Math.max(0, otherTotal - myTotal) };
-  }, [otherPrice, testCount]);
+    return { myTotal, otherTotal, savings: Math.max(0, otherTotal - myTotal), pricePerTest };
+  }, [otherPrice, testCount, myPrice]);
 
   const corporateSavings = useMemo(() => {
     const interviewCost = averagePrice * interviewers * duration;
@@ -479,7 +539,9 @@ export default function HomePage(): JSX.Element {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="label-mono">EvaluateMe price</label>
-                        <div className="text-2xl font-display font-bold text-text-primary">$3</div>
+                        <div className="text-2xl font-display font-bold text-text-primary">
+                          ${userSavings.pricePerTest.toLocaleString()}
+                        </div>
                       </div>
                       <div>
                         <label className="label-mono">Other test price</label>
@@ -766,6 +828,9 @@ export default function HomePage(): JSX.Element {
           </div>
         </div>
       </section>
+
+      {/* Result Code Lookup */}
+      <ResultCodeLookupSection />
 
       {/* Contact */}
       <section id="contact" className="bg-bg-secondary py-16 sm:py-20 lg:py-28 border-y border-border">

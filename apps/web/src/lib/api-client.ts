@@ -6,6 +6,19 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 let isRefreshing = false;
 let refreshPromise: Promise<void> | null = null;
 
+function getErrorMessage(body: unknown, fallback: string): string {
+  if (body && typeof body === 'object') {
+    const record = body as Record<string, unknown>;
+    const msg = record.message;
+    if (typeof msg === 'string' && msg.length > 0) return msg;
+    const nested = record.error;
+    if (nested && typeof nested === 'object') {
+      const nestedMsg = (nested as Record<string, unknown>).message;
+      if (typeof nestedMsg === 'string' && nestedMsg.length > 0) return nestedMsg;
+    }
+  }
+  return fallback;
+}
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -18,6 +31,9 @@ export class ApiError extends Error {
 }
 
 async function performRefresh(): Promise<void> {
+  if (logoutInProgress) {
+    throw new Error('Logout in progress');
+  }
   await refresh({ refreshToken: '' });
 }
 
@@ -50,6 +66,12 @@ async function fetchWithAuth(
   return response;
 }
 
+let logoutInProgress = false;
+
+export function setLogoutInProgress(value: boolean): void {
+  logoutInProgress = value;
+}
+
 export async function apiGet<T extends ZodTypeAny>(
   path: string,
   schema: T,
@@ -62,7 +84,7 @@ export async function apiGet<T extends ZodTypeAny>(
   const body: unknown = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiError(response.status, body, `GET ${path} failed with ${response.status}`);
+    throw new ApiError(response.status, body, getErrorMessage(body, `GET ${path} failed with ${response.status}`));
   }
 
   const parsed = schema.safeParse(body);
@@ -97,7 +119,7 @@ export async function apiPost<
   const responseBody: unknown = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiError(response.status, responseBody, `POST ${path} failed with ${response.status}`);
+    throw new ApiError(response.status, responseBody, getErrorMessage(responseBody, `POST ${path} failed with ${response.status}`));
   }
 
   const parsed = responseSchema.safeParse(responseBody);
@@ -132,7 +154,7 @@ export async function apiPut<
   const responseBody: unknown = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiError(response.status, responseBody, `PUT ${path} failed with ${response.status}`);
+    throw new ApiError(response.status, responseBody, getErrorMessage(responseBody, `PUT ${path} failed with ${response.status}`));
   }
 
   const parsed = responseSchema.safeParse(responseBody);
@@ -157,7 +179,7 @@ export async function apiDelete<TResponse extends ZodTypeAny>(
   const responseBody: unknown = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiError(response.status, responseBody, `DELETE ${path} failed with ${response.status}`);
+    throw new ApiError(response.status, responseBody, getErrorMessage(responseBody, `DELETE ${path} failed with ${response.status}`));
   }
 
   const parsed = responseSchema.safeParse(responseBody);

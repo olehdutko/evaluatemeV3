@@ -1,5 +1,7 @@
 import { apiPost, apiGet } from './api-client';
 import {
+  startPersonalQuizRequestSchema,
+  startPersonalQuizResponseSchema,
   startTestRequestSchema,
   startTestResponseSchema,
   testSessionStateResponseSchema,
@@ -7,12 +9,17 @@ import {
   submitAnswerResponseSchema,
 } from './schemas/test-engine';
 import type {
+  StartPersonalQuizResponse,
   StartTestRequest,
   StartTestResponse,
   TestSessionStateResponse,
   SubmitAnswerRequest,
   SubmitAnswerResponse,
 } from './schemas/test-engine';
+
+export function startPersonalQuiz(): Promise<StartPersonalQuizResponse> {
+  return apiPost('/api/v1/tests/personal/start', {}, startPersonalQuizRequestSchema, startPersonalQuizResponseSchema);
+}
 
 export function startTest(input: StartTestRequest): Promise<StartTestResponse> {
   return apiPost('/api/v1/tests/start', input, startTestRequestSchema, startTestResponseSchema);

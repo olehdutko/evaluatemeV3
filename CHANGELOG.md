@@ -1,5 +1,96 @@
 # Development Log
 
+## 2026-09-02 — User profile, password change and password reset
+
+- Added user profile management:
+  - Backend `UpdateProfileUseCase` and `PUT /api/v1/auth/me` endpoint for updating email and username.
+  - Frontend `/profile` page with profile details form.
+- Added password change flow:
+  - Backend `ChangePasswordUseCase` and `POST /api/v1/auth/change-password` endpoint.
+  - Requires current password, strong new password, and password confirmation.
+  - Sends `password_changed` email notification after a successful change.
+  - Frontend "Privacy & Security" section on `/profile` with password strength indicator.
+- Added password reset flow:
+  - Backend `ForgotPasswordUseCase` and `POST /api/v1/auth/forgot-password` endpoint.
+  - Generates a secure SHA-256 hashed token stored in the new `password_reset_tokens` table.
+  - Sends `password_reset` email with a reset link.
+  - Backend `ResetPasswordUseCase` and `POST /api/v1/auth/reset-password` endpoint validates the token and sets a new strong password.
+  - Frontend `/forgot-password` request page and `/reset-password` confirmation page.
+- Introduced strong password policy (min 12 chars, uppercase, lowercase, digit, special char, no repeated sequences) shared between backend and frontend.
+- Added email infrastructure:
+  - Domain `IEmailService` port.
+  - `ConsoleEmailService` for local development and `NodemailerEmailService` for production SMTP.
+  - Added `password_changed` email template to the seed.
+- Added unit tests for `ChangePasswordUseCase` and `ResetPasswordUseCase`.
+- Updated existing `LoginUseCase` tests to match current error messages.
+- Added `findAll` to `IQuestionRepository` and `IQuizSessionRepository` ports and Prisma implementations.
+- Verified production builds pass for `apps/api` and `apps/web`.
+
+## 2026-09-02 — Extended user profile fields
+## 2026-09-02 — Register / profile UI refinements and auth-aware technology page
+
+- Moved **Account type** selector to the top of the `/register` form and made the form conditional:
+  - **Personal** shows Last name, First name, Middle name and required Date of birth.
+  - **Company** shows a single required **Company name** field and hides Date of birth / personal name fields.
+- Added `companyName` support to backend `RegisterUseCase` and Zod schemas.
+- Replaced country `<select>` with a searchable `CountryAutocomplete` dropdown with emoji flags on `/register` and `/profile`.
+- Added a gentle `form-reveal` CSS animation when switching account type on `/register`.
+- Redesigned `/register` left panel to place the headline at the top and fill remaining space with the existing `/landing/Mockup-Generated-by-Dunnnk.png` image.
+- Made the Email field on `/profile` read-only/disabled.
+- Added `apps/web/src/lib/auth/session.ts` with `getSessionUser` for server-side auth checks in public pages.
+- Updated `/technologies/[slug]/start` to hide the "Sign up / Log in" sidebar CTA for authenticated users.
+- Updated `CHANGELOG.md` and `docs/SESSION-LOG.md`.
+
+
+- Extended `User` model with profile fields:
+  - `firstName`, `lastName`, `middleName`, `birthDate`, `country`, `city`, `phone`.
+  - Created and applied migration `20250902000000_add_user_profile_fields`.
+- Updated domain `User` entity and `PrismaUserRepository` to map the new fields.
+- Updated `RegisterUseCase`, `UpdateProfileUseCase`, and `GetMeUseCase` to accept and return the new profile fields.
+- Updated backend Zod schemas (`register`, `updateProfile`, `me`) for the new fields.
+- Updated frontend Zod schemas, `AuthContext` `UserProfile`, and auth API types for the new fields.
+- Redesigned frontend `/register` form:
+  - Username is now required.
+  - Added required fields: last name, first name, date of birth, country of residence.
+  - Added optional middle name, city, phone.
+  - Added country selector with emoji flags (`apps/web/src/lib/countries.ts`).
+- Extended frontend `/profile` form to allow editing all new profile fields.
+- Fixed logout auto-relogin race condition:
+  - `AuthContext.handleLogout` now uses plain `fetch` instead of `apiLogout` to avoid automatic `refresh-on-401`.
+  - Added `?logged-out=1` flag and skip `getMe()` restore after logout.
+  - Increased reload delay to 400 ms.
+- Updated backend `OAuthLoginUseCase` and legacy migration to provide defaults for the new user fields.
+- Updated contract tests for the new register request/response shapes.
+- Updated `apps/web/tests/unit/lib/auth.api.test.ts` for the new register payload.
+- Verified `npm run build` passes for both workspaces and auth unit tests pass.
+
+- Smoke-tested the full flow against the running dev servers:
+  - `PUT /api/v1/auth/me` updates profile.
+  - `POST /api/v1/auth/change-password` changes password and sends email notification.
+  - `POST /api/v1/auth/forgot-password` creates a reset token and sends reset email.
+  - `POST /api/v1/auth/reset-password` validates token and sets a new password.
+  - `/profile`, `/forgot-password`, and `/reset-password` frontend pages render correctly.
+
+## 2026-08-31 — Landing page backend integration and logout fix
+
+- Fixed stale admin header after logout:
+  - Set frontend logout-in-progress flag before clearing state to stop the automatic refresh-on-401 flow.
+  - Replaced `window.location.href` with `window.location.replace` and added a short delay to let `Set-Cookie` clear headers propagate before the reload.
+  - Updated `AuthContext` and `api-client` to coordinate logout state.
+- Wired landing page calculators to real backend prices:
+  - Added `personal_credit_price`, `company_access_code_price`, `personal_bonus_credits_default`, and `company_bonus_credits_default` to known credit-setting keys.
+  - Created `/api/v1/public-info` endpoint returning live credit settings and counters.
+  - Created `/api/credit-price` edge route and updated the landing page user calculator to use the dynamic EvaluateMe price.
+- Populated landing counters from the database:
+  - Added `findAll` to `IQuestionRepository` and `IQuizSessionRepository` ports and Prisma implementations.
+  - Public-info endpoint now reads `technologies`, `users`, `questions`, and completed `quiz_sessions` counts.
+- Connected contact form to email notification:
+  - Updated `/api/contact` to validate input and call a configurable SMTP relay endpoint (`SMTP_ENDPOINT`).
+  - Falls back to logging the submission when no relay or admin email is configured.
+  - Reads `CONTACT_ADMIN_EMAIL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` and `SMTP_ENDPOINT` from environment variables.
+- Verified production builds pass for both `apps/api` and `apps/web`.
+- Verified `/api/v1/public-info` returns live counters: technologies=19, users=1, questions=6534, testsPassed=0.
+
 ## 2026-08-10 — Feature 005-05-auth
 
 - Implemented backend JWT authentication: register, login, refresh, logout.

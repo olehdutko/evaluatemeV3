@@ -1,10 +1,14 @@
-import { Controller, Get, Post, Body, Req, Res, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Req, Res, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { RegisterUseCase } from '../../application/auth/register.use-case';
 import { LoginUseCase } from '../../application/auth/login.use-case';
 import { RefreshUseCase } from '../../application/auth/refresh.use-case';
 import { LogoutUseCase } from '../../application/auth/logout.use-case';
 import { GetMeUseCase } from '../../application/auth/get-me.use-case';
+import { UpdateProfileUseCase } from '../../application/auth/update-profile.use-case';
+import { ChangePasswordUseCase } from '../../application/auth/change-password.use-case';
+import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.use-case';
+import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { ZodValidationPipe } from '../../infrastructure/validation/zod-validation.pipe';
 import { RateLimit } from '../../infrastructure/security/rate-limit.guard';
@@ -14,6 +18,12 @@ import {
   registerRequestSchema,
   refreshRequestSchema,
   logoutRequestSchema,
+  updateProfileRequestSchema,
+  changePasswordRequestSchema,
+  forgotPasswordRequestSchema,
+  resetPasswordRequestSchema,
+  type UpdateProfileRequest,
+  type RegisterRequest,
 } from '../../lib/schemas/auth.schema';
 
 interface RequestWithUser extends Request {
@@ -41,13 +51,17 @@ export class AuthController {
     private readonly refreshUseCase: RefreshUseCase,
     private readonly logoutUseCase: LogoutUseCase,
     private readonly getMeUseCase: GetMeUseCase,
+    private readonly updateProfileUseCase: UpdateProfileUseCase,
+    private readonly changePasswordUseCase: ChangePasswordUseCase,
+    private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
     private readonly audit: LogSecurityEventUseCase,
   ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @RateLimit({ limit: 5, windowMs: 60 * 1000 })
-  async register(@Body(new ZodValidationPipe(registerRequestSchema)) body: { email: string; password: string; role: 'user' | 'company'; username?: string }) {
+  async register(@Body(new ZodValidationPipe(registerRequestSchema)) body: RegisterRequest) {
     return this.registerUseCase.execute(body);
   }
 
@@ -163,5 +177,66 @@ export class AuthController {
     response.clearCookie(ACCESS_TOKEN_COOKIE, CLEAR_COOKIE_OPTIONS);
     response.clearCookie(REFRESH_TOKEN_COOKIE, CLEAR_COOKIE_OPTIONS);
     return { success: true };
+  }
+
+  @Put('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async updateMe(
+    @Body(new ZodValidationPipe(updateProfileRequestSchema)) body: UpdateProfileRequest,
+    @Req() request: RequestWithUser,
+  ) {
+    const userId = request.user?.sub ?? '';
+    return this.updateProfileUseCase.execute({
+      userId,
+      email: body.email,
+      username: body.username,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      middleName: body.middleName,
+      birthDate: body.birthDate,
+      country: body.country,
+      city: body.city,
+      phone: body.phone,
+    });
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 5, windowMs: 60 * 1000 })
+  async changePassword(
+    @Body(new ZodValidationPipe(changePasswordRequestSchema)) body: { currentPassword: string; newPassword: string; confirmPassword: string },
+    @Req() request: RequestWithUser,
+  ) {
+    const userId = request.user?.sub ?? '';
+    return this.changePasswordUseCase.execute({
+      userId,
+      currentPassword: body.currentPassword,
+      newPassword: body.newPassword,
+      confirmPassword: body.confirmPassword,
+    });
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 3, windowMs: 60 * 60 * 1000 })
+  async forgotPassword(
+    @Body(new ZodValidationPipe(forgotPasswordRequestSchema)) body: { email: string },
+  ) {
+    return this.forgotPasswordUseCase.execute({ email: body.email });
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 5, windowMs: 60 * 1000 })
+  async resetPassword(
+    @Body(new ZodValidationPipe(resetPasswordRequestSchema)) body: { token: string; newPassword: string; confirmPassword: string },
+  ) {
+    return this.resetPasswordUseCase.execute({
+      token: body.token,
+      newPassword: body.newPassword,
+      confirmPassword: body.confirmPassword,
+    });
   }
 }

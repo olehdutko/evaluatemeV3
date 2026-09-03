@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE `users` ADD COLUMN `firstName` VARCHAR(100) NULL,
+    ADD COLUMN `lastName` VARCHAR(100) NULL,
+    ADD COLUMN `middleName` VARCHAR(100) NULL,
+    ADD COLUMN `birthDate` DATE NULL,
+    ADD COLUMN `country` VARCHAR(100) NULL,
+    ADD COLUMN `city` VARCHAR(100) NULL,
+    ADD COLUMN `phone` VARCHAR(50) NULL;

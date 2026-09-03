@@ -4,7 +4,9 @@ import { HealthModule } from './modules/health/health.module';
 import { TechnologiesModule } from './modules/technologies/technologies.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { TestEngineModule } from './modules/test-engine/test-engine.module';
+import { MeModule } from './modules/me/me.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { PublicInfoModule } from './modules/public-info/public-info.module';
 
 @Module({
   imports: [
@@ -16,7 +18,9 @@ import { AdminModule } from './modules/admin/admin.module';
     TechnologiesModule,
     AuthModule,
     TestEngineModule,
+    MeModule,
     AdminModule,
+    PublicInfoModule,
   ],
 })
 export class AppModule {}

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/login', '/register', '/api', '/admin/login'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/result', '/api', '/admin/login', '/technologies', '/health', '/tests'];
 const ADMIN_PATHS = ['/admin'];
 const STATIC_PATH_PREFIXES = ['/_next', '/static', '/favicon.ico'];
 
@@ -30,5 +30,5 @@ export function middleware(request: NextRequest): NextResponse {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)'],
 };

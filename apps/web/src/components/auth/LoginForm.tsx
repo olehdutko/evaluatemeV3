@@ -28,42 +28,46 @@ export function LoginForm(): JSX.Element {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="border-b border-border pb-4 mb-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="pb-2">
         <h2 className="font-display text-2xl font-bold text-text-primary">Log in</h2>
       </div>
 
-      <label className="block">
-        <span className="label-mono">Email</span>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          className="input-field"
-        />
-      </label>
+      <div className="space-y-5">
+        <label className="block">
+          <span className="label-mono">Email</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            className="input-field"
+            placeholder="you@example.com"
+          />
+        </label>
 
-      <label className="block">
-        <span className="label-mono">Password</span>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-          autoComplete="current-password"
-          className="input-field"
-        />
-      </label>
+        <label className="block">
+          <span className="label-mono">Password</span>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            autoComplete="current-password"
+            className="input-field"
+            placeholder="Enter your password"
+          />
+        </label>
+      </div>
 
       {error && <ErrorMessage message={error} />}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="btn-primary w-full"
+        className="btn-primary w-full mt-2"
       >
         {isSubmitting ? 'Logging in…' : 'Log in'}
       </button>

@@ -8,6 +8,13 @@ export interface AuthMeDto {
   username: string | null;
   role: string;
   credits: number;
+  firstName: string | null;
+  lastName: string | null;
+  middleName: string | null;
+  birthDate: string | null;
+  country: string | null;
+  city: string | null;
+  phone: string | null;
 }
 
 @Injectable()
@@ -30,6 +37,13 @@ export class GetMeUseCase {
         username: user.username,
         role: user.role,
         credits: user.credits,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        middleName: user.middleName,
+        birthDate: user.birthDate ? user.birthDate.toISOString().split('T')[0] : null,
+        country: user.country,
+        city: user.city,
+        phone: user.phone,
       },
     };
   }

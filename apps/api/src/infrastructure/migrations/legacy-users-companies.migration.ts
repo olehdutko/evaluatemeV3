@@ -78,6 +78,13 @@ export class LegacyUsersCompaniesMigration {
         activationStatus: v3Status,
         companyProfileId: null,
         credits: 0,
+        firstName: null,
+        lastName: null,
+        middleName: null,
+        birthDate: null,
+        country: null,
+        city: null,
+        phone: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
