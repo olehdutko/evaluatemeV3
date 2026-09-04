@@ -237,3 +237,10 @@ Run on 2026-09-02:
 - The quiz engine needs to create real `QuizSession` records and invoke `SendQuizResultEmailUseCase` after completion.
 - The dashboard detail page currently shows donut chart + score bar; refine charts if a charting library is adopted.
 - Consider caching or pagination for `/api/v1/me/results` if a user accumulates many results.
+
+## 2026-09-04 — Quiz preview/start flow and test credits note
+
+- Implemented quiz preview, confirmation dialog, and timer start screen in `feature/quiz-preview-and-start-flow`.
+- Added `set-user-credits` script in `apps/api` (`npm run set:credits -w apps/api -- <email> <credits>`) to update user credits safely.
+- Confirmed that the application does **not** reset user credits on server restart; credit balance persists in the database.
+- `private.user@example.com` now has 100 000 credits for manual testing.
