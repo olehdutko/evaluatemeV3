@@ -115,13 +115,13 @@ export default function TestSessionPage(): JSX.Element {
                 ? 'bg-success'
                 : 'bg-error'
               : index < current
-                ? 'bg-accent'
+                ? 'bg-info'
                 : 'bg-bg-tertiary';
             return (
               <div
                 key={index}
                 className={`flex-1 transition-colors duration-300 ${color}`}
-                title={userAnswer ? (userAnswer.isCorrect ? 'Correct' : 'Incorrect') : index < current ? 'Current' : 'Pending'}
+                title={userAnswer ? (userAnswer.isCorrect ? 'Correct' : 'Incorrect') : index < current ? 'Current question' : 'Pending'}
               />
             );
           })}
