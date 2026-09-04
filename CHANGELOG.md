@@ -338,3 +338,8 @@ Options going forward:
 ### Changed
 -  now triggers a parent-provided confirmation flow instead of immediately deducting credits.
 -  and  use cases read question count and duration from credit settings.
+
+## [2026-09-04]
+
+### Fixed
+- Quiz session now uses the configured `test_question_count` snapshot instead of all technology questions, so duration and question count match preview settings.
