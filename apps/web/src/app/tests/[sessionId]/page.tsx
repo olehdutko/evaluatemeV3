@@ -110,18 +110,19 @@ export default function TestSessionPage(): JSX.Element {
             const userAnswer = questionId
               ? state.userAnswers?.find((a) => a.questionId === questionId)
               : undefined;
-            const color = userAnswer
+            const answered = userAnswer !== undefined;
+            const baseColor = answered
               ? userAnswer.isCorrect
                 ? 'bg-success'
                 : 'bg-error'
-              : index < current
-                ? 'bg-info'
-                : 'bg-bg-tertiary';
+              : 'bg-bg-tertiary';
+            const isCurrent = !answered && index < current;
+            const borderClass = isCurrent ? 'border border-text-primary' : '';
             return (
               <div
                 key={index}
-                className={`flex-1 transition-colors duration-300 ${color}`}
-                title={userAnswer ? (userAnswer.isCorrect ? 'Correct' : 'Incorrect') : index < current ? 'Current question' : 'Pending'}
+                className={`flex-1 transition-colors duration-300 ${baseColor} ${borderClass}`}
+                title={answered ? (userAnswer.isCorrect ? 'Correct' : 'Incorrect') : isCurrent ? 'Current question' : 'Pending'}
               />
             );
           })}
