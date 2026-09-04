@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from '@evaluateme/prisma';
+import { PrismaClient } from '@prisma/client';
 
 async function main(): Promise<void> {
   const email = process.argv[2];
