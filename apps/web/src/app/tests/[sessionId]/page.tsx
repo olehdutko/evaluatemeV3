@@ -52,6 +52,7 @@ export default function TestSessionPage(): JSX.Element {
   const current = state.currentQuestionIndex + 1;
   const question = state.questions[state.currentQuestionIndex];
   const durationMinutes = state.durationMinutes ?? Math.max(1, totalQuestions * 2);
+  const answerMap = new Map(state.userAnswers?.map((a) => [a.questionId, a.isCorrect]));
 
   if (!hasStarted) {
     return (

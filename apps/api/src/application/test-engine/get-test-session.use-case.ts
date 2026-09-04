@@ -16,6 +16,7 @@ export interface QuizSessionState {
   currentQuestionIndex: number;
   score?: number | null;
   durationMinutes: number;
+  userAnswers: Array<{ questionId: string; answerId: string; isCorrect: boolean }>;
   questions: Array<{
     id: string;
     content: string;
@@ -41,10 +42,11 @@ export class GetTestSessionUseCase {
     }
 
     const snapshotIds = session.questionIdsSnapshot ?? [];
-    const [technologyQuestions, answers, minutesPerQuestion] = await Promise.all([
+    const [technologyQuestions, answers, minutesPerQuestion, userAnswers] = await Promise.all([
       this.questionRepository.findByTechnologyId(session.technologyId),
       this.answerRepository.findByQuestionIds(snapshotIds),
       this.resolveMinutesPerQuestion(),
+      this.quizSessionRepository.findAnswersBySessionId(sessionId),
     ]);
 
     const questionMap = new Map(technologyQuestions.map((q) => [q.id, q]));
@@ -71,6 +73,7 @@ export class GetTestSessionUseCase {
         currentQuestionIndex: session.currentQuestionIndex,
         score: session.score ?? null,
         durationMinutes: Math.max(1, questions.length * minutesPerQuestion),
+        userAnswers: userAnswers.map((a) => ({ questionId: a.questionId, answerId: a.answerId, isCorrect: a.isCorrect })),
         questions,
       },
     };
