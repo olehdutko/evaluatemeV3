@@ -52,7 +52,6 @@ export default function TestSessionPage(): JSX.Element {
   const current = state.currentQuestionIndex + 1;
   const question = state.questions[state.currentQuestionIndex];
   const durationMinutes = state.durationMinutes ?? Math.max(1, totalQuestions * 2);
-  const answerMap = new Map(state.userAnswers?.map((a) => [a.questionId, a.isCorrect]));
 
   if (!hasStarted) {
     return (
@@ -106,14 +105,26 @@ export default function TestSessionPage(): JSX.Element {
           Question {String(current).padStart(2, '0')} of {String(totalQuestions).padStart(2, '0')}
         </p>
         <div className="flex gap-1 h-2 w-full sm:w-64">
-          {Array.from({ length: totalQuestions }).map((_, index) => (
-            <div
-              key={index}
-              className={`flex-1 transition-colors duration-300 ${
-                index < current ? 'bg-accent' : 'bg-bg-tertiary'
-              }`}
-            />
-          ))}
+          {Array.from({ length: totalQuestions }).map((_, index) => {
+            const questionId = state.questions[index]?.id;
+            const userAnswer = questionId
+              ? state.userAnswers?.find((a) => a.questionId === questionId)
+              : undefined;
+            const color = userAnswer
+              ? userAnswer.isCorrect
+                ? 'bg-success'
+                : 'bg-error'
+              : index < current
+                ? 'bg-accent'
+                : 'bg-bg-tertiary';
+            return (
+              <div
+                key={index}
+                className={`flex-1 transition-colors duration-300 ${color}`}
+                title={userAnswer ? (userAnswer.isCorrect ? 'Correct' : 'Incorrect') : index < current ? 'Current' : 'Pending'}
+              />
+            );
+          })}
         </div>
       </div>
 
