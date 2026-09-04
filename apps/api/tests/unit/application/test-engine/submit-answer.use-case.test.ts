@@ -2,12 +2,10 @@ import { SubmitAnswerUseCase } from '../../../../src/application/test-engine/sub
 import {
   IQuizSessionRepository,
   IAnswerRepository,
-  IQuestionRepository,
   IUserResultRepository,
   ICandidateResultRepository,
   QuizSession,
   Answer,
-  Question,
   UserAnswer,
 } from '@evaluateme/domain';
 
@@ -23,19 +21,6 @@ const session: QuizSession = {
   createdAt: now,
   updatedAt: now,
 };
-
-const questions: Question[] = [
-  {
-    id: 'q-1',
-    technologyId: 'tech-1',
-    content: 'Q1',
-    type: 'single',
-    orderIndex: 0,
-    score: 1,
-    createdAt: now,
-    updatedAt: now,
-  },
-];
 
 class FakeQuizSessionRepository implements IQuizSessionRepository {
   answers: UserAnswer[] = [];
@@ -87,26 +72,6 @@ class FakeAnswerRepository implements IAnswerRepository {
   }
 }
 
-class FakeQuestionRepository implements IQuestionRepository {
-  async findAll(): Promise<Question[]> {
-    return questions;
-  }
-  async findById(): Promise<Question | null> {
-    return null;
-  }
-  async findByTechnologyId(): Promise<Question[]> {
-    return questions;
-  }
-  async findByTechnologyIdRandomized(): Promise<Question[]> {
-    return [];
-  }
-  async save(q: Question): Promise<Question> {
-    return q;
-  }
-  async delete(): Promise<void> {
-    // no-op
-  }
-}
 
 class FakeUserResultRepository implements IUserResultRepository {
   async findByUserId(): Promise<never[]> {
@@ -137,7 +102,6 @@ describe('SubmitAnswerUseCase', () => {
   const useCase = new SubmitAnswerUseCase(
     repo,
     new FakeAnswerRepository(),
-    new FakeQuestionRepository(),
     new FakeUserResultRepository(),
     new FakeCandidateResultRepository(),
   );

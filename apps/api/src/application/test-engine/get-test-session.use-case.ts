@@ -47,7 +47,6 @@ export class GetTestSessionUseCase {
       this.resolveMinutesPerQuestion(),
     ]);
 
-    const snapshotSet = new Set(snapshotIds);
     const questionMap = new Map(technologyQuestions.map((q) => [q.id, q]));
     const orderedQuestions = snapshotIds
       .map((id) => questionMap.get(id))

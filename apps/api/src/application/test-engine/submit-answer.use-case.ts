@@ -3,7 +3,6 @@ import { randomUUID } from 'crypto';
 import {
   IQuizSessionRepository,
   IAnswerRepository,
-  IQuestionRepository,
   IUserResultRepository,
   ICandidateResultRepository,
   SessionStatus,
@@ -31,7 +30,6 @@ export class SubmitAnswerUseCase {
   constructor(
     @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
     @Inject(IAnswerRepository) private readonly answerRepository: IAnswerRepository,
-    @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(IUserResultRepository) private readonly userResultRepository: IUserResultRepository,
     @Inject(ICandidateResultRepository) private readonly candidateResultRepository: ICandidateResultRepository,
   ) {
