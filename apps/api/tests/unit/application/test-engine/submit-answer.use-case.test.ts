@@ -18,6 +18,7 @@ const session: QuizSession = {
   status: 'in_progress',
   startedAt: now,
   currentQuestionIndex: 0,
+  questionIdsSnapshot: ['q-1'],
   createdAt: now,
   updatedAt: now,
 };
