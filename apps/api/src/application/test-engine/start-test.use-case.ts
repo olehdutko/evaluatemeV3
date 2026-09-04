@@ -63,6 +63,7 @@ export class StartTestUseCase {
       status: 'in_progress',
       startedAt: new Date(),
       currentQuestionIndex: 0,
+      questionIdsSnapshot: questions.map((q) => q.id),
     });
 
     return {

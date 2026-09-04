@@ -40,11 +40,29 @@ export class GetTestSessionUseCase {
       throw new NotFoundError('quiz session');
     }
 
-    const [questions, minutesPerQuestion] = await Promise.all([
+    const snapshotIds = session.questionIdsSnapshot ?? [];
+    const [technologyQuestions, answers, minutesPerQuestion] = await Promise.all([
       this.questionRepository.findByTechnologyId(session.technologyId),
+      this.answerRepository.findByQuestionIds(snapshotIds),
       this.resolveMinutesPerQuestion(),
     ]);
-    const answers = await this.answerRepository.findByQuestionIds(questions.map((q) => q.id));
+
+    const snapshotSet = new Set(snapshotIds);
+    const questionMap = new Map(technologyQuestions.map((q) => [q.id, q]));
+    const orderedQuestions = snapshotIds
+      .map((id) => questionMap.get(id))
+      .filter((q): q is NonNullable<typeof q> => q !== undefined);
+
+    const questions = orderedQuestions.map((q, index) => ({
+      id: q.id,
+      content: q.content,
+      type: q.type,
+      orderIndex: index,
+      answers: answers
+        .filter((a) => a.questionId === q.id)
+        .sort((a, b) => a.orderIndex - b.orderIndex)
+        .map((a) => ({ id: a.id, content: a.content, orderIndex: a.orderIndex })),
+    }));
 
     return {
       success: true,
@@ -53,16 +71,8 @@ export class GetTestSessionUseCase {
         status: session.status,
         currentQuestionIndex: session.currentQuestionIndex,
         score: session.score ?? null,
-        durationMinutes: questions.length * minutesPerQuestion,
-        questions: questions.map((q) => ({
-          id: q.id,
-          content: q.content,
-          type: q.type,
-          orderIndex: q.orderIndex,
-          answers: answers
-            .filter((a) => a.questionId === q.id)
-            .map((a) => ({ id: a.id, content: a.content, orderIndex: a.orderIndex })),
-        })),
+        durationMinutes: Math.max(1, questions.length * minutesPerQuestion),
+        questions,
       },
     };
   }

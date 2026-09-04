@@ -51,6 +51,7 @@ export class StartSessionUseCase {
       status: 'in_progress',
       startedAt: new Date(),
       currentQuestionIndex: 0,
+      questionIdsSnapshot: questions.map((q) => q.id),
     });
 
     const sessionToken = await this.sessionStrategy.issueSessionToken(candidateId, code.id, 7 * 24 * 60);
