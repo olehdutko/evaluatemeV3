@@ -2,29 +2,23 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { fetchTechnologyPreview } from '../../../../lib/technology.api';
-import { startPersonalQuiz, startTest } from '../../../../lib/test-engine.api';
 import { PageHeader } from '../../../../components/ui/PageHeader';
 import { ErrorMessage } from '../../../../components/ui/ErrorMessage';
 import { Loading } from '../../../../components/ui/Loading';
-import { Modal } from '../../../../components/ui/Modal';
-import { StartQuizButton } from '../../../../components/quiz/StartQuizButton';
+import { QuizStartButtonWithDialog } from '../../../../components/quiz/QuizStartButtonWithDialog';
 import { useAuth } from '../../../../lib/auth/auth-context';
-import { ApiError } from '../../../../lib/api-client';
 
 export default function TechnologyDetailPage(): JSX.Element {
   const params = useParams();
-  const router = useRouter();
   const slug = params.slug as string;
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
 
   const [preview, setPreview] = useState<Awaited<ReturnType<typeof fetchTechnologyPreview>>['data'] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [isStarting, setIsStarting] = useState(false);
-  const [startError, setStartError] = useState<string | null>(null);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -42,26 +36,6 @@ export default function TechnologyDetailPage(): JSX.Element {
       });
     return () => { cancelled = true; };
   }, [slug]);
-
-  async function handleConfirmStart(): Promise<void> {
-    setStartError(null);
-    setIsStarting(true);
-    try {
-      await startPersonalQuiz();
-      const session = await startTest({ technologySlug: slug });
-      await refreshUser();
-      router.push(`/tests/${session.data.sessionId}`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to start quiz';
-      setStartError(message);
-      if (err instanceof ApiError && err.status === 402) {
-        // Insufficient credits after confirmation: close confirm and show error inline.
-        setShowConfirm(false);
-      }
-    } finally {
-      setIsStarting(false);
-    }
-  }
 
   if (isLoading) {
     return (
@@ -161,11 +135,12 @@ export default function TechnologyDetailPage(): JSX.Element {
 
           {isPersonalUser ? (
             <div className="space-y-3 pt-4 border-t border-border">
-              <StartQuizButton
-                onClick={() => setShowConfirm(true)}
-                isLoading={isStarting}
+              <QuizStartButtonWithDialog
+                slug={preview.slug}
+                variant="primary"
+                className="w-full"
+                initialPreview={preview}
               />
-              {startError && <ErrorMessage message={startError} />}
             </div>
           ) : (
             <div className="pt-4 border-t border-border">
@@ -180,36 +155,6 @@ export default function TechnologyDetailPage(): JSX.Element {
           )}
         </div>
       </div>
-
-      <Modal
-        open={showConfirm}
-        onClose={() => !isStarting && setShowConfirm(false)}
-        title="Start quiz?"
-      >
-        <div className="space-y-4">
-          <p className="font-body text-text-primary">
-            Once you click "Yes" button, {preview.price} credits will be taken from your account for selected test. Do you really want to navigate to test?
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowConfirm(false)}
-              disabled={isStarting}
-              className="btn-secondary flex-1 disabled:opacity-50"
-            >
-              No
-            </button>
-            <button
-              type="button"
-              onClick={() => { void handleConfirmStart(); }}
-              disabled={isStarting}
-              className="btn-primary flex-1 disabled:opacity-50"
-            >
-              {isStarting ? 'Starting…' : 'Yes'}
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }
