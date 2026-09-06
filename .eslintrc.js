@@ -2,7 +2,7 @@ module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: ['./apps/*/tsconfig.json', './packages/*/tsconfig.json'],
+    project: ['./tsconfig.eslint.json'],
     tsconfigRootDir: __dirname,
     sourceType: 'module',
     ecmaVersion: 2022,
@@ -59,6 +59,22 @@ module.exports = {
       },
     ],
   },
+  overrides: [
+    {
+      files: ['apps/api/tests/**/*.ts'],
+      rules: {
+        // Legacy tests use loose mock patterns; new production code remains strict.
+        '@typescript-eslint/require-await': 'off',
+        '@typescript-eslint/unbound-method': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+      },
+    },
+  ],
   settings: {
     'import/resolver': {
       node: {
@@ -66,7 +82,7 @@ module.exports = {
       },
       typescript: {
         alwaysTryTypes: true,
-        project: ['./apps/*/tsconfig.json', './packages/*/tsconfig.json'],
+        project: ['./tsconfig.eslint.json'],
       },
     },
   },

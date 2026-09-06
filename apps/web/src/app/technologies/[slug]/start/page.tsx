@@ -55,15 +55,18 @@ export default function TechnologyDetailPage(): JSX.Element {
   }
 
   const isPersonalUser = user?.role === 'user';
+  const isAdminUser = user?.role === 'admin';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <PageHeader
         title={preview.name}
         description={
-          isPersonalUser
-            ? 'Review the sample question and quiz details before you start.'
-            : 'Read-only technology details. Log in or register to start a test.'
+          isAdminUser
+            ? 'Admin accounts cannot take tests. Use the admin panel to configure the application.'
+            : isPersonalUser
+              ? 'Review the sample question and quiz details before you start.'
+              : 'Read-only technology details. Log in or register to start a test.'
         }
       />
 
@@ -133,7 +136,16 @@ export default function TechnologyDetailPage(): JSX.Element {
           <p className="label-mono">Slug</p>
           <p className="font-mono text-sm text-text-secondary">{preview.slug}</p>
 
-          {isPersonalUser ? (
+          {isAdminUser ? (
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm text-text-secondary font-body">
+                Admin accounts cannot take tests. Switch to a personal account to start a quiz.
+              </p>
+              <div className="flex flex-col gap-3 mt-4">
+                <Link href="/admin/dashboard" className="btn-secondary text-center">Go to admin panel</Link>
+              </div>
+            </div>
+          ) : isPersonalUser ? (
             <div className="space-y-3 pt-4 border-t border-border">
               <QuizStartButtonWithDialog
                 slug={preview.slug}

@@ -10,6 +10,8 @@ interface Technology {
   name: string;
   slug: string;
   description: string | null;
+  quizQuestionCount: number;
+  quizDurationMinutes: number;
   updatedAt: string;
 }
 
@@ -22,6 +24,8 @@ export default function AdminTechnologiesPage(): JSX.Element {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [description, setDescription] = useState('');
+  const [quizQuestionCount, setQuizQuestionCount] = useState(20);
+  const [quizDurationMinutes, setQuizDurationMinutes] = useState(40);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -42,6 +46,8 @@ export default function AdminTechnologiesPage(): JSX.Element {
     setName('');
     setSlug('');
     setDescription('');
+    setQuizQuestionCount(20);
+    setQuizDurationMinutes(40);
     setFormError(null);
   }
 
@@ -50,6 +56,8 @@ export default function AdminTechnologiesPage(): JSX.Element {
     setName(tech.name);
     setSlug(tech.slug);
     setDescription(tech.description ?? '');
+    setQuizQuestionCount(tech.quizQuestionCount);
+    setQuizDurationMinutes(tech.quizDurationMinutes);
     setFormError(null);
   }
 
@@ -62,6 +70,8 @@ export default function AdminTechnologiesPage(): JSX.Element {
       name,
       slug: slug || undefined,
       description: description.trim() || null,
+      quizQuestionCount,
+      quizDurationMinutes,
     };
 
     const promise = editing
@@ -191,6 +201,32 @@ export default function AdminTechnologiesPage(): JSX.Element {
                 className="input-field"
               />
             </label>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="block">
+                <span className="label-mono">Quiz questions</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={quizQuestionCount}
+                  onChange={(e) => setQuizQuestionCount(Math.max(1, Math.min(100, Number(e.target.value) || 1)))}
+                  required
+                  className="input-field"
+                />
+              </label>
+              <label className="block">
+                <span className="label-mono">Quiz duration (min)</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={300}
+                  value={quizDurationMinutes}
+                  onChange={(e) => setQuizDurationMinutes(Math.max(1, Math.min(300, Number(e.target.value) || 1)))}
+                  required
+                  className="input-field"
+                />
+              </label>
+            </div>
             <div className="flex items-center gap-3">
               <button type="submit" disabled={saving} className="btn-primary disabled:opacity-50">
                 {saving ? 'Saving…' : editing ? 'Update Technology' : 'Create Technology'}

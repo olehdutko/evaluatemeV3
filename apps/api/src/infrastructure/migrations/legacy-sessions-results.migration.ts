@@ -176,8 +176,11 @@ export class LegacySessionsResultsMigration {
       const result: CandidateResult = {
         id: crypto.randomUUID(),
         resultCode: legacy.result_code,
+        campaignId: null,
         candidateId: legacy.candidate_id,
+        accessCodeId: null,
         technologyId: legacy.test_id,
+        companyQuizId: null,
         score: legacy.score,
         maxScore: legacy.max_score,
         status: this.mapStatus(legacy.status),

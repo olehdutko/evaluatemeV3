@@ -7,7 +7,7 @@ export class AdminListTechnologiesUseCase {
 
   async execute(): Promise<{
     success: true;
-    data: Array<{ id: string; name: string; slug: string; description: string | null; updatedAt: string }>;
+    data: Array<{ id: string; name: string; slug: string; description: string | null; quizQuestionCount: number; quizDurationMinutes: number; updatedAt: string }>;
   }> {
     const rows = await this.repository.findAll();
     return {
@@ -17,6 +17,8 @@ export class AdminListTechnologiesUseCase {
         name: row.name,
         slug: row.slug,
         description: row.description,
+        quizQuestionCount: row.quizQuestionCount,
+        quizDurationMinutes: row.quizDurationMinutes,
         updatedAt: row.updatedAt.toISOString(),
       })),
     };

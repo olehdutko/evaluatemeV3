@@ -8,11 +8,7 @@ import {
 import { NotFoundError } from '../../infrastructure/errors/app-error';
 
 const DEFAULT_TEST_PRICE_CREDITS = 1;
-const DEFAULT_QUESTION_COUNT = 20;
-const DEFAULT_MINUTES_PER_QUESTION = 2;
 const TEST_PRICE_KEY = 'test_price_credits';
-const TEST_QUESTION_COUNT_KEY = 'test_question_count';
-const TEST_MINUTES_PER_QUESTION_KEY = 'test_duration_minutes_per_question';
 
 export interface TechnologyPreviewResult {
   id: string;
@@ -45,19 +41,17 @@ export class GetTechnologyPreviewUseCase {
       throw new NotFoundError('Technology');
     }
 
-    const [questions, allAnswers, price, questionCount, minutesPerQuestion] = await Promise.all([
+    const [questions, allAnswers, price] = await Promise.all([
       this.questionRepository.findByTechnologyId(technology.id),
       this.questionRepository.findByTechnologyId(technology.id).then((q) =>
         this.answerRepository.findByQuestionIds(q.map((item) => item.id)),
       ),
       this.resolveTestPrice(),
-      this.resolveQuestionCount(),
-      this.resolveMinutesPerQuestion(),
     ]);
 
     const sampleQuestion = this.pickSampleQuestion(questions, allAnswers);
-    const effectiveCount = Math.min(questionCount, questions.length || questionCount);
-    const durationMinutes = effectiveCount * minutesPerQuestion;
+    const effectiveCount = Math.min(technology.quizQuestionCount, questions.length || technology.quizQuestionCount);
+    const durationMinutes = technology.quizDurationMinutes;
 
     return {
       success: true,
@@ -97,16 +91,6 @@ export class GetTechnologyPreviewUseCase {
   private async resolveTestPrice(): Promise<number> {
     const setting = await this.creditSettingRepository.findByKey(TEST_PRICE_KEY);
     return this.parsePositiveNumber(setting?.value, DEFAULT_TEST_PRICE_CREDITS);
-  }
-
-  private async resolveQuestionCount(): Promise<number> {
-    const setting = await this.creditSettingRepository.findByKey(TEST_QUESTION_COUNT_KEY);
-    return this.parsePositiveNumber(setting?.value, DEFAULT_QUESTION_COUNT);
-  }
-
-  private async resolveMinutesPerQuestion(): Promise<number> {
-    const setting = await this.creditSettingRepository.findByKey(TEST_MINUTES_PER_QUESTION_KEY);
-    return this.parsePositiveNumber(setting?.value, DEFAULT_MINUTES_PER_QUESTION);
   }
 
   private parsePositiveNumber(value: string | undefined, fallback: number): number {

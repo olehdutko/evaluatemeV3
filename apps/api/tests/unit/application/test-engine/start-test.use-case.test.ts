@@ -4,12 +4,10 @@ import {
   IQuestionRepository,
   IQuizSessionRepository,
   IUserRepository,
-  ICreditSettingRepository,
   Technology,
   Question,
   QuizSession,
   User,
-  CreditSetting,
 } from '@evaluateme/domain';
 
 const now = new Date();
@@ -19,6 +17,8 @@ const tech: Technology = {
   name: 'C#',
   slug: 'csharp',
   description: null,
+  quizQuestionCount: 20,
+  quizDurationMinutes: 40,
   createdAt: now,
   updatedAt: now,
 };
@@ -150,28 +150,12 @@ class FakeUserRepository implements IUserRepository {
   }
 }
 
-class FakeCreditSettingRepository implements ICreditSettingRepository {
-  async findByKey(key: string): Promise<CreditSetting | null> {
-    if (key === 'test_question_count') {
-      return { id: 'cs-1', key, value: '20', updatedByUserId: 'admin-1', createdAt: now, updatedAt: now };
-    }
-    return null;
-  }
-  async findAll(): Promise<CreditSetting[]> {
-    return [];
-  }
-  async save(s: CreditSetting): Promise<CreditSetting> {
-    return s;
-  }
-}
-
 describe('StartTestUseCase', () => {
   const useCase = new StartTestUseCase(
     new FakeTechnologyRepository(),
     new FakeQuestionRepository(),
     new FakeQuizSessionRepository(),
     new FakeUserRepository(),
-    new FakeCreditSettingRepository(),
   );
 
   it('creates a test session for an existing technology', async () => {
@@ -183,5 +167,22 @@ describe('StartTestUseCase', () => {
 
   it('throws for unknown technology', async () => {
     await expect(useCase.execute('user-1', 'unknown')).rejects.toThrow('not found');
+  });
+
+  it('rejects admin users', async () => {
+    const adminRepository = new FakeUserRepository();
+    const originalFindById = adminRepository.findById.bind(adminRepository);
+    adminRepository.findById = async (id: string): Promise<User | null> => {
+      const existing = await originalFindById(id);
+      if (!existing) return null;
+      return { ...existing, role: 'admin' };
+    };
+    const adminUseCase = new StartTestUseCase(
+      new FakeTechnologyRepository(),
+      new FakeQuestionRepository(),
+      new FakeQuizSessionRepository(),
+      adminRepository,
+    );
+    await expect(adminUseCase.execute('user-1', 'csharp')).rejects.toThrow('Admin users cannot take tests');
   });
 });

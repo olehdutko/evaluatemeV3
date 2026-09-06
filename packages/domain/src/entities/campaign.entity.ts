@@ -2,8 +2,10 @@ import { Entity } from './base.entity';
 import { CampaignStatus } from './status.enums';
 
 export interface Campaign extends Entity {
+  companyId: string | null;
   name: string;
   description: string | null;
+  notes: string | null;
   status: CampaignStatus;
   createdByUserId: string;
   startDate: Date | null;
@@ -12,7 +14,9 @@ export interface Campaign extends Entity {
 
 export interface CampaignHistory extends Entity {
   campaignId: string;
-  status: CampaignStatus;
+  action: string;
+  status: CampaignStatus | null;
   changedByUserId: string;
+  metadata: string | null;
   changedAt: Date;
 }

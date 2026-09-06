@@ -1,0 +1,67 @@
+{
+  "name": "Company Quizzes API",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/v1/corporate/quizzes/custom",
+      "body": {
+        "companyId": "uuid",
+        "name": "string",
+        "description": "string | null",
+        "questionIds": "uuid[]"
+      },
+      "response": {
+        "data": {
+          "id": "uuid",
+          "name": "string"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/corporate/quizzes/personal",
+      "body": {
+        "companyId": "uuid",
+        "name": "string",
+        "description": "string | null",
+        "questions": [
+          {
+            "content": "string",
+            "type": "single_choice | multiple_choice",
+            "score": "number (optional)",
+            "answers": [
+              {
+                "content": "string",
+                "isCorrect": "boolean"
+              }
+            ]
+          }
+        ]
+      },
+      "response": {
+        "data": {
+          "id": "uuid",
+          "name": "string"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/quizzes?companyId=",
+      "response": {
+        "data": [
+          {
+            "id": "uuid",
+            "companyId": "uuid",
+            "type": "custom | personal",
+            "name": "string",
+            "description": "string | null",
+            "status": "draft | published | archived",
+            "createdByUserId": "uuid",
+            "createdAt": "ISO 8601"
+          }
+        ]
+      }
+    }
+  ]
+}

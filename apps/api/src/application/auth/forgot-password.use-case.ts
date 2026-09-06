@@ -68,7 +68,7 @@ export class ForgotPasswordUseCase {
   }
 
   private replaceVariables(template: string, variables: Record<string, string>): string {
-    return template.replace(/\{\{(\w+)\}\}/g, (_, key) => variables[key] ?? `{{${key}}}`);
+    return template.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => variables[key] ?? `{{${key}}}`);
   }
 
   private defaultHtml(displayName: string, resetLink: string): string {

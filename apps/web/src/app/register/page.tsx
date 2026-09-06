@@ -18,7 +18,7 @@ export default function RegisterPage(): JSX.Element {
             Start evaluating.
           </h1>
           <p className="mt-4 text-text-secondary font-body">
-            Create a personal, company, or admin account to access tests, results, and team tools.
+            Create a personal or company account to take tests, view results, and manage team campaigns.
           </p>
         </div>
         <div className="mt-8 lg:mt-12 flex-1 min-h-0 w-full max-w-md">

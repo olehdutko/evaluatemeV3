@@ -5,11 +5,13 @@ import { ITokenBlacklist } from '@evaluateme/domain';
 export class InMemoryTokenBlacklist implements ITokenBlacklist {
   private readonly tokens = new Set<string>();
 
-  async add(token: string, _expiresAt?: number): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  add(token: string, _expiresAt?: number): Promise<void> {
     this.tokens.add(token);
+    return Promise.resolve();
   }
 
-  async has(token: string): Promise<boolean> {
-    return this.tokens.has(token);
+  has(token: string): Promise<boolean> {
+    return Promise.resolve(this.tokens.has(token));
   }
 }

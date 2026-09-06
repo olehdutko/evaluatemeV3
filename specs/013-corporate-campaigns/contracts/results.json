@@ -1,0 +1,52 @@
+{
+  "name": "Campaign Results API",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns/:campaignId/results?companyId=",
+      "response": {
+        "data": [
+          {
+            "id": "uuid",
+            "resultCode": "string",
+            "candidateId": "uuid | null",
+            "technologyId": "uuid | null",
+            "companyQuizId": "uuid | null",
+            "score": "number | null",
+            "maxScore": "number | null",
+            "status": "string",
+            "sessionId": "string | null",
+            "createdAt": "ISO 8601"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns/:campaignId/results/:resultId?companyId=",
+      "response": {
+        "data": {
+          "id": "uuid",
+          "resultCode": "string",
+          "campaignId": "uuid | null",
+          "candidateId": "uuid | null",
+          "accessCodeId": "uuid | null",
+          "technologyId": "uuid | null",
+          "companyQuizId": "uuid | null",
+          "score": "number | null",
+          "maxScore": "number | null",
+          "status": "string",
+          "sessionId": "string | null",
+          "createdAt": "ISO 8601",
+          "questions": [
+            {
+              "questionId": "uuid",
+              "answerId": "uuid | null",
+              "isCorrect": "boolean"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import {
   IAnswerRepository,
   IUserResultRepository,
   ICandidateResultRepository,
+  IAccessCodeRepository,
   SessionStatus,
 } from '@evaluateme/domain';
 import { NotFoundError, BadRequestError } from '../../infrastructure/errors/app-error';
@@ -32,6 +33,7 @@ export class SubmitAnswerUseCase {
     @Inject(IAnswerRepository) private readonly answerRepository: IAnswerRepository,
     @Inject(IUserResultRepository) private readonly userResultRepository: IUserResultRepository,
     @Inject(ICandidateResultRepository) private readonly candidateResultRepository: ICandidateResultRepository,
+    @Inject(IAccessCodeRepository) private readonly accessCodeRepository: IAccessCodeRepository,
   ) {
     this.logger = createLogger('SubmitAnswerUseCase');
   }
@@ -97,11 +99,15 @@ export class SubmitAnswerUseCase {
             updatedAt: new Date(),
           });
         } else if (session.accessCodeId) {
+          const accessCode = await this.accessCodeRepository.findById(session.accessCodeId);
           await this.candidateResultRepository.save({
             id: randomUUID(),
             resultCode,
+            campaignId: accessCode?.campaignId ?? null,
             candidateId: null,
+            accessCodeId: session.accessCodeId ?? null,
             technologyId: session.technologyId,
+            companyQuizId: accessCode?.quizId ?? null,
             score: currentScore,
             maxScore: 100,
             status: 'completed' as SessionStatus,

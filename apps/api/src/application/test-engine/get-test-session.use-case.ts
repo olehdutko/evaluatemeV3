@@ -3,12 +3,9 @@ import {
   IQuizSessionRepository,
   IQuestionRepository,
   IAnswerRepository,
-  ICreditSettingRepository,
+  ITechnologyRepository,
 } from '@evaluateme/domain';
 import { NotFoundError } from '../../infrastructure/errors/app-error';
-
-const DEFAULT_MINUTES_PER_QUESTION = 2;
-const TEST_MINUTES_PER_QUESTION_KEY = 'test_duration_minutes_per_question';
 
 export interface QuizSessionState {
   sessionId: string;
@@ -32,7 +29,7 @@ export class GetTestSessionUseCase {
     @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(IAnswerRepository) private readonly answerRepository: IAnswerRepository,
-    @Inject(ICreditSettingRepository) private readonly creditSettingRepository: ICreditSettingRepository,
+    @Inject(ITechnologyRepository) private readonly technologyRepository: ITechnologyRepository,
   ) {}
 
   async execute(sessionId: string): Promise<{ success: true; data: QuizSessionState }> {
@@ -42,10 +39,10 @@ export class GetTestSessionUseCase {
     }
 
     const snapshotIds = session.questionIdsSnapshot ?? [];
-    const [technologyQuestions, answers, minutesPerQuestion, userAnswers] = await Promise.all([
+    const [technologyQuestions, answers, technology, userAnswers] = await Promise.all([
       this.questionRepository.findByTechnologyId(session.technologyId),
       this.answerRepository.findByQuestionIds(snapshotIds),
-      this.resolveMinutesPerQuestion(),
+      this.technologyRepository.findById(session.technologyId),
       this.quizSessionRepository.findAnswersBySessionId(sessionId),
     ]);
 
@@ -72,16 +69,10 @@ export class GetTestSessionUseCase {
         status: session.status,
         currentQuestionIndex: session.currentQuestionIndex,
         score: session.score ?? null,
-        durationMinutes: Math.max(1, questions.length * minutesPerQuestion),
+        durationMinutes: technology?.quizDurationMinutes ?? Math.max(1, questions.length * 2),
         userAnswers: userAnswers.map((a) => ({ questionId: a.questionId, answerId: a.answerId, isCorrect: a.isCorrect })),
         questions,
       },
     };
-  }
-
-  private async resolveMinutesPerQuestion(): Promise<number> {
-    const setting = await this.creditSettingRepository.findByKey(TEST_MINUTES_PER_QUESTION_KEY);
-    const parsed = Number(setting?.value);
-    return Number.isNaN(parsed) || parsed <= 0 ? DEFAULT_MINUTES_PER_QUESTION : parsed;
   }
 }

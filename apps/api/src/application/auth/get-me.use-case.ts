@@ -8,6 +8,7 @@ export interface AuthMeDto {
   username: string | null;
   role: string;
   credits: number;
+  companyId: string | null;
   firstName: string | null;
   lastName: string | null;
   middleName: string | null;
@@ -15,6 +16,11 @@ export interface AuthMeDto {
   country: string | null;
   city: string | null;
   phone: string | null;
+}
+
+function isPersonalProfileField(_role: string): boolean {
+  // Admins configure the application and do not maintain personal profiles or credits.
+  return _role !== 'admin';
 }
 
 @Injectable()
@@ -29,6 +35,8 @@ export class GetMeUseCase {
       throw new UnauthorizedError();
     }
 
+    const includePersonalFields = isPersonalProfileField(user.role);
+
     return {
       success: true,
       data: {
@@ -36,14 +44,17 @@ export class GetMeUseCase {
         email: user.email,
         username: user.username,
         role: user.role,
-        credits: user.credits,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        middleName: user.middleName,
-        birthDate: user.birthDate ? user.birthDate.toISOString().split('T')[0] : null,
-        country: user.country,
-        city: user.city,
-        phone: user.phone,
+        credits: includePersonalFields ? user.credits : 0,
+        companyId: user.companyProfileId,
+        firstName: includePersonalFields ? user.firstName : null,
+        lastName: includePersonalFields ? user.lastName : null,
+        middleName: includePersonalFields ? user.middleName : null,
+        birthDate: includePersonalFields
+          ? (user.birthDate ? user.birthDate.toISOString().split('T')[0] : null)
+          : null,
+        country: includePersonalFields ? user.country : null,
+        city: includePersonalFields ? user.city : null,
+        phone: includePersonalFields ? user.phone : null,
       },
     };
   }

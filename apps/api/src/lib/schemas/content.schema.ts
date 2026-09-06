@@ -8,6 +8,8 @@ export const technologySummarySchema = z.object({
       name: z.string().min(1).max(100),
       slug: z.string().min(1).max(100),
       description: z.string().max(5000).nullable(),
+      quizQuestionCount: z.number().int().min(1).max(100),
+      quizDurationMinutes: z.number().int().min(1).max(300),
       updatedAt: z.string().datetime(),
     }),
   ),
@@ -20,6 +22,8 @@ export const technologyValueSchema = z.object({
     name: z.string().min(1).max(100),
     slug: z.string().min(1).max(100),
     description: z.string().max(5000).nullable(),
+    quizQuestionCount: z.number().int().min(1).max(100),
+    quizDurationMinutes: z.number().int().min(1).max(300),
     updatedAt: z.string().datetime(),
   }),
 });
@@ -28,6 +32,8 @@ export const createTechnologyRequestSchema = z.object({
   name: z.string().min(1).max(100),
   slug: z.string().min(1).max(100).optional(),
   description: z.string().max(5000).nullable().optional(),
+  quizQuestionCount: z.number().int().min(1).max(100).optional(),
+  quizDurationMinutes: z.number().int().min(1).max(300).optional(),
 });
 
 export const technologyWithQuestionsSchema = z.object({

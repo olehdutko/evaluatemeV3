@@ -61,4 +61,4 @@ async function main() {
     created++;
   }
 }
-main().catch((e) => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());
+main().catch((e) => { console.error(e); process.exit(1); }).finally(() => { void prisma.$disconnect(); });

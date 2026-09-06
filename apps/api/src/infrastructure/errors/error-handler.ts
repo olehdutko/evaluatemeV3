@@ -21,24 +21,16 @@ interface ErrorEnvelope {
 }
 
 function statusToCode(status: number): string {
-  switch (status) {
-    case HttpStatus.BAD_REQUEST:
-      return 'BAD_REQUEST';
-    case HttpStatus.UNAUTHORIZED:
-      return 'UNAUTHORIZED';
-    case HttpStatus.FORBIDDEN:
-      return 'FORBIDDEN';
-    case HttpStatus.NOT_FOUND:
-      return 'RESOURCE_NOT_FOUND';
-    case HttpStatus.CONFLICT:
-      return 'CONFLICT';
-    case HttpStatus.UNPROCESSABLE_ENTITY:
-      return 'UNPROCESSABLE_ENTITY';
-    case HttpStatus.TOO_MANY_REQUESTS:
-      return 'TOO_MANY_REQUESTS';
-    default:
-      return 'INTERNAL_ERROR';
-  }
+  const codeMap: Record<number, string> = {
+    [HttpStatus.BAD_REQUEST]: 'BAD_REQUEST',
+    [HttpStatus.UNAUTHORIZED]: 'UNAUTHORIZED',
+    [HttpStatus.FORBIDDEN]: 'FORBIDDEN',
+    [HttpStatus.NOT_FOUND]: 'RESOURCE_NOT_FOUND',
+    [HttpStatus.CONFLICT]: 'CONFLICT',
+    [HttpStatus.UNPROCESSABLE_ENTITY]: 'UNPROCESSABLE_ENTITY',
+    [HttpStatus.TOO_MANY_REQUESTS]: 'TOO_MANY_REQUESTS',
+  };
+  return codeMap[status] ?? 'INTERNAL_ERROR';
 }
 
 @Catch()
@@ -81,7 +73,7 @@ export class ErrorHandler implements ExceptionFilter {
       }
     }
 
-    if (status >= 500) {
+    if (Number(status) >= 500) {
       this.logger.error(
         message,
         error instanceof Error ? error.stack : String(error),

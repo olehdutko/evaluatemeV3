@@ -7,6 +7,8 @@ export interface UpdateTechnologyInput {
   name?: string;
   slug?: string;
   description?: string | null;
+  quizQuestionCount?: number;
+  quizDurationMinutes?: number;
 }
 
 function generateSlug(name: string): string {
@@ -28,6 +30,8 @@ export class UpdateTechnologyUseCase {
       name: string;
       slug: string;
       description: string | null;
+      quizQuestionCount: number;
+      quizDurationMinutes: number;
       updatedAt: string;
     };
   }> {
@@ -39,6 +43,8 @@ export class UpdateTechnologyUseCase {
     const name = input.name !== undefined ? input.name.trim() : existing.name;
     const slug = input.slug !== undefined ? input.slug.trim() || generateSlug(name) : existing.slug;
     const description = input.description !== undefined ? input.description?.trim() ?? null : existing.description;
+    const quizQuestionCount = input.quizQuestionCount ?? existing.quizQuestionCount;
+    const quizDurationMinutes = input.quizDurationMinutes ?? existing.quizDurationMinutes;
 
     if (!name) {
       throw new BadRequestError({ name: ['Name is required'] });
@@ -66,6 +72,8 @@ export class UpdateTechnologyUseCase {
       name,
       slug,
       description,
+      quizQuestionCount,
+      quizDurationMinutes,
       updatedAt: new Date(),
     });
 
@@ -76,6 +84,8 @@ export class UpdateTechnologyUseCase {
         name: saved.name,
         slug: saved.slug,
         description: saved.description,
+        quizQuestionCount: saved.quizQuestionCount,
+        quizDurationMinutes: saved.quizDurationMinutes,
         updatedAt: saved.updatedAt.toISOString(),
       },
     };

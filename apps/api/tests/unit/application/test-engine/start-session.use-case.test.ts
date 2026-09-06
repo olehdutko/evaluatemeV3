@@ -4,9 +4,11 @@ import {
   IQuestionRepository,
   IQuizSessionRepository,
   ISessionStrategy,
+  ITechnologyRepository,
   AccessCode,
   Question,
   QuizSession,
+  Technology,
 } from '@evaluateme/domain';
 
 const now = new Date();
@@ -16,6 +18,12 @@ const accessCode: AccessCode = {
   code: 'CODE-123',
   companyId: 'company-1',
   technologyId: 'tech-1',
+  campaignId: null,
+  quizId: null,
+  sentAt: null,
+  sentToEmail: null,
+  usedCount: 0,
+  maxUses: 1,
   status: 'active',
   expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000),
   usedAt: null,
@@ -42,6 +50,7 @@ const session: QuizSession = {
   status: 'in_progress',
   startedAt: now,
   currentQuestionIndex: 0,
+  questionIdsSnapshot: ['q-1'],
   createdAt: now,
   updatedAt: now,
 };
@@ -52,6 +61,9 @@ class FakeAccessCodeRepository implements IAccessCodeRepository {
   }
   findByCode(code: string): Promise<AccessCode | null> {
     return Promise.resolve(code === accessCode.code ? accessCode : null);
+  }
+  findByCampaignId(): Promise<AccessCode[]> {
+    return Promise.resolve([]);
   }
   save(c: AccessCode): Promise<AccessCode> {
     return Promise.resolve(c);
@@ -112,12 +124,45 @@ class FakeSessionStrategy implements ISessionStrategy {
   }
 }
 
+const technology: Technology = {
+  id: 'tech-1',
+  name: 'C#',
+  slug: 'csharp',
+  description: null,
+  quizQuestionCount: 20,
+  quizDurationMinutes: 40,
+  createdAt: now,
+  updatedAt: now,
+};
+
+class FakeTechnologyRepository implements ITechnologyRepository {
+  findById(id: string): Promise<Technology | null> {
+    return Promise.resolve(id === technology.id ? technology : null);
+  }
+  findAll(): Promise<Technology[]> {
+    return Promise.resolve([]);
+  }
+  findBySlug(): Promise<Technology | null> {
+    return Promise.resolve(null);
+  }
+  findByName(): Promise<Technology | null> {
+    return Promise.resolve(null);
+  }
+  save(t: Technology): Promise<Technology> {
+    return Promise.resolve(t);
+  }
+  delete(): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
 describe('StartSessionUseCase', () => {
   const useCase = new StartSessionUseCase(
     new FakeAccessCodeRepository(),
     new FakeQuestionRepository(),
     new FakeQuizSessionRepository(),
     new FakeSessionStrategy(),
+    new FakeTechnologyRepository(),
   );
 
   it('starts a session for a valid access code', async () => {

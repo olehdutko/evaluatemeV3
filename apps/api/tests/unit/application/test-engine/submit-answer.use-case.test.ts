@@ -4,12 +4,32 @@ import {
   IAnswerRepository,
   IUserResultRepository,
   ICandidateResultRepository,
+  IAccessCodeRepository,
   QuizSession,
   Answer,
   UserAnswer,
+  AccessCode,
 } from '@evaluateme/domain';
 
 const now = new Date();
+
+const accessCode: AccessCode = {
+  id: 'ac-1',
+  code: 'CODE-123',
+  companyId: 'company-1',
+  campaignId: null,
+  quizId: null,
+  technologyId: 'tech-1',
+  status: 'active',
+  sentAt: null,
+  sentToEmail: null,
+  usedCount: 0,
+  maxUses: 1,
+  expiresAt: null,
+  usedAt: null,
+  createdAt: now,
+  updatedAt: now,
+};
 
 const session: QuizSession = {
   id: 'session-1',
@@ -86,8 +106,26 @@ class FakeUserResultRepository implements IUserResultRepository {
   }
 }
 
+class FakeAccessCodeRepository implements IAccessCodeRepository {
+  async findById(id: string): Promise<AccessCode | null> {
+    return id === accessCode.id ? accessCode : null;
+  }
+  async findByCode(): Promise<AccessCode | null> {
+    return null;
+  }
+  async findByCampaignId(): Promise<AccessCode[]> {
+    return [];
+  }
+  async save(c: AccessCode): Promise<AccessCode> {
+    return c;
+  }
+}
+
 class FakeCandidateResultRepository implements ICandidateResultRepository {
   async findByCandidateId(): Promise<never[]> {
+    return [];
+  }
+  async findByCampaignId(): Promise<never[]> {
     return [];
   }
   async save(): Promise<never> {
@@ -105,6 +143,7 @@ describe('SubmitAnswerUseCase', () => {
     new FakeAnswerRepository(),
     new FakeUserResultRepository(),
     new FakeCandidateResultRepository(),
+    new FakeAccessCodeRepository(),
   );
 
   it('records a correct answer and completes the test', async () => {

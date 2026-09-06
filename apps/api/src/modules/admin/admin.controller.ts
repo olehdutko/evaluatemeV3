@@ -164,7 +164,7 @@ export class AdminController {
 
   @Post('technologies')
   async createTechnology(
-    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name: string; slug?: string; description?: string | null },
+    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name: string; slug?: string; description?: string | null; quizQuestionCount?: number; quizDurationMinutes?: number },
   ): Promise<ReturnType<CreateTechnologyUseCase['execute']>> {
     return this.createTechnologyUseCase.execute(body);
   }
@@ -172,7 +172,7 @@ export class AdminController {
   @Put('technologies/:id')
   async updateTechnology(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name?: string; slug?: string; description?: string | null },
+    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name?: string; slug?: string; description?: string | null; quizQuestionCount?: number; quizDurationMinutes?: number },
   ): Promise<ReturnType<UpdateTechnologyUseCase['execute']>> {
     return this.updateTechnologyUseCase.execute({ id, ...body });
   }

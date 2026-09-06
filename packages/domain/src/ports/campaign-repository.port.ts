@@ -4,7 +4,9 @@ export const ICampaignRepository = Symbol('ICampaignRepository');
 
 export interface ICampaignRepository {
   findById(id: string): Promise<Campaign | null>;
-  findAll(): Promise<Campaign[]>;
+  findByCompanyId(companyId: string): Promise<Campaign[]>;
+  findByCompanyIdAndStatus(companyId: string, status: string): Promise<Campaign[]>;
   save(campaign: Campaign): Promise<Campaign>;
   saveHistory(history: CampaignHistory): Promise<CampaignHistory>;
+  findHistoryByCampaignId(campaignId: string): Promise<CampaignHistory[]>;
 }

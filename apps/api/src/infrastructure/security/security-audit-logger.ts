@@ -10,11 +10,12 @@ export class ConsoleSecurityAuditLogger implements ISecurityAuditLogger {
     this.logger = createLogger('security');
   }
 
-  async log(event: SecurityAuditEvent): Promise<void> {
+  log(event: SecurityAuditEvent): Promise<void> {
     this.logger.warn(event.eventCode, {
       tag: 'security',
       ...event,
       timestamp: new Date().toISOString(),
     });
+    return Promise.resolve();
   }
 }

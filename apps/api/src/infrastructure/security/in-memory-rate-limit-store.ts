@@ -10,7 +10,8 @@ interface WindowState {
 export class InMemoryRateLimitStore implements IRateLimitStore {
   private readonly windows = new Map<string, WindowState>();
 
-  async record(key: string, windowMs: number, _limit: number): Promise<RateLimitRecord> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  record(key: string, windowMs: number, _limit: number): Promise<RateLimitRecord> {
     const now = Date.now();
     let state = this.windows.get(key);
     if (!state || state.resetAt <= now) {
@@ -18,19 +19,20 @@ export class InMemoryRateLimitStore implements IRateLimitStore {
       this.windows.set(key, state);
     }
     state.count += 1;
-    return { count: state.count, windowStart: state.resetAt - windowMs, resetAt: state.resetAt };
+    return Promise.resolve({ count: state.count, windowStart: state.resetAt - windowMs, resetAt: state.resetAt });
   }
 
-  async peek(key: string, windowMs: number): Promise<RateLimitRecord | null> {
+  peek(key: string, windowMs: number): Promise<RateLimitRecord | null> {
     const now = Date.now();
     const state = this.windows.get(key);
     if (!state || state.resetAt <= now) {
-      return null;
+      return Promise.resolve(null);
     }
-    return { count: state.count, windowStart: state.resetAt - windowMs, resetAt: state.resetAt };
+    return Promise.resolve({ count: state.count, windowStart: state.resetAt - windowMs, resetAt: state.resetAt });
   }
 
-  async reset(key: string): Promise<void> {
+  reset(key: string): Promise<void> {
     this.windows.delete(key);
+    return Promise.resolve();
   }
 }

@@ -343,3 +343,28 @@ Options going forward:
 
 ### Fixed
 - Quiz session now uses the configured `test_question_count` snapshot instead of all technology questions, so duration and question count match preview settings.
+
+## 2026-09-05 — Corporate Campaigns Management
+
+### Added
+- New `CorporateModule` with NestJS use cases, controllers, and repositories.
+- Campaign lifecycle: create, list, filter by status, view detail/history, transition status (open → closed → archived → open).
+- Company-private quizzes: custom quizzes built from existing questions and personal quizzes with original Q&A.
+- Access code generation and email sending inside open campaigns; usage tracked per company.
+- Campaign-scoped candidate results list and detailed result view with per-question correctness.
+- Prisma migration `20260905000000_corporate_campaigns` adding `companyId`/`notes` to campaigns, `campaignId`/`quizId`/`sentAt`/`sentToEmail` to access codes, new `company_quizzes` tables, and `campaignId`/`accessCodeId`/`companyQuizId` to candidate results.
+- Frontend pages: `/campaigns`, `/campaigns/[id]`, `/campaigns/[id]/results`, `/campaigns/[id]/results/[resultId]`, `/quizzes/custom`, `/quizzes/personal`.
+- Seed script `apps/api/src/scripts/create-company-user.ts` for test company accounts.
+- Unit tests for campaign use cases.
+- Fixed root `npm run lint -w apps/api`; build, lint, API tests, and web build/lint all pass.
+- Fixed runtime NestJS DI error by registering `IQuizSessionRepository` in `CorporateModule`.
+- Extended `/api/v1/auth/me` and frontend auth context to expose and persist `companyId`, fixing corporate pages load for company users.
+- Linked the seeded corporate test account to a `CompanyProfile` so the `/campaigns` page can load for `corporate.admin@example.com`.
+- Added corporate navigation (`Campaigns`, `Quizzes`) in `Header` and mobile menu for `company` users; allowed authenticated access to `/campaigns` and `/quizzes` via middleware.
+- Configured Next.js rewrite to proxy `/api/v1/*` requests to the API server so corporate pages work with relative fetch URLs.
+- Refactored corporate frontend fetch calls to use full API base URL with credentials, resolving 401 errors on `/campaigns` for company users.
+- Added `/campaigns/new` page so company users can create campaigns from the UI.
+- Added breadcrumb navigation to campaign detail, results list, and result detail pages.
+- Breadcrumb labels now display the actual campaign name, truncated at 20 characters.
+- Cleared build caches and stabilized Next.js dev server after adding corporate pages.
+- Added `zod` to Next.js `transpilePackages` to fix dev server module resolution error on `/campaigns/[id]`.

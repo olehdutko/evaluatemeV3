@@ -40,6 +40,7 @@ describe('LegacySessionsResultsMigration', () => {
   const mockCandidateResultRepo: jest.Mocked<ICandidateResultRepository> = {
     findByResultCode: jest.fn(),
     findByCandidateId: jest.fn(),
+    findByCampaignId: jest.fn(),
     save: jest.fn(),
   };
   const mockQueryRunner = { query: jest.fn() };

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PUBLIC_PATHS = ['/', '/login', '/register', '/forgot-password', '/reset-password', '/result', '/api', '/admin/login', '/technologies', '/health', '/tests'];
+const COMPANY_PATHS = ['/campaigns', '/quizzes'];
 const ADMIN_PATHS = ['/admin'];
 const STATIC_PATH_PREFIXES = ['/_next', '/static', '/favicon.ico'];
 
@@ -24,6 +25,12 @@ export function middleware(request: NextRequest): NextResponse {
   if (!token) {
     const loginUrl = isAdminPath(pathname) ? new URL('/admin/login', request.url) : new URL('/login', request.url);
     return NextResponse.redirect(loginUrl);
+  }
+
+  const isCompanyPath = COMPANY_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  if (isCompanyPath) {
+    // Allow only authenticated users through; role enforcement happens on the API.
+    return NextResponse.next();
   }
 
   return NextResponse.next();

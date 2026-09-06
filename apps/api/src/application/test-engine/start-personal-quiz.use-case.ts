@@ -28,6 +28,10 @@ export class StartPersonalQuizUseCase {
       throw new NotFoundError('user');
     }
 
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenError('Admin users cannot take tests.');
+    }
+
     if (user.role !== UserRole.USER) {
       throw new ForbiddenError('Only personal accounts can start this quiz.');
     }

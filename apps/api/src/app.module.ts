@@ -7,6 +7,7 @@ import { TestEngineModule } from './modules/test-engine/test-engine.module';
 import { MeModule } from './modules/me/me.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { PublicInfoModule } from './modules/public-info/public-info.module';
+import { CorporateModule } from './modules/corporate/corporate.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PublicInfoModule } from './modules/public-info/public-info.module';
     MeModule,
     AdminModule,
     PublicInfoModule,
+    CorporateModule,
   ],
 })
 export class AppModule {}

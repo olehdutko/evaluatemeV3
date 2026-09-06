@@ -1,0 +1,27 @@
+{
+  "name": "Campaign History",
+  "description": "Chronological audit log of actions performed on a campaign.",
+  "endpoint": "GET /api/v1/corporate/campaigns/:id",
+  "response": {
+    "data": {
+      "id": "string (uuid)",
+      "companyId": "string (uuid) | null",
+      "name": "string",
+      "description": "string | null",
+      "notes": "string | null",
+      "status": "enum: open | closed | archived",
+      "createdByUserId": "string (uuid)",
+      "createdAt": "string (ISO 8601)",
+      "history": [
+        {
+          "id": "string (uuid)",
+          "action": "enum: created | status_changed | access_code_created",
+          "status": "enum: open | closed | archived | null",
+          "changedByUserId": "string (uuid)",
+          "metadata": "string (JSON) | null",
+          "changedAt": "string (ISO 8601)"
+        }
+      ]
+    }
+  }
+}

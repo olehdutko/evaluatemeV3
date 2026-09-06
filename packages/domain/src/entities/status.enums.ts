@@ -25,10 +25,9 @@ export const SessionStatus = {
 export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus];
 
 export const CampaignStatus = {
-  DRAFT: 'draft',
-  ACTIVE: 'active',
-  PAUSED: 'paused',
+  OPEN: 'open',
   CLOSED: 'closed',
+  ARCHIVED: 'archived',
 } as const;
 
 export type CampaignStatus = (typeof CampaignStatus)[keyof typeof CampaignStatus];
