@@ -42,7 +42,7 @@ function PasswordStrength({ password }: PasswordStrengthProps): JSX.Element | nu
 }
 
 export function ProfileForm(): JSX.Element {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, isAdmin } = useAuth();
 
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -135,6 +135,8 @@ export function ProfileForm(): JSX.Element {
     }
   }
 
+
+
   async function handlePasswordSubmit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
     setPasswordError(null);
@@ -187,28 +189,48 @@ export function ProfileForm(): JSX.Element {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-      <PageHeader title="Your profile" description="Manage your account details and security settings." />
+      {isAdmin ? (
+        <PageHeader title="Admin profile" className="border-b-0 pb-0" />
+      ) : (
+        <PageHeader title="Your profile" description="Manage your account details and security settings." />
+      )}
 
       {/* Profile details */}
       <section className="panel p-6 sm:p-8">
         <h2 className="font-display text-xl font-bold text-text-primary mb-6">Profile details</h2>
-        <form onSubmit={(event) => { void handleProfileSubmit(event); }} className="space-y-5">
-          <div className="block">
-            <span className="label-mono">Email</span>
-            <input
-              type="email"
-              value={email}
-              readOnly
-              disabled
-              autoComplete="email"
-              className="input-field cursor-not-allowed opacity-70"
-              placeholder="you@example.com"
-              aria-describedby="email-readonly-note"
-            />
-            <p id="email-readonly-note" className="mt-1.5 font-mono text-xs text-text-secondary">
-              Email cannot be changed here. Contact support if you need to update it.
-            </p>
+        {isAdmin ? (
+          <div className="space-y-5">
+            <div className="block">
+              <span className="label-mono">Email</span>
+              <input
+                type="email"
+                value={email}
+                readOnly
+                disabled
+                autoComplete="email"
+                className="input-field cursor-not-allowed opacity-70"
+                placeholder="you@example.com"
+              />
+            </div>
           </div>
+        ) : (
+          <form onSubmit={(event) => { void handleProfileSubmit(event); }} className="space-y-5">
+            <div className="block">
+              <span className="label-mono">Email</span>
+              <input
+                type="email"
+                value={email}
+                readOnly
+                disabled
+                autoComplete="email"
+                className="input-field cursor-not-allowed opacity-70"
+                placeholder="you@example.com"
+                aria-describedby="email-readonly-note"
+              />
+              <p id="email-readonly-note" className="mt-1.5 font-mono text-xs text-text-secondary">
+                Email cannot be changed here. Contact support if you need to update it.
+              </p>
+            </div>
 
           <label className="block">
             <span className="label-mono">Username</span>
@@ -311,6 +333,7 @@ export function ProfileForm(): JSX.Element {
             {isUpdatingProfile ? 'Saving…' : 'Save profile'}
           </button>
         </form>
+      )}
       </section>
 
       {/* Privacy & Security */}

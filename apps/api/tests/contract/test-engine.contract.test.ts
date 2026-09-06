@@ -29,7 +29,7 @@ describe('Test engine endpoint contracts', () => {
         questions: [
           {
             id: '550e8400-e29b-41d4-a716-446655440002',
-            testId: '550e8400-e29b-41d4-a716-446655440001',
+            technologyId: '550e8400-e29b-41d4-a716-446655440001',
             content: 'What is 2+2?',
             type: 'single',
             orderIndex: 0,

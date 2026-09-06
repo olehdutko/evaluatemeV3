@@ -1,0 +1,75 @@
+{
+  "name": "Campaigns API",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/v1/corporate/campaigns",
+      "body": {
+        "companyId": "uuid",
+        "name": "string",
+        "description": "string | null (optional)",
+        "notes": "string | null (optional)"
+      },
+      "response": {
+        "data": {
+          "id": "uuid",
+          "name": "string",
+          "description": "string | null",
+          "notes": "string | null",
+          "status": "open",
+          "createdByUserId": "uuid",
+          "companyId": "uuid",
+          "createdAt": "ISO 8601"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns?companyId=&status=",
+      "response": {
+        "data": [
+          {
+            "id": "uuid",
+            "companyId": "uuid",
+            "name": "string",
+            "description": "string | null",
+            "status": "open | closed | archived",
+            "createdByUserId": "uuid",
+            "createdAt": "ISO 8601"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns/:id?companyId=",
+      "response": {
+        "data": {
+          "id": "uuid",
+          "companyId": "uuid",
+          "name": "string",
+          "description": "string | null",
+          "notes": "string | null",
+          "status": "open | closed | archived",
+          "createdByUserId": "uuid",
+          "createdAt": "ISO 8601",
+          "history": "CampaignHistory[]"
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/corporate/campaigns/:id/status",
+      "body": {
+        "companyId": "uuid",
+        "status": "open | closed | archived"
+      },
+      "response": {
+        "data": {
+          "id": "uuid",
+          "status": "open | closed | archived"
+        }
+      }
+    }
+  ]
+}

@@ -65,7 +65,7 @@ export class PrismaQuizSessionRepository implements IQuizSessionRepository {
       where: { testSessionId: sessionId },
       orderBy: { answeredAt: 'asc' },
     });
-    return rows.map(this.mapAnswer);
+    return rows.map((row) => this.mapAnswer(row));
   }
 
   private mapSession(row: {

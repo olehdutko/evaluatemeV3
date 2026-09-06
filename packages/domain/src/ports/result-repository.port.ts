@@ -12,5 +12,6 @@ export interface IUserResultRepository {
 export interface ICandidateResultRepository {
   findByResultCode(resultCode: string): Promise<CandidateResult | null>;
   findByCandidateId(candidateId: string): Promise<CandidateResult[]>;
+  findByCampaignId(campaignId: string): Promise<CandidateResult[]>;
   save(result: CandidateResult): Promise<CandidateResult>;
 }

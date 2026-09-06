@@ -58,7 +58,11 @@ async function fetchWithAuth(
     credentials: 'include',
   });
 
-  if (response.status === 401 && retry) {
+  // Auth endpoints (login, register, refresh) should not trigger a token refresh,
+  // otherwise a 401 on login would deadlock waiting for its own refresh promise.
+  const isAuthEndpoint = url.includes('/api/v1/auth/');
+
+  if (response.status === 401 && retry && !isAuthEndpoint) {
     await getRefreshPromise();
     return fetchWithAuth(url, init, false);
   }

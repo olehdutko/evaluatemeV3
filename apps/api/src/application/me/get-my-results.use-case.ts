@@ -21,7 +21,7 @@ export class GetMyResultsUseCase {
       orderBy: { createdAt: 'desc' },
     });
 
-    const technologyIds = [...new Set(rows.map((row) => row.technologyId as string))];
+    const technologyIds = [...new Set(rows.map((row) => row.technologyId))];
     const technologies = technologyIds.length > 0
       ? await this.prisma.technology.findMany({ where: { id: { in: technologyIds } }, select: { id: true, name: true } })
       : [];

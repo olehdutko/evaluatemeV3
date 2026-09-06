@@ -7,7 +7,8 @@ import { SecurityHeadersMiddleware } from './infrastructure/security/security-he
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
-  app.use(new SecurityHeadersMiddleware().use);
+  const securityHeaders = new SecurityHeadersMiddleware();
+  app.use((req: unknown, res: unknown, next: () => void) => securityHeaders.use(req as never, res as never, next));
   app.use(cookieParser());
   app.enableCors({
     origin: [process.env.WEB_ORIGIN || 'http://localhost:4000', 'http://localhost:3000'],

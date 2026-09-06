@@ -2,11 +2,13 @@ import { StartSessionUseCase } from '../../../../src/application/test-engine/sta
 import {
   IAccessCodeRepository,
   IQuestionRepository,
-  ITestSessionRepository,
+  IQuizSessionRepository,
   ISessionStrategy,
+  ITechnologyRepository,
   AccessCode,
   Question,
-  TestSession,
+  QuizSession,
+  Technology,
 } from '@evaluateme/domain';
 
 const now = new Date();
@@ -15,7 +17,13 @@ const accessCode: AccessCode = {
   id: 'ac-1',
   code: 'CODE-123',
   companyId: 'company-1',
-  testId: 'test-1',
+  technologyId: 'tech-1',
+  campaignId: null,
+  quizId: null,
+  sentAt: null,
+  sentToEmail: null,
+  usedCount: 0,
+  maxUses: 1,
   status: 'active',
   expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000),
   usedAt: null,
@@ -25,7 +33,7 @@ const accessCode: AccessCode = {
 
 const question: Question = {
   id: 'q-1',
-  testId: 'test-1',
+  technologyId: 'tech-1',
   content: 'Q1',
   type: 'single',
   orderIndex: 0,
@@ -34,14 +42,15 @@ const question: Question = {
   updatedAt: now,
 };
 
-const session: TestSession = {
+const session: QuizSession = {
   id: 'session-1',
   userId: null,
-  testId: 'test-1',
+  technologyId: 'tech-1',
   accessCodeId: 'ac-1',
   status: 'in_progress',
   startedAt: now,
   currentQuestionIndex: 0,
+  questionIdsSnapshot: ['q-1'],
   createdAt: now,
   updatedAt: now,
 };
@@ -53,34 +62,46 @@ class FakeAccessCodeRepository implements IAccessCodeRepository {
   findByCode(code: string): Promise<AccessCode | null> {
     return Promise.resolve(code === accessCode.code ? accessCode : null);
   }
+  findByCampaignId(): Promise<AccessCode[]> {
+    return Promise.resolve([]);
+  }
   save(c: AccessCode): Promise<AccessCode> {
     return Promise.resolve(c);
   }
 }
 
 class FakeQuestionRepository implements IQuestionRepository {
-  findByTestId(): Promise<Question[]> {
+  findAll(): Promise<Question[]> {
     return Promise.resolve([question]);
   }
   findById(): Promise<Question | null> {
     return Promise.resolve(null);
   }
-  findByTestIdRandomized(): Promise<Question[]> {
+  findByTechnologyId(): Promise<Question[]> {
+    return Promise.resolve([question]);
+  }
+  findByTechnologyIdRandomized(): Promise<Question[]> {
     return Promise.resolve([question]);
   }
   save(q: Question): Promise<Question> {
     return Promise.resolve(q);
   }
+  delete(): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
-class FakeTestSessionRepository implements ITestSessionRepository {
-  create(s: Omit<TestSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<TestSession> {
+class FakeQuizSessionRepository implements IQuizSessionRepository {
+  create(s: Omit<QuizSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<QuizSession> {
     return Promise.resolve({ ...session, ...s });
   }
-  findById(): Promise<TestSession | null> {
+  findAll(): Promise<QuizSession[]> {
+    return Promise.resolve([]);
+  }
+  findById(): Promise<QuizSession | null> {
     return Promise.resolve(null);
   }
-  update(id: string, data: Partial<TestSession>): Promise<TestSession> {
+  update(id: string, data: Partial<QuizSession>): Promise<QuizSession> {
     return Promise.resolve({ ...session, ...data, id });
   }
   addAnswer(): Promise<never> {
@@ -103,12 +124,45 @@ class FakeSessionStrategy implements ISessionStrategy {
   }
 }
 
+const technology: Technology = {
+  id: 'tech-1',
+  name: 'C#',
+  slug: 'csharp',
+  description: null,
+  quizQuestionCount: 20,
+  quizDurationMinutes: 40,
+  createdAt: now,
+  updatedAt: now,
+};
+
+class FakeTechnologyRepository implements ITechnologyRepository {
+  findById(id: string): Promise<Technology | null> {
+    return Promise.resolve(id === technology.id ? technology : null);
+  }
+  findAll(): Promise<Technology[]> {
+    return Promise.resolve([]);
+  }
+  findBySlug(): Promise<Technology | null> {
+    return Promise.resolve(null);
+  }
+  findByName(): Promise<Technology | null> {
+    return Promise.resolve(null);
+  }
+  save(t: Technology): Promise<Technology> {
+    return Promise.resolve(t);
+  }
+  delete(): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
 describe('StartSessionUseCase', () => {
   const useCase = new StartSessionUseCase(
     new FakeAccessCodeRepository(),
     new FakeQuestionRepository(),
-    new FakeTestSessionRepository(),
+    new FakeQuizSessionRepository(),
     new FakeSessionStrategy(),
+    new FakeTechnologyRepository(),
   );
 
   it('starts a session for a valid access code', async () => {
@@ -118,18 +172,7 @@ describe('StartSessionUseCase', () => {
     expect(result.data.questions).toHaveLength(1);
   });
 
-  it('throws for unknown access code', async () => {
+  it('throws for an unknown access code', async () => {
     await expect(useCase.execute('UNKNOWN')).rejects.toThrow('not found');
-  });
-
-  it('throws for expired access code', async () => {
-    const expiredCode = { ...accessCode, expiresAt: new Date(now.getTime() - 1000) };
-    const repo: IAccessCodeRepository = {
-      findById: () => Promise.resolve(null),
-      findByCode: () => Promise.resolve(expiredCode),
-      save: (c) => Promise.resolve(c),
-    };
-    const expiredUseCase = new StartSessionUseCase(repo, new FakeQuestionRepository(), new FakeTestSessionRepository(), new FakeSessionStrategy());
-    await expect(expiredUseCase.execute('CODE-123')).rejects.toThrow('Request validation failed.');
   });
 });

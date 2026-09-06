@@ -5,7 +5,7 @@ import { IEmailService, EmailMessage } from '@evaluateme/domain';
 export class ConsoleEmailService implements IEmailService {
   private readonly logger = new Logger(ConsoleEmailService.name);
 
-  async send(message: EmailMessage): Promise<void> {
+  send(message: EmailMessage): Promise<void> {
     this.logger.log('--- EMAIL ---');
     this.logger.log(`To: ${message.to}`);
     this.logger.log(`Subject: ${message.subject}`);
@@ -14,5 +14,6 @@ export class ConsoleEmailService implements IEmailService {
     }
     this.logger.log(`HTML:\n${message.html}`);
     this.logger.log('-------------');
+    return Promise.resolve();
   }
 }

@@ -3,9 +3,9 @@ import { randomUUID } from 'crypto';
 import {
   IQuizSessionRepository,
   IAnswerRepository,
-  IQuestionRepository,
   IUserResultRepository,
   ICandidateResultRepository,
+  IAccessCodeRepository,
   SessionStatus,
 } from '@evaluateme/domain';
 import { NotFoundError, BadRequestError } from '../../infrastructure/errors/app-error';
@@ -31,9 +31,9 @@ export class SubmitAnswerUseCase {
   constructor(
     @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
     @Inject(IAnswerRepository) private readonly answerRepository: IAnswerRepository,
-    @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(IUserResultRepository) private readonly userResultRepository: IUserResultRepository,
     @Inject(ICandidateResultRepository) private readonly candidateResultRepository: ICandidateResultRepository,
+    @Inject(IAccessCodeRepository) private readonly accessCodeRepository: IAccessCodeRepository,
   ) {
     this.logger = createLogger('SubmitAnswerUseCase');
   }
@@ -64,12 +64,15 @@ export class SubmitAnswerUseCase {
       answeredAt: new Date(),
     });
 
-    const allQuestions = await this.questionRepository.findByTechnologyId(session.technologyId);
+    const totalQuestions = session.questionIdsSnapshot?.length ?? 0;
+    if (totalQuestions === 0) {
+      throw new BadRequestError({ session: ['Quiz session has no questions'] });
+    }
     const answers = await this.quizSessionRepository.findAnswersBySessionId(sessionId);
     const correctCount = answers.filter((a: { isCorrect: boolean }) => a.isCorrect).length;
     const totalAnswered = answers.length;
-    const currentScore = Math.round((correctCount / allQuestions.length) * 100);
-    const nextIndex = totalAnswered < allQuestions.length ? totalAnswered : null;
+    const currentScore = Math.round((correctCount / totalQuestions) * 100);
+    const nextIndex = totalAnswered < totalQuestions ? totalAnswered : null;
     const isComplete = nextIndex === null;
 
     if (isComplete) {
@@ -96,11 +99,15 @@ export class SubmitAnswerUseCase {
             updatedAt: new Date(),
           });
         } else if (session.accessCodeId) {
+          const accessCode = await this.accessCodeRepository.findById(session.accessCodeId);
           await this.candidateResultRepository.save({
             id: randomUUID(),
             resultCode,
+            campaignId: accessCode?.campaignId ?? null,
             candidateId: null,
+            accessCodeId: session.accessCodeId ?? null,
             technologyId: session.technologyId,
+            companyQuizId: accessCode?.quizId ?? null,
             score: currentScore,
             maxScore: 100,
             status: 'completed' as SessionStatus,

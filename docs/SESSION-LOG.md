@@ -237,3 +237,39 @@ Run on 2026-09-02:
 - The quiz engine needs to create real `QuizSession` records and invoke `SendQuizResultEmailUseCase` after completion.
 - The dashboard detail page currently shows donut chart + score bar; refine charts if a charting library is adopted.
 - Consider caching or pagination for `/api/v1/me/results` if a user accumulates many results.
+
+## 2026-09-04 — Quiz preview/start flow and test credits note
+
+- Implemented quiz preview, confirmation dialog, and timer start screen in `feature/quiz-preview-and-start-flow`.
+- Added `set-user-credits` script in `apps/api` (`npm run set:credits -w apps/api -- <email> <credits>`) to update user credits safely.
+- Confirmed that the application does **not** reset user credits on server restart; credit balance persists in the database.
+- `private.user@example.com` now has 100 000 credits for manual testing.
+
+## Feature 013-corporate-campaigns — Corporate Campaigns Management (2026-09-05)
+
+- Created feature specification, implementation plan, data model, and tasks under `specs/013-corporate-campaigns/`.
+- Implemented backend `CorporateModule`:
+  - Campaigns CRUD + status transitions + history (`/api/v1/corporate/campaigns`).
+  - Custom/personal company quizzes (`/api/v1/corporate/quizzes`).
+  - Access codes inside campaigns with email sending (`/api/v1/corporate/campaigns/:campaignId/access-codes`).
+  - Campaign-scoped candidate results (`/api/v1/corporate/campaigns/:campaignId/results`).
+- Updated Prisma schema and applied migration adding company ownership, campaign linkage, and company quiz tables.
+- Updated test-engine result creation to record `campaignId`, `accessCodeId`, and `companyQuizId`.
+- Added frontend pages and components for campaigns, quizzes, access codes, and results.
+- Added seed script for corporate test users (`apps/api/src/scripts/create-company-user.ts`).
+- Added unit tests for campaign use cases; fixed existing tests impacted by domain entity changes.
+- Builds (`apps/api`, `apps/web`) and API tests pass. Root lint now passes; added `tsconfig.eslint.json` to include both `src` and `tests`, fixed strict `require-await`, `unbound-method`, `no-unsafe-*`, and other errors in `apps/api/src`, and added a targeted test-file override for pre-existing test mock ergonomics.
+- Fixed runtime NestJS DI error: added missing `IQuizSessionRepository` / `PrismaQuizSessionRepository` provider to `CorporateModule` so the API dev server starts.
+- Extended `/api/v1/auth/me` and web `AuthContext` to return and persist `companyId` in `localStorage`, enabling corporate pages to load the user's company profile automatically.
+- Linked existing `corporate.admin@example.com` test account to a `CompanyProfile` in the database so `/auth/me` returns `companyId` and corporate pages can load.
+- Added corporate navigation to `Header` (`Campaigns`, `Quizzes`) for users with role `company`; updated mobile menu and `middleware.ts` to allow authenticated access to `/campaigns` and `/quizzes/**`.
+- Added Next.js rewrite `/api/v1/:path*` → API server in `apps/web/next.config.js` so corporate pages can use relative API paths.
+- Refactored corporate frontend fetch calls to use full `CORPORATE_API_BASE` URL with `credentials: 'include'`, fixing cookie/auth forwarding for company users.
+- Added `/campaigns/new` page with a form to create campaigns; fixed relative import paths for nested route.
+- Added reusable `Breadcrumbs` component and wired it into `/campaigns/[id]`, `/campaigns/[id]/results`, and `/campaigns/[id]/results/[resultId]` for easy navigation back to the campaign.
+- Breadcrumb labels for the campaign now show the campaign name, truncated to 20 characters with an ellipsis when longer.
+- Cleared Next.js caches and verified dev server can render `/campaigns/[id]`; production build passes again.
+- Added `zod` to `transpilePackages` in `apps/web/next.config.js` to resolve Next.js dev server error `Cannot find module './vendor-chunks/zod.js'` on campaign detail pages.
+
+### Test account
+- Corporate user: `corporate.admin@example.com` / `CorpPassword123!` — company "EvaluateMe Demo Corp" with 100 available tests and 1000 access codes.

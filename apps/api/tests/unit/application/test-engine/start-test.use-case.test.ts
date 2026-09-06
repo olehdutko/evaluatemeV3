@@ -2,10 +2,12 @@ import { StartTestUseCase } from '../../../../src/application/test-engine/start-
 import {
   ITechnologyRepository,
   IQuestionRepository,
-  ITestSessionRepository,
+  IQuizSessionRepository,
+  IUserRepository,
   Technology,
   Question,
-  TestSession,
+  QuizSession,
+  User,
 } from '@evaluateme/domain';
 
 const now = new Date();
@@ -15,13 +17,15 @@ const tech: Technology = {
   name: 'C#',
   slug: 'csharp',
   description: null,
+  quizQuestionCount: 20,
+  quizDurationMinutes: 40,
   createdAt: now,
   updatedAt: now,
 };
 
 const question: Question = {
   id: 'q-1',
-  testId: 'tech-1',
+  technologyId: 'tech-1',
   content: 'What is 2+2?',
   type: 'single',
   orderIndex: 0,
@@ -30,15 +34,36 @@ const question: Question = {
   updatedAt: now,
 };
 
-const session: TestSession = {
+const session: QuizSession = {
   id: 'session-1',
   userId: 'user-1',
-  testId: 'tech-1',
+  technologyId: 'tech-1',
   status: 'in_progress',
   startedAt: new Date(),
   currentQuestionIndex: 0,
   createdAt: new Date(),
   updatedAt: new Date(),
+};
+
+const user: User = {
+  id: 'user-1',
+  email: 'test@example.com',
+  username: null,
+  passwordHash: 'hash',
+  legacyMd5Hash: null,
+  role: 'user',
+  activationStatus: 'active',
+  companyProfileId: null,
+  credits: 10,
+  firstName: null,
+  lastName: null,
+  middleName: null,
+  birthDate: null,
+  country: null,
+  city: null,
+  phone: null,
+  createdAt: now,
+  updatedAt: now,
 };
 
 class FakeTechnologyRepository implements ITechnologyRepository {
@@ -63,28 +88,37 @@ class FakeTechnologyRepository implements ITechnologyRepository {
 }
 
 class FakeQuestionRepository implements IQuestionRepository {
-  async findByTestId(): Promise<Question[]> {
+  async findAll(): Promise<Question[]> {
     return [question];
   }
   async findById(): Promise<Question | null> {
     return null;
   }
-  async findByTestIdRandomized(): Promise<Question[]> {
+  async findByTechnologyId(): Promise<Question[]> {
+    return [question];
+  }
+  async findByTechnologyIdRandomized(): Promise<Question[]> {
     return [question];
   }
   async save(q: Question): Promise<Question> {
     return q;
   }
+  async delete(): Promise<void> {
+    // no-op
+  }
 }
 
-class FakeTestSessionRepository implements ITestSessionRepository {
-  async create(s: Omit<TestSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<TestSession> {
+class FakeQuizSessionRepository implements IQuizSessionRepository {
+  async create(s: Omit<QuizSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<QuizSession> {
     return { ...session, ...s };
   }
-  async findById(): Promise<TestSession | null> {
+  async findAll(): Promise<QuizSession[]> {
+    return [];
+  }
+  async findById(): Promise<QuizSession | null> {
     return null;
   }
-  async update(id: string, data: Partial<TestSession>): Promise<TestSession> {
+  async update(id: string, data: Partial<QuizSession>): Promise<QuizSession> {
     return { ...session, ...data, id };
   }
   async addAnswer(): Promise<never> {
@@ -95,11 +129,33 @@ class FakeTestSessionRepository implements ITestSessionRepository {
   }
 }
 
+class FakeUserRepository implements IUserRepository {
+  async findAll(): Promise<User[]> {
+    return [];
+  }
+  async findById(id: string): Promise<User | null> {
+    return id === user.id ? user : null;
+  }
+  async findByEmail(): Promise<User | null> {
+    return null;
+  }
+  async findByUsername(): Promise<User | null> {
+    return null;
+  }
+  async save(u: User): Promise<User> {
+    return u;
+  }
+  async delete(): Promise<void> {
+    // no-op
+  }
+}
+
 describe('StartTestUseCase', () => {
   const useCase = new StartTestUseCase(
     new FakeTechnologyRepository(),
     new FakeQuestionRepository(),
-    new FakeTestSessionRepository(),
+    new FakeQuizSessionRepository(),
+    new FakeUserRepository(),
   );
 
   it('creates a test session for an existing technology', async () => {
@@ -111,5 +167,22 @@ describe('StartTestUseCase', () => {
 
   it('throws for unknown technology', async () => {
     await expect(useCase.execute('user-1', 'unknown')).rejects.toThrow('not found');
+  });
+
+  it('rejects admin users', async () => {
+    const adminRepository = new FakeUserRepository();
+    const originalFindById = adminRepository.findById.bind(adminRepository);
+    adminRepository.findById = async (id: string): Promise<User | null> => {
+      const existing = await originalFindById(id);
+      if (!existing) return null;
+      return { ...existing, role: 'admin' };
+    };
+    const adminUseCase = new StartTestUseCase(
+      new FakeTechnologyRepository(),
+      new FakeQuestionRepository(),
+      new FakeQuizSessionRepository(),
+      adminRepository,
+    );
+    await expect(adminUseCase.execute('user-1', 'csharp')).rejects.toThrow('Admin users cannot take tests');
   });
 });

@@ -5,11 +5,10 @@ import {
   IQuestionRepository,
   IQuizSessionRepository,
   ISessionStrategy,
+  ITechnologyRepository,
   Question,
 } from '@evaluateme/domain';
 import { NotFoundError, BadRequestError } from '../../infrastructure/errors/app-error';
-
-const DEFAULT_QUESTION_COUNT = 20;
 
 export interface StartSessionResult {
   sessionToken: string;
@@ -24,6 +23,7 @@ export class StartSessionUseCase {
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
     @Inject(ISessionStrategy) private readonly sessionStrategy: ISessionStrategy,
+    @Inject(ITechnologyRepository) private readonly technologyRepository: ITechnologyRepository,
   ) {}
 
   async execute(accessCode: string): Promise<{ success: true; data: StartSessionResult }> {
@@ -38,7 +38,9 @@ export class StartSessionUseCase {
       throw new BadRequestError({ accessCode: ['Access code has expired'] });
     }
 
-    const questions = await this.questionRepository.findByTechnologyIdRandomized(code.technologyId, DEFAULT_QUESTION_COUNT);
+    const technology = await this.technologyRepository.findById(code.technologyId ?? '');
+    const questionCount = technology?.quizQuestionCount ?? 20;
+    const questions = await this.questionRepository.findByTechnologyIdRandomized(code.technologyId ?? '', questionCount);
     if (questions.length === 0) {
       throw new NotFoundError('questions for technology');
     }
@@ -46,11 +48,12 @@ export class StartSessionUseCase {
     const candidateId = `candidate-${randomUUID()}`;
     const session = await this.quizSessionRepository.create({
       userId: null,
-      technologyId: code.technologyId,
+      technologyId: code.technologyId ?? '',
       accessCodeId: code.id,
       status: 'in_progress',
       startedAt: new Date(),
       currentQuestionIndex: 0,
+      questionIdsSnapshot: questions.map((q) => q.id),
     });
 
     const sessionToken = await this.sessionStrategy.issueSessionToken(candidateId, code.id, 7 * 24 * 60);

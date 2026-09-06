@@ -13,6 +13,7 @@ export interface UserProfile {
   username: string | null;
   role: UserRole;
   credits: number;
+  companyId: string | null;
   firstName: string | null;
   lastName: string | null;
   middleName: string | null;
@@ -48,6 +49,7 @@ function toUserProfile(data: MeResponse['data']): UserProfile {
     username: data.username,
     role: data.role,
     credits: data.credits,
+    companyId: data.companyId ?? null,
     firstName: data.firstName ?? null,
     lastName: data.lastName ?? null,
     middleName: data.middleName ?? null,
@@ -87,7 +89,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
       try {
         const response = await getMe();
         if (!cancelled) {
-          setUser(toUserProfile(response.data));
+          const profile = toUserProfile(response.data);
+          setUser(profile);
+          if (typeof window !== 'undefined' && profile.companyId) {
+            window.localStorage.setItem('companyId', profile.companyId);
+          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -111,6 +117,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     const response = await getMe();
     const profile = toUserProfile(response.data);
     setUser(profile);
+    if (typeof window !== 'undefined' && profile.companyId) {
+      window.localStorage.setItem('companyId', profile.companyId);
+    }
     return profile;
   }, []);
 
@@ -175,6 +184,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
       });
     } catch {
       // Ignore errors and clear client-side state anyway.
+    }
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('companyId');
     }
     clearAuthCookies();
     // Give the browser time to apply the Set-Cookie clear headers from the logout

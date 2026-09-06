@@ -11,7 +11,7 @@ const publicLinks = [
 ];
 
 export function Header(): JSX.Element {
-  const { isAuthenticated, logout, displayName, roleLabel, credits, user } = useAuth();
+  const { isAuthenticated, logout, displayName, roleLabel, credits, user, isAdmin } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -54,12 +54,36 @@ export function Header(): JSX.Element {
                 Dashboard
               </Link>
             )}
+            {user?.role === 'company' && (
+              <>
+                <Link
+                  href="/campaigns"
+                  className="font-body text-text-secondary hover:text-text-primary underline-offset-4 decoration-1 hover:underline transition-colors"
+                >
+                  Campaigns
+                </Link>
+                <Link
+                  href="/quizzes/custom"
+                  className="font-body text-text-secondary hover:text-text-primary underline-offset-4 decoration-1 hover:underline transition-colors"
+                >
+                  Quizzes
+                </Link>
+              </>
+            )}
             {user?.role === 'user' && (
               <Link
                 href="/buy-credits"
                 className="font-mono text-xs uppercase tracking-wider text-accent hover:text-text-primary underline-offset-4 decoration-1 hover:underline transition-colors"
               >
                 Buy credits
+              </Link>
+            )}
+            {isAdmin && (
+              <Link
+                href="/admin/dashboard"
+                className="font-mono text-xs uppercase tracking-wider text-accent hover:text-text-primary underline-offset-4 decoration-1 hover:underline transition-colors"
+              >
+                Admin panel
               </Link>
             )}
           </nav>
@@ -87,8 +111,17 @@ export function Header(): JSX.Element {
                     <div className="px-4 py-3 border-b border-border">
                       <p className="font-body text-sm text-text-primary truncate">{displayName}</p>
                       <p className="font-mono text-xs text-accent">{roleLabel}</p>
-                      <p className="font-mono text-xs text-text-secondary mt-1">Credits: {credits}</p>
+                      {!isAdmin && <p className="font-mono text-xs text-text-secondary mt-1">Credits: {credits}</p>}
                     </div>
+                    {isAdmin && (
+                      <Link
+                        href="/admin/dashboard"
+                        className="block px-4 py-3 text-sm hover:bg-bg-secondary transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        Admin panel
+                      </Link>
+                    )}
                     <Link
                       href="/profile"
                       className="block px-4 py-3 text-sm hover:bg-bg-secondary transition-colors"
@@ -159,22 +192,53 @@ export function Header(): JSX.Element {
                   <div className="px-4 py-3 border-b border-border">
                     <p className="font-body text-lg text-text-primary">{displayName}</p>
                     <p className="font-mono text-sm text-accent">{roleLabel}</p>
-                    <p className="font-mono text-sm text-text-secondary mt-1">Credits: {credits}</p>
+                    {!isAdmin && <p className="font-mono text-sm text-text-secondary mt-1">Credits: {credits}</p>}
                   </div>
-                  <Link
-                    href="/dashboard"
-                    onClick={closeMenu}
-                    className="btn-secondary text-center"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/buy-credits"
-                    onClick={closeMenu}
-                    className="btn-primary text-center"
-                  >
-                    Buy credits
-                  </Link>
+                  {user?.role === 'user' && (
+                    <Link
+                      href="/dashboard"
+                      onClick={closeMenu}
+                      className="btn-secondary text-center"
+                    >
+                      Dashboard
+                    </Link>
+                  )}
+                  {user?.role === 'company' && (
+                    <>
+                      <Link
+                        href="/campaigns"
+                        onClick={closeMenu}
+                        className="btn-secondary text-center"
+                      >
+                        Campaigns
+                      </Link>
+                      <Link
+                        href="/quizzes/custom"
+                        onClick={closeMenu}
+                        className="btn-secondary text-center"
+                      >
+                        Quizzes
+                      </Link>
+                    </>
+                  )}
+                  {user?.role === 'user' && (
+                    <Link
+                      href="/buy-credits"
+                      onClick={closeMenu}
+                      className="btn-primary text-center"
+                    >
+                      Buy credits
+                    </Link>
+                  )}
+                  {isAdmin && (
+                    <Link
+                      href="/admin/dashboard"
+                      onClick={closeMenu}
+                      className="btn-secondary text-center"
+                    >
+                      Admin panel
+                    </Link>
+                  )}
                   <Link
                     href="/profile"
                     onClick={closeMenu}

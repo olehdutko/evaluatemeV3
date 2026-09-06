@@ -107,7 +107,7 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const refreshToken = body.refreshToken || request.cookies[REFRESH_TOKEN_COOKIE] || '';
+    const refreshToken = body.refreshToken || (request.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined) || '';
     const result = await this.refreshUseCase.execute(refreshToken);
     response.cookie(ACCESS_TOKEN_COOKIE, result.data.accessToken, {
       ...COOKIE_OPTIONS,
@@ -166,7 +166,7 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const refreshToken = body.refreshToken || request.cookies[REFRESH_TOKEN_COOKIE] || '';
+    const refreshToken = body.refreshToken || (request.cookies?.[REFRESH_TOKEN_COOKIE] as string | undefined) || '';
     try {
       if (refreshToken) {
         await this.logoutUseCase.execute(refreshToken);

@@ -33,13 +33,13 @@ export class RateLimitGuard implements CanActivate {
   }
 
   private getOptions(context: ExecutionContext): RateLimitOptions | undefined {
-    return Reflect.getMetadata('rateLimit', context.getHandler()) as RateLimitOptions | undefined;
+    return Reflect.getMetadata('rateLimit', context.getHandler() as object) as RateLimitOptions | undefined;
   }
 }
 
 export const RateLimit = (options: Partial<RateLimitOptions> = {}) => {
   return (_target: object, _propertyKey: string, descriptor: PropertyDescriptor) => {
-    Reflect.defineMetadata('rateLimit', { ...DEFAULT_OPTIONS, ...options }, descriptor.value);
+    Reflect.defineMetadata('rateLimit', { ...DEFAULT_OPTIONS, ...options }, descriptor.value as object);
     return descriptor;
   };
 };

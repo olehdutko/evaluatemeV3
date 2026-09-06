@@ -147,6 +147,8 @@ export const technologiesSchema = z.object({
       name: z.string(),
       slug: z.string(),
       description: z.string().nullable(),
+      quizQuestionCount: z.number().int(),
+      quizDurationMinutes: z.number().int(),
       updatedAt: z.string().datetime(),
     }),
   ),
@@ -159,6 +161,8 @@ export const technologyValueSchema = z.object({
     name: z.string(),
     slug: z.string(),
     description: z.string().nullable(),
+    quizQuestionCount: z.number().int(),
+    quizDurationMinutes: z.number().int(),
     updatedAt: z.string().datetime(),
   }),
 });
@@ -170,6 +174,8 @@ export const technologyWithQuestionsSchema = z.object({
     name: z.string(),
     slug: z.string(),
     description: z.string().nullable(),
+    quizQuestionCount: z.number().int(),
+    quizDurationMinutes: z.number().int(),
     questions: z.array(
       z.object({
         id: z.string().uuid(),

@@ -69,8 +69,11 @@ function toDomainCandidateResult(raw: unknown): CandidateResult {
   return {
     id: data.id as string,
     resultCode: data.resultCode as string,
+    campaignId: (data.campaignId as string | null) ?? null,
     candidateId: data.candidateId as string | null,
-    technologyId: data.technologyId as string,
+    accessCodeId: (data.accessCodeId as string | null) ?? null,
+    technologyId: data.technologyId as string | null,
+    companyQuizId: (data.companyQuizId as string | null) ?? null,
     score: data.score as number | null,
     maxScore: data.maxScore as number | null,
     status: data.status as SessionStatus,
@@ -272,20 +275,38 @@ export class PrismaCandidateResultRepository implements ICandidateResultReposito
     }
   }
 
+  async findByCampaignId(campaignId: string): Promise<CandidateResult[]> {
+    try {
+      const results = await this.prisma.candidateResult.findMany({ where: { campaignId } });
+      return results.map(toDomainCandidateResult);
+    } catch (error: unknown) {
+      this.logger.error('Failed to find candidate results by campaign id', { error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
+  }
+
   async save(result: CandidateResult): Promise<CandidateResult> {
     const saved = await this.prisma.candidateResult.upsert({
       where: { resultCode: result.resultCode },
       create: {
         id: result.id,
         resultCode: result.resultCode,
+        campaignId: result.campaignId,
         candidateId: result.candidateId,
+        accessCodeId: result.accessCodeId,
         technologyId: result.technologyId,
+        companyQuizId: result.companyQuizId,
         score: result.score,
         maxScore: result.maxScore,
         status: result.status,
         sessionId: result.sessionId,
       },
       update: {
+        campaignId: result.campaignId,
+        candidateId: result.candidateId,
+        accessCodeId: result.accessCodeId,
+        technologyId: result.technologyId,
+        companyQuizId: result.companyQuizId,
         score: result.score,
         maxScore: result.maxScore,
         status: result.status,

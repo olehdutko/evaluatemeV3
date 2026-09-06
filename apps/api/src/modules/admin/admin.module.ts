@@ -20,7 +20,10 @@ import {
   ICreditSettingRepository,
   IEmailTemplateRepository,
   ILandingAdRepository,
-} from '@evaluateme/domain';
+
+  ITechnologyRepository,
+  IQuestionRepository,
+  IAnswerRepository} from '@evaluateme/domain';
 import { ListUsersUseCase } from '../../application/admin/users/list-users.use-case';
 import { UpdateUserUseCase } from '../../application/admin/users/update-user.use-case';
 import { AdminListTechnologiesUseCase } from '../../application/admin/content/list-technologies.use-case';
@@ -31,11 +34,6 @@ import { GetTechnologyWithQuestionsUseCase } from '../../application/admin/conte
 import { SaveQuestionUseCase } from '../../application/admin/content/save-question.use-case';
 import { DeleteQuestionUseCase } from '../../application/admin/content/delete-question.use-case';
 import { DeleteAnswerUseCase } from '../../application/admin/content/delete-answer.use-case';
-import {
-  ITechnologyRepository,
-  IQuestionRepository,
-  IAnswerRepository,
-} from '@evaluateme/domain';
 import { PrismaTechnologyRepository } from '../../infrastructure/prisma/repositories/prisma-technology.repository';
 import { PrismaQuestionRepository } from '../../infrastructure/prisma/repositories/prisma-question.repository';
 import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories/prisma-answer.repository';

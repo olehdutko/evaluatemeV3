@@ -17,6 +17,8 @@ export class GetTechnologyWithQuestionsUseCase {
       name: string;
       slug: string;
       description: string | null;
+      quizQuestionCount: number;
+      quizDurationMinutes: number;
       questions: Array<{
         id: string;
         content: string;
@@ -53,6 +55,8 @@ export class GetTechnologyWithQuestionsUseCase {
         name: technology.name,
         slug: technology.slug,
         description: technology.description,
+        quizQuestionCount: technology.quizQuestionCount,
+        quizDurationMinutes: technology.quizDurationMinutes,
         questions: questionsWithAnswers,
       },
     };

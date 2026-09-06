@@ -38,3 +38,5 @@ export * from './ports/auth';
 export * from './ports/password-hasher.port';
 export * from './ports/rate-limit-store.port';
 export * from './ports/security-audit-logger.port';
+export * from './entities/company-quiz.entity';
+export * from './ports/company-quiz-repository.port';

@@ -7,16 +7,16 @@ type StringValue = `${number}${'s' | 'm' | 'h' | 'd' | 'w' | 'y'}`;
 
 @Injectable()
 export class JwtStrategyAdapter implements IJwtStrategy {
-  async sign(payload: ITokenPayload, expiresIn?: string): Promise<string> {
+  sign(payload: ITokenPayload, expiresIn?: string): Promise<string> {
     const options: SignOptions = {};
     if (expiresIn) {
       options.expiresIn = expiresIn as StringValue;
     }
     const config = getAppConfig();
-    return sign(payload, this.secretForType(config, payload.type), options);
+    return Promise.resolve(sign(payload, this.secretForType(config, payload.type), options));
   }
 
-  async verify(token: string): Promise<ITokenPayload> {
+  verify(token: string): Promise<ITokenPayload> {
     const config = getAppConfig();
     let payload: ITokenPayload;
     try {
@@ -24,7 +24,7 @@ export class JwtStrategyAdapter implements IJwtStrategy {
     } catch {
       payload = verify(token, config.jwtRefreshSecret) as ITokenPayload;
     }
-    return payload;
+    return Promise.resolve(payload);
   }
 
   private secretForType(config: ReturnType<typeof getAppConfig>, type: ITokenPayload['type']): string {

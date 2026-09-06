@@ -16,7 +16,7 @@ export class PrismaQuestionRepository implements IQuestionRepository {
       where: technologyId ? { technologyId } : {},
       orderBy: { orderIndex: 'asc' },
     });
-    return rows.map(this.mapRow);
+    return rows.map((row) => this.mapRow(row));
   }
 
   async findById(id: string): Promise<Question | null> {
@@ -37,7 +37,7 @@ export class PrismaQuestionRepository implements IQuestionRepository {
     }>>`
       SELECT * FROM questions WHERE technologyId = ${technologyId} ORDER BY RAND() LIMIT ${limit}
     `;
-    return rows.map(this.mapRow);
+    return rows.map((row) => this.mapRow(row));
   }
 
   async save(question: Question): Promise<Question> {

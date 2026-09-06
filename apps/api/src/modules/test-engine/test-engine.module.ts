@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
-import { PrismaTechnologyRepository } from '../../infrastructure/prisma/repositories/prisma-technology.repository';
 import { PrismaQuestionRepository } from '../../infrastructure/prisma/repositories/prisma-question.repository';
 import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories/prisma-answer.repository';
+import { PrismaTechnologyRepository } from '../../infrastructure/prisma/repositories/prisma-technology.repository';
 import { PrismaQuizSessionRepository } from '../../infrastructure/prisma/repositories/prisma-quiz-session.repository';
 import { PrismaAccessCodeRepository } from '../../infrastructure/prisma/repositories/prisma-access-code.repository';
 import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repositories/prisma-credit-setting.repository';

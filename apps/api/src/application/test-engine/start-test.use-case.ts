@@ -9,8 +9,6 @@ import {
 } from '@evaluateme/domain';
 import { NotFoundError, ForbiddenError } from '../../infrastructure/errors/app-error';
 
-const DEFAULT_QUESTION_COUNT = 20;
-
 export interface StartTestResult {
   sessionId: string;
   technology: { id: string; name: string; slug: string };
@@ -40,14 +38,18 @@ export class StartTestUseCase {
       throw new NotFoundError('technology');
     }
 
-    // Admin users can start tests for free for application testing purposes.
-    if (user.role !== UserRole.ADMIN && user.credits < 1) {
+    // Admin users configure the application and are not allowed to take tests.
+    if (user.role === UserRole.ADMIN) {
+      throw new ForbiddenError('Admin users cannot take tests.');
+    }
+
+    if (user.credits < 1) {
       throw new ForbiddenError('Insufficient credits to start a test.');
     }
 
     const questions = await this.questionRepository.findByTechnologyIdRandomized(
       technology.id,
-      DEFAULT_QUESTION_COUNT,
+      technology.quizQuestionCount,
     );
     if (questions.length === 0) {
       throw new NotFoundError('questions for technology');
@@ -59,6 +61,7 @@ export class StartTestUseCase {
       status: 'in_progress',
       startedAt: new Date(),
       currentQuestionIndex: 0,
+      questionIdsSnapshot: questions.map((q) => q.id),
     });
 
     return {

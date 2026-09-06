@@ -1,50 +1,61 @@
 import { SubmitAnswerUseCase } from '../../../../src/application/test-engine/submit-answer.use-case';
 import {
-  ITestSessionRepository,
+  IQuizSessionRepository,
   IAnswerRepository,
-  IQuestionRepository,
-  TestSession,
+  IUserResultRepository,
+  ICandidateResultRepository,
+  IAccessCodeRepository,
+  QuizSession,
   Answer,
-  Question,
   UserAnswer,
+  AccessCode,
 } from '@evaluateme/domain';
 
 const now = new Date();
 
-const session: TestSession = {
-  id: 'session-1',
-  userId: 'user-1',
-  testId: 'tech-1',
-  status: 'in_progress',
-  startedAt: now,
-  currentQuestionIndex: 0,
+const accessCode: AccessCode = {
+  id: 'ac-1',
+  code: 'CODE-123',
+  companyId: 'company-1',
+  campaignId: null,
+  quizId: null,
+  technologyId: 'tech-1',
+  status: 'active',
+  sentAt: null,
+  sentToEmail: null,
+  usedCount: 0,
+  maxUses: 1,
+  expiresAt: null,
+  usedAt: null,
   createdAt: now,
   updatedAt: now,
 };
 
-const questions: Question[] = [
-  {
-    id: 'q-1',
-    testId: 'tech-1',
-    content: 'Q1',
-    type: 'single',
-    orderIndex: 0,
-    score: 1,
-    createdAt: now,
-    updatedAt: now,
-  },
-];
+const session: QuizSession = {
+  id: 'session-1',
+  userId: 'user-1',
+  technologyId: 'tech-1',
+  status: 'in_progress',
+  startedAt: now,
+  currentQuestionIndex: 0,
+  questionIdsSnapshot: ['q-1'],
+  createdAt: now,
+  updatedAt: now,
+};
 
-class FakeTestSessionRepository implements ITestSessionRepository {
+class FakeQuizSessionRepository implements IQuizSessionRepository {
   answers: UserAnswer[] = [];
 
   async create(): Promise<never> {
     throw new Error('not implemented');
   }
-  async findById(id: string): Promise<TestSession | null> {
+  async findAll(): Promise<QuizSession[]> {
+    return [];
+  }
+  async findById(id: string): Promise<QuizSession | null> {
     return id === session.id ? session : null;
   }
-  async update(id: string, data: Partial<TestSession>): Promise<TestSession> {
+  async update(id: string, data: Partial<QuizSession>): Promise<QuizSession> {
     return { ...session, ...data, id };
   }
   async addAnswer(answer: Omit<UserAnswer, 'id' | 'createdAt' | 'updatedAt'>): Promise<UserAnswer> {
@@ -68,7 +79,7 @@ class FakeAnswerRepository implements IAnswerRepository {
   }
   async findById(id: string): Promise<Answer | null> {
     return id === 'a-1'
-      ? { id: 'a-1', questionId: 'q-1', content: 'Correct', isCorrect: true, orderIndex: 0, createdAt: now, updatedAt: now }
+      ? { id: 'a-1', questionId: 'q-1', content: 'Correct', isCorrect: true, orderIndex: 0, createdAt: now }
       : null;
   }
   async findByQuestionIds(): Promise<Answer[]> {
@@ -77,26 +88,63 @@ class FakeAnswerRepository implements IAnswerRepository {
   async save(a: Answer): Promise<Answer> {
     return a;
   }
+  async delete(): Promise<void> {
+    // no-op
+  }
 }
 
-class FakeQuestionRepository implements IQuestionRepository {
-  async findByTestId(): Promise<Question[]> {
-    return questions;
-  }
-  async findById(): Promise<Question | null> {
-    return null;
-  }
-  async findByTestIdRandomized(): Promise<Question[]> {
+
+class FakeUserResultRepository implements IUserResultRepository {
+  async findByUserId(): Promise<never[]> {
     return [];
   }
-  async save(q: Question): Promise<Question> {
-    return q;
+  async save(): Promise<never> {
+    throw new Error('not implemented');
+  }
+  async findByResultCode(): Promise<never> {
+    throw new Error('not implemented');
+  }
+}
+
+class FakeAccessCodeRepository implements IAccessCodeRepository {
+  async findById(id: string): Promise<AccessCode | null> {
+    return id === accessCode.id ? accessCode : null;
+  }
+  async findByCode(): Promise<AccessCode | null> {
+    return null;
+  }
+  async findByCampaignId(): Promise<AccessCode[]> {
+    return [];
+  }
+  async save(c: AccessCode): Promise<AccessCode> {
+    return c;
+  }
+}
+
+class FakeCandidateResultRepository implements ICandidateResultRepository {
+  async findByCandidateId(): Promise<never[]> {
+    return [];
+  }
+  async findByCampaignId(): Promise<never[]> {
+    return [];
+  }
+  async save(): Promise<never> {
+    throw new Error('not implemented');
+  }
+  async findByResultCode(): Promise<never> {
+    throw new Error('not implemented');
   }
 }
 
 describe('SubmitAnswerUseCase', () => {
-  const repo = new FakeTestSessionRepository();
-  const useCase = new SubmitAnswerUseCase(repo, new FakeAnswerRepository(), new FakeQuestionRepository());
+  const repo = new FakeQuizSessionRepository();
+  const useCase = new SubmitAnswerUseCase(
+    repo,
+    new FakeAnswerRepository(),
+    new FakeUserResultRepository(),
+    new FakeCandidateResultRepository(),
+    new FakeAccessCodeRepository(),
+  );
 
   it('records a correct answer and completes the test', async () => {
     const result = await useCase.execute('session-1', 'q-1', 'a-1');

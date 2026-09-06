@@ -13,8 +13,11 @@ export interface UserResult extends Entity {
 
 export interface CandidateResult extends Entity {
   resultCode: string;
+  campaignId: string | null;
   candidateId: string | null;
-  technologyId: string;
+  accessCodeId: string | null;
+  technologyId: string | null;
+  companyQuizId: string | null;
   score: number | null;
   maxScore: number | null;
   status: SessionStatus;

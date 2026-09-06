@@ -11,7 +11,7 @@ export class PrismaAnswerRepository implements IAnswerRepository {
       where: { questionId },
       orderBy: { orderIndex: 'asc' },
     });
-    return rows.map(this.mapRow);
+    return rows.map((row) => this.mapRow(row));
   }
 
   async findById(id: string): Promise<Answer | null> {
@@ -24,7 +24,7 @@ export class PrismaAnswerRepository implements IAnswerRepository {
       where: { questionId: { in: questionIds } },
       orderBy: { orderIndex: 'asc' },
     });
-    return rows.map(this.mapRow);
+    return rows.map((row) => this.mapRow(row));
   }
 
   async save(answer: Answer): Promise<Answer> {

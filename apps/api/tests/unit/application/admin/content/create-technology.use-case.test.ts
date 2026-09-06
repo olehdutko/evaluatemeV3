@@ -40,6 +40,8 @@ describe('CreateTechnologyUseCase', () => {
       name: 'React',
       slug: 'react-js',
       description: null,
+      quizQuestionCount: 20,
+      quizDurationMinutes: 40,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

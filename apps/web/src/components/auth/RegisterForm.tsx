@@ -71,7 +71,7 @@ export function RegisterForm(): JSX.Element {
           className="input-field"
         >
           <option value="user">Personal — take tests and track progress</option>
-          <option value="company">Company — invite candidates and buy access codes</option>
+          <option value="company">Company — invite candidates and manage campaigns</option>
         </select>
       </label>
 

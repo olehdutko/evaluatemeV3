@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { IQuestionRepository, IAnswerRepository, Answer } from '@evaluateme/domain';
-import { Question } from '@evaluateme/domain';
+import { IQuestionRepository, IAnswerRepository, Answer , Question } from '@evaluateme/domain';
 import { BadRequestError, UnprocessableError } from '../../../infrastructure/errors/app-error';
 
 export interface SaveQuestionInput {
