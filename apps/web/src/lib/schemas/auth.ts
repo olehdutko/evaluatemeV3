@@ -102,6 +102,8 @@ export const meResponseSchema = z.object({
     role: userRoleSchema,
     credits: z.number().int().min(0),
     companyId: z.string().uuid().nullable(),
+    availableAccessCodes: z.number().int().nullable(),
+    availableTests: z.number().int().nullable(),
     firstName: z.string().max(100).nullable(),
     lastName: z.string().max(100).nullable(),
     middleName: z.string().max(100).nullable(),

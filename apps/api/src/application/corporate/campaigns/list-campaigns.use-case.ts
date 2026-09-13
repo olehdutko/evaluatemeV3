@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ICampaignRepository, CampaignStatus, ICompanyProfileRepository } from '@evaluateme/domain';
+import { ICampaignRepository, CampaignStatus, ICompanyProfileRepository, IAccessCodeRepository } from '@evaluateme/domain';
 import { NotFoundError } from '../../../infrastructure/errors/app-error';
 
 export interface CampaignListItem {
@@ -11,6 +11,7 @@ export interface CampaignListItem {
   createdByUserId: string;
   createdAt: string;
   updatedAt: string;
+  accessCodeCount: number;
 }
 
 export interface ListCampaignsInput {
@@ -24,6 +25,7 @@ export class ListCampaignsUseCase {
   constructor(
     @Inject(ICampaignRepository) private readonly campaignRepository: ICampaignRepository,
     @Inject(ICompanyProfileRepository) private readonly companyProfileRepository: ICompanyProfileRepository,
+    @Inject(IAccessCodeRepository) private readonly accessCodeRepository: IAccessCodeRepository,
   ) {}
 
   async execute(input: ListCampaignsInput): Promise<{ success: true; data: CampaignListItem[] }> {
@@ -36,9 +38,13 @@ export class ListCampaignsUseCase {
       ? await this.campaignRepository.findByCompanyIdAndStatus(input.companyId, input.status)
       : await this.campaignRepository.findByCompanyId(input.companyId);
 
+    const counts = await Promise.all(
+      campaigns.map((campaign) => this.accessCodeRepository.countByCampaignId(campaign.id)),
+    );
+
     return {
       success: true,
-      data: campaigns.map((campaign) => ({
+      data: campaigns.map((campaign, index) => ({
         id: campaign.id,
         companyId: campaign.companyId ?? '',
         name: campaign.name,
@@ -47,6 +53,7 @@ export class ListCampaignsUseCase {
         createdByUserId: campaign.createdByUserId,
         createdAt: campaign.createdAt.toISOString(),
         updatedAt: campaign.updatedAt.toISOString(),
+        accessCodeCount: counts[index] ?? 0,
       })),
     };
   }

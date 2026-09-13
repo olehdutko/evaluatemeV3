@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
-import { Card } from '../../../components/ui/Card';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { Loading } from '../../../components/ui/Loading';
 import { Button } from '../../../components/ui/Button';
 import { CORPORATE_API_BASE } from '../../../lib/corporate-api';
 import { CreateAccessCodeForm } from '../../../components/campaigns/CreateAccessCodeForm';
 import { AccessCodeGrid } from '../../../components/campaigns/AccessCodeGrid';
+import { CampaignResults } from '../../../components/campaigns/CampaignResults';
 import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 
 interface HistoryItem {
@@ -39,13 +39,6 @@ interface ErrorResponse {
   message?: string;
 }
 
-const nextStatusMap: Record<'open' | 'closed' | 'archived', ('closed' | 'archived' | 'open')[]> = {
-  open: ['closed'],
-  closed: ['archived', 'open'],
-  archived: ['open'],
-};
-
-
 function truncateLabel(name: string): string {
   return name.length > 40 ? `${name.slice(0, 40)}…` : name;
 }
@@ -57,9 +50,7 @@ export default function CampaignDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
-  const [createdCount, setCreatedCount] = useState<number | null>(null);
-  const [activatedCount, setActivatedCount] = useState<number | null>(null);
-  const [accessCodeLimit, setAccessCodeLimit] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'access-codes' | 'results' | 'history'>('access-codes');
   const [confirmStatus, setConfirmStatus] = useState<'open' | 'closed' | 'archived' | null>(null);
 
   const fetchCampaign = useCallback(() => {
@@ -108,8 +99,6 @@ export default function CampaignDetailPage() {
   if (error) return <ErrorMessage message={error} />;
   if (!campaign) return <ErrorMessage message="Campaign not found" />;
 
-  const nextStatuses = nextStatusMap[campaign.status];
-
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumbs
@@ -121,107 +110,136 @@ export default function CampaignDetailPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{campaign.name}</h1>
-          <a href={`/campaigns/${campaign.id}/results?companyId=${companyId}`} className="text-sm text-blue-600 hover:underline">Results</a>
-          <span className="ml-2 rounded-full px-2 py-1 text-xs font-medium uppercase">{campaign.status}</span>
         </div>
         <div className="flex gap-2">
-          {nextStatuses.map((status) => (
-            <Button key={status} onClick={() => requestStatusChange(status)} variant="secondary">
-              Mark {status}
+          {campaign.status === 'open' && (
+            <Button onClick={() => requestStatusChange('closed')} variant="secondary">
+              Close
             </Button>
-          ))}
+          )}
+          {campaign.status !== 'open' && (
+            <Button onClick={() => requestStatusChange('open')} variant="secondary">
+              Reopen
+            </Button>
+          )}
         </div>
       </div>
 
-      <Card className="mb-6">
+      <div className="mb-6">
         {campaign.description && <p className="mb-2 text-gray-700">{campaign.description}</p>}
-        {campaign.notes && <p className="mb-2 text-gray-700"><strong>Notes:</strong> {campaign.notes}</p>}
-        <p className="text-sm text-gray-500">Created {new Date(campaign.createdAt).toLocaleString()}</p>
-      </Card>
+        {campaign.notes && <p className="text-gray-700"><strong>Notes:</strong> {campaign.notes}</p>}
+      </div>
 
-      {accessCodeLimit !== null && (
-        <div className="mb-4 text-sm text-gray-600">
-          Access codes: {createdCount ?? 0} created
-          {activatedCount !== null && (
-            <>, {activatedCount} activated</>
+      <div className="mb-6 border-b border-border">
+        <nav className="-mb-px flex gap-6" aria-label="Campaign tabs">
+          {[
+            { id: 'access-codes', label: 'Access Codes' },
+            { id: 'results', label: 'Results' },
+            { id: 'history', label: 'History' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              className={`border-b-2 px-1 pb-2 font-mono text-sm uppercase tracking-wider transition-colors ${
+                activeTab === tab.id
+                  ? 'border-text-primary text-text-primary'
+                  : 'border-transparent text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {activeTab === 'access-codes' && (
+        <div className="space-y-6">
+          {campaign.status === 'open' && (
+            <CreateAccessCodeForm
+              campaignId={campaign.id}
+              companyId={companyId}
+              onCreated={() => {
+                setRefreshToken((t) => t + 1);
+              }}
+            />
           )}
-          {accessCodeLimit !== -1 && activatedCount !== null && (
-            <span className="ml-1">({Math.max(0, accessCodeLimit - activatedCount)} remaining)</span>
-          )}
-          {accessCodeLimit === -1 && <span className="ml-1">(unlimited)</span>}
+          <AccessCodeGrid
+            campaignId={campaign.id}
+            companyId={companyId}
+            refreshToken={refreshToken}
+          />
         </div>
       )}
 
-      {campaign.status === 'open' && (
-        <CreateAccessCodeForm
-          campaignId={campaign.id}
-          companyId={companyId}
-          onCreated={(count, activated, limit) => {
-            setCreatedCount(count);
-            setActivatedCount(activated);
-            setAccessCodeLimit(limit);
-            setRefreshToken((t) => t + 1);
-          }}
-        />
+      {activeTab === 'results' && (
+        <CampaignResults campaignId={campaign.id} companyId={companyId} />
+      )}
+
+      {activeTab === 'history' && (
+        <>
+          {campaign.history.length === 0 ? (
+            <p className="text-gray-600">No history yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-bg-tertiary">
+                  <tr>
+                    <th className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-text-secondary">Action</th>
+                    <th className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-text-secondary">Details</th>
+                    <th className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-text-secondary">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {campaign.history.map((entry) => {
+                    const metadata = entry.metadata ? (JSON.parse(entry.metadata) as Record<string, unknown>) : {};
+                    const previousStatus = metadata.previousStatus ? String(metadata.previousStatus) : null;
+                    const recipientEmail = metadata.recipientEmail ? String(metadata.recipientEmail) : null;
+                    const testeeEmail = metadata.testeeEmail ? String(metadata.testeeEmail) : null;
+                    const details: string[] = [];
+                    if (entry.status) details.push(`Status: ${entry.status}`);
+                    if (previousStatus) details.push(`From: ${previousStatus}`);
+                    if (recipientEmail) details.push(`Sent to: ${recipientEmail}`);
+                    if (testeeEmail) details.push(`For: ${testeeEmail}`);
+                    return (
+                      <tr key={entry.id}>
+                        <td className="px-4 py-2 font-medium capitalize text-text-primary">{entry.action.replace(/_/g, ' ')}</td>
+                        <td className="px-4 py-2 text-text-secondary">{details.join(' · ') || '-'}</td>
+                        <td className="px-4 py-2 text-text-secondary whitespace-nowrap">{new Date(entry.changedAt).toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
 
       {confirmStatus && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="max-w-sm rounded bg-white p-6 shadow-lg">
-            <h3 className="mb-2 text-lg font-semibold">Confirm status change</h3>
+            <h3 className="mb-2 text-lg font-semibold">
+              {confirmStatus === 'closed' ? 'Close campaign?' : 'Reopen campaign?'}
+            </h3>
             <p className="mb-4 text-sm text-gray-600">
-              Are you sure you want to mark this campaign as <strong>{confirmStatus}</strong>?
-              {confirmStatus !== 'open' && (
-                <> This may disable access codes.</>
+              {confirmStatus === 'closed' ? (
+                <>
+                  Are you sure you want to close this campaign? This will prevent creating and sending new access codes. Already sent codes remain active.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to reopen this campaign? You will be able to create and send new access codes.
+                </>
               )}
             </p>
             <div className="flex justify-end gap-2">
               <Button onClick={() => setConfirmStatus(null)} variant="secondary">Cancel</Button>
-              <Button onClick={() => void changeStatus(confirmStatus)}>Confirm</Button>
+              <Button onClick={() => void changeStatus(confirmStatus)}>
+                {confirmStatus === 'closed' ? 'Close' : 'Reopen'}
+              </Button>
             </div>
           </div>
         </div>
-      )}
-
-      <h2 className="mb-4 text-xl font-semibold">Access Codes</h2>
-      <AccessCodeGrid
-        campaignId={campaign.id}
-        companyId={companyId}
-        refreshToken={refreshToken}
-        onSent={(activated, remaining) => {
-          setActivatedCount(activated);
-          if (remaining !== null && accessCodeLimit !== null && accessCodeLimit !== -1) {
-            // no-op: remaining already derived
-          }
-        }}
-      />
-
-      <h2 className="mb-4 mt-8 text-xl font-semibold">History</h2>
-      {campaign.history.length === 0 ? (
-        <p className="text-gray-600">No history yet.</p>
-      ) : (
-        <ul className="space-y-2">
-          {campaign.history.map((entry) => {
-            const metadata = entry.metadata ? (JSON.parse(entry.metadata) as Record<string, unknown>) : {};
-            const previousStatus = metadata.previousStatus ? String(metadata.previousStatus) : null;
-            const recipientEmail = metadata.recipientEmail ? String(metadata.recipientEmail) : null;
-            return (
-              <li key={entry.id} className="rounded border p-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium capitalize">{entry.action.replace(/_/g, ' ')}</span>
-                  <span className="text-sm text-gray-500">{new Date(entry.changedAt).toLocaleString()}</span>
-                </div>
-                {entry.status && <p className="text-sm text-gray-600">Status: {entry.status}</p>}
-                {previousStatus && (
-                  <p className="text-sm text-gray-600">Previous status: {previousStatus}</p>
-                )}
-                {recipientEmail && (
-                  <p className="text-sm text-gray-600">Sent to: {recipientEmail}</p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
       )}
     </div>
   );

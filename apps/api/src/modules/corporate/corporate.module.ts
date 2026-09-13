@@ -30,6 +30,7 @@ import {
 } from '../../infrastructure/prisma/repositories/prisma-session-result.repository';
 import { NodemailerEmailService } from '../../infrastructure/email/nodemailer-email.service';
 import { ConsoleEmailService } from '../../infrastructure/email/console-email.service';
+import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repositories/prisma-credit-setting.repository';
 import {
   ICampaignRepository,
   ICompanyQuizRepository,
@@ -41,6 +42,7 @@ import {
   ICandidateResultRepository,
   IEmailService,
   IQuizSessionRepository,
+  ICreditSettingRepository,
 } from '@evaluateme/domain';
 
 @Module({
@@ -69,6 +71,7 @@ import {
     { provide: IAnswerRepository, useClass: PrismaAnswerRepository },
     { provide: IQuizSessionRepository, useClass: PrismaQuizSessionRepository },
     { provide: ICandidateResultRepository, useClass: PrismaCandidateResultRepository },
+    { provide: ICreditSettingRepository, useClass: PrismaCreditSettingRepository },
     {
       provide: IEmailService,
       useClass: process.env.SMTP_HOST ? NodemailerEmailService : ConsoleEmailService,

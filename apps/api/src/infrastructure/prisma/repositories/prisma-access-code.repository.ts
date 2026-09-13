@@ -29,6 +29,11 @@ export class PrismaAccessCodeRepository implements IAccessCodeRepository {
     return count;
   }
 
+  async countByCampaignId(campaignId: string): Promise<number> {
+    const count = await this.prisma.accessCode.count({ where: { campaignId } });
+    return count;
+  }
+
   async countSentByCompanyId(companyId: string): Promise<number> {
     const count = await this.prisma.accessCode.count({ where: { companyId, sentAt: { not: null } } });
     return count;

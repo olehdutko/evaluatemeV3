@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IUserRepository } from '@evaluateme/domain';
+import { IUserRepository, ICompanyProfileRepository } from '@evaluateme/domain';
 import { UnauthorizedError } from '../../infrastructure/errors/app-error';
 
 export interface AuthMeDto {
@@ -9,6 +9,8 @@ export interface AuthMeDto {
   role: string;
   credits: number;
   companyId: string | null;
+  availableAccessCodes: number | null;
+  availableTests: number | null;
   firstName: string | null;
   lastName: string | null;
   middleName: string | null;
@@ -27,6 +29,7 @@ function isPersonalProfileField(_role: string): boolean {
 export class GetMeUseCase {
   constructor(
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
+    @Inject(ICompanyProfileRepository) private readonly companyProfileRepository: ICompanyProfileRepository,
   ) {}
 
   async execute(userId: string): Promise<{ success: true; data: AuthMeDto }> {
@@ -36,6 +39,9 @@ export class GetMeUseCase {
     }
 
     const includePersonalFields = isPersonalProfileField(user.role);
+    const companyProfile = user.companyProfileId
+      ? await this.companyProfileRepository.findById(user.companyProfileId)
+      : null;
 
     return {
       success: true,
@@ -46,6 +52,8 @@ export class GetMeUseCase {
         role: user.role,
         credits: includePersonalFields ? user.credits : 0,
         companyId: user.companyProfileId,
+        availableAccessCodes: companyProfile?.availableAccessCodes ?? null,
+        availableTests: companyProfile?.availableTests ?? null,
         firstName: includePersonalFields ? user.firstName : null,
         lastName: includePersonalFields ? user.lastName : null,
         middleName: includePersonalFields ? user.middleName : null,

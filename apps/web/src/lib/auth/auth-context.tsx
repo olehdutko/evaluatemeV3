@@ -14,6 +14,8 @@ export interface UserProfile {
   role: UserRole;
   credits: number;
   companyId: string | null;
+  availableAccessCodes: number | null;
+  availableTests: number | null;
   firstName: string | null;
   lastName: string | null;
   middleName: string | null;
@@ -50,6 +52,8 @@ function toUserProfile(data: MeResponse['data']): UserProfile {
     role: data.role,
     credits: data.credits,
     companyId: data.companyId ?? null,
+    availableAccessCodes: data.availableAccessCodes ?? null,
+    availableTests: data.availableTests ?? null,
     firstName: data.firstName ?? null,
     lastName: data.lastName ?? null,
     middleName: data.middleName ?? null,

@@ -16,6 +16,7 @@ interface Campaign {
   status: 'open' | 'closed' | 'archived';
   createdAt: string;
   updatedAt: string;
+  accessCodeCount: number;
 }
 
 interface CampaignsResponse {
@@ -100,7 +101,12 @@ export default function CampaignsPage() {
                 <Card className={`cursor-pointer hover:shadow-md ${cardClasses}`}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <h2 className="truncate text-lg font-semibold">{campaign.name}</h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="truncate text-lg font-semibold">{campaign.name}</h2>
+                        <span className="shrink-0 text-xs text-gray-500">
+                          ({campaign.accessCodeCount} {campaign.accessCodeCount === 1 ? 'code' : 'codes'})
+                        </span>
+                      </div>
                       {campaign.description && (
                         <p className="mt-1 line-clamp-2 text-sm text-gray-600">{campaign.description}</p>
                       )}

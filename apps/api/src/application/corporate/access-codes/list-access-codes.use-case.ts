@@ -1,6 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IAccessCodeRepository, ICampaignRepository, ICompanyProfileRepository } from '@evaluateme/domain';
+import { IAccessCodeRepository, ICampaignRepository, ICompanyProfileRepository, ICandidateResultRepository } from '@evaluateme/domain';
 import { NotFoundError } from '../../../infrastructure/errors/app-error';
+
+export interface AccessCodeResultSummary {
+  id: string;
+  resultCode: string;
+  status: string;
+  score: number | null;
+  maxScore: number | null;
+}
 
 export interface AccessCodeListItem {
   id: string;
@@ -12,6 +20,11 @@ export interface AccessCodeListItem {
   maxUses: number;
   usedAt: string | null;
   createdAt: string;
+  testeeName: string | null;
+  testeeEmail: string | null;
+  questionCount: number | null;
+  durationMinutes: number | null;
+  result: AccessCodeResultSummary | null;
 }
 
 export interface ListAccessCodesInput {
@@ -26,6 +39,7 @@ export class ListAccessCodesUseCase {
     @Inject(IAccessCodeRepository) private readonly accessCodeRepository: IAccessCodeRepository,
     @Inject(ICampaignRepository) private readonly campaignRepository: ICampaignRepository,
     @Inject(ICompanyProfileRepository) private readonly companyProfileRepository: ICompanyProfileRepository,
+    @Inject(ICandidateResultRepository) private readonly candidateResultRepository: ICandidateResultRepository,
   ) {}
 
   async execute(input: ListAccessCodesInput): Promise<{ success: true; data: AccessCodeListItem[] }> {
@@ -39,7 +53,24 @@ export class ListAccessCodesUseCase {
       throw new NotFoundError('campaign');
     }
 
-    const codes = await this.accessCodeRepository.findByCampaignId(input.campaignId);
+    const [codes, results] = await Promise.all([
+      this.accessCodeRepository.findByCampaignId(input.campaignId),
+      this.candidateResultRepository.findByCampaignId(input.campaignId),
+    ]);
+
+    const resultByAccessCodeId = new Map<string, AccessCodeResultSummary>();
+    for (const result of results) {
+      if (result.accessCodeId) {
+        resultByAccessCodeId.set(result.accessCodeId, {
+          id: result.id,
+          resultCode: result.resultCode,
+          status: result.status,
+          score: result.score,
+          maxScore: result.maxScore,
+        });
+      }
+    }
+
     return {
       success: true,
       data: codes.map((code) => ({
@@ -52,6 +83,11 @@ export class ListAccessCodesUseCase {
         maxUses: code.maxUses,
         usedAt: code.usedAt ? code.usedAt.toISOString() : null,
         createdAt: code.createdAt.toISOString(),
+        testeeName: code.testeeName,
+        testeeEmail: code.testeeEmail,
+        questionCount: code.questionCount,
+        durationMinutes: code.durationMinutes,
+        result: resultByAccessCodeId.get(code.id) ?? null,
       })),
     };
   }

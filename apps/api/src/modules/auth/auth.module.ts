@@ -22,6 +22,7 @@ import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.us
 import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
 import { OAuthLoginUseCase } from '../../application/auth/oauth-login.use-case';
 import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repositories/prisma-credit-setting.repository';
+import { PrismaCompanyProfileRepository } from '../../infrastructure/prisma/repositories/prisma-company-profile.repository';
 import { PrismaPasswordResetTokenRepository } from '../../infrastructure/prisma/repositories/prisma-password-reset-token.repository';
 import { ConsoleEmailService } from '../../infrastructure/email/console-email.service';
 import { NodemailerEmailService } from '../../infrastructure/email/nodemailer-email.service';
@@ -39,6 +40,7 @@ import {
   ISecurityAuditLogger,
   IRateLimitStore,
   ICreditSettingRepository,
+  ICompanyProfileRepository,
   IPasswordResetTokenRepository,
   IEmailService,
   IEmailTemplateRepository,
@@ -72,6 +74,7 @@ import {
     { provide: ISessionStrategy, useClass: SessionStrategyAdapter },
     { provide: ITokenBlacklist, useClass: PrismaTokenBlacklist },
     { provide: ICreditSettingRepository, useClass: PrismaCreditSettingRepository },
+    { provide: ICompanyProfileRepository, useClass: PrismaCompanyProfileRepository },
     { provide: IPasswordResetTokenRepository, useClass: PrismaPasswordResetTokenRepository },
     { provide: IEmailTemplateRepository, useClass: PrismaEmailTemplateRepository },
     { provide: IEmailService, useClass: process.env.SMTP_HOST ? NodemailerEmailService : ConsoleEmailService },

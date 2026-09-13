@@ -5,9 +5,14 @@ import {
   ICompanyProfileRepository,
   IEmailService,
   ICampaignRepository,
+  ICreditSettingRepository,
   CampaignHistory,
 } from '@evaluateme/domain';
-import { NotFoundError, BadRequestError } from '../../../infrastructure/errors/app-error';
+import { NotFoundError, BadRequestError, PaymentRequiredError } from '../../../infrastructure/errors/app-error';
+
+const DEFAULT_ACCESS_CODE_PRICE = 1;
+const ACCESS_CODE_PRICE_KEY = 'company_access_code_price';
+const FALLBACK_ACCESS_CODE_PRICE_KEY = 'access_code_price_credits';
 
 export interface SendAccessCodeInput {
   userId: string;
@@ -20,6 +25,7 @@ export interface SendAccessCodeOutput {
   sentAt: string;
   activatedCount: number;
   remaining: number | null;
+  price: number;
 }
 
 @Injectable()
@@ -29,6 +35,7 @@ export class SendAccessCodeUseCase {
     @Inject(ICompanyProfileRepository) private readonly companyProfileRepository: ICompanyProfileRepository,
     @Inject(IEmailService) private readonly emailService: IEmailService,
     @Inject(ICampaignRepository) private readonly campaignRepository: ICampaignRepository,
+    @Inject(ICreditSettingRepository) private readonly creditSettingRepository: ICreditSettingRepository,
   ) {}
 
   async execute(input: SendAccessCodeInput): Promise<{ success: true; data: SendAccessCodeOutput }> {
@@ -55,12 +62,14 @@ export class SendAccessCodeUseCase {
 
     const activatedCount = await this.accessCodeRepository.countSentByCompanyId(input.companyId);
     const limit = profile.availableAccessCodes;
-    if (limit !== -1 && activatedCount >= limit) {
-      throw new BadRequestError({
-        accessCodes: [
-          `Access code limit reached: ${activatedCount} of ${limit} activated`,
-        ],
-      });
+    const price = await this.resolveAccessCodePrice();
+    // eslint-disable-next-line no-console
+    console.log('[SendAccessCode] profile.availableAccessCodes', limit, 'price', price);
+
+    if (limit !== -1 && limit < price) {
+      throw new PaymentRequiredError(
+        `Insufficient access code credits: ${limit} available, ${price} required.`,
+      );
     }
 
     const now = new Date();
@@ -71,11 +80,14 @@ export class SendAccessCodeUseCase {
       text: `Use this access code to start your assessment: ${code.code}`,
     });
 
-    // Deduct one access code credit only when the code is actually used (sent).
+    // Deduct the configured access code price from company credits only when the code is actually used (sent).
     if (limit !== -1) {
+      const newBalance = Math.max(0, profile.availableAccessCodes - price);
+      // eslint-disable-next-line no-console
+      console.log('[SendAccessCode] deducting', price, 'new balance', newBalance);
       await this.companyProfileRepository.save({
         ...profile,
-        availableAccessCodes: Math.max(0, profile.availableAccessCodes - 1),
+        availableAccessCodes: newBalance,
         updatedAt: now,
       });
     }
@@ -89,7 +101,7 @@ export class SendAccessCodeUseCase {
 
     const remaining = limit === -1
       ? null
-      : Math.max(0, limit - (activatedCount + 1));
+      : Math.max(0, limit - price);
 
     if (code.campaignId) {
       const history: CampaignHistory = {
@@ -112,7 +124,20 @@ export class SendAccessCodeUseCase {
         sentAt: updated.sentAt!.toISOString(),
         activatedCount: Number(activatedCount) + 1,
         remaining: Number(remaining),
+        price,
       },
     };
+  }
+
+  private async resolveAccessCodePrice(): Promise<number> {
+    let setting = await this.creditSettingRepository.findByKey(ACCESS_CODE_PRICE_KEY);
+    if (!setting) {
+      setting = await this.creditSettingRepository.findByKey(FALLBACK_ACCESS_CODE_PRICE_KEY);
+    }
+    if (!setting) {
+      return DEFAULT_ACCESS_CODE_PRICE;
+    }
+    const parsed = Number(setting.value);
+    return Number.isNaN(parsed) || parsed < 0 ? DEFAULT_ACCESS_CODE_PRICE : parsed;
   }
 }

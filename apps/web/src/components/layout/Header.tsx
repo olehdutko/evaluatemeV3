@@ -11,7 +11,7 @@ const publicLinks = [
 ];
 
 export function Header(): JSX.Element {
-  const { isAuthenticated, logout, displayName, roleLabel, credits, user, isAdmin } = useAuth();
+  const { isAuthenticated, logout, displayName, roleLabel, credits, user, isAdmin, isCompany } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -111,7 +111,12 @@ export function Header(): JSX.Element {
                     <div className="px-4 py-3 border-b border-border">
                       <p className="font-body text-sm text-text-primary truncate">{displayName}</p>
                       <p className="font-mono text-xs text-accent">{roleLabel}</p>
-                      {!isAdmin && <p className="font-mono text-xs text-text-secondary mt-1">Credits: {credits}</p>}
+                      {isCompany && (
+                        <p className="font-mono text-xs text-text-secondary mt-1">
+                          Access code credits: {user?.availableAccessCodes ?? 0}
+                        </p>
+                      )}
+                      {!isAdmin && !isCompany && <p className="font-mono text-xs text-text-secondary mt-1">Credits: {credits}</p>}
                     </div>
                     {isAdmin && (
                       <Link
@@ -192,7 +197,12 @@ export function Header(): JSX.Element {
                   <div className="px-4 py-3 border-b border-border">
                     <p className="font-body text-lg text-text-primary">{displayName}</p>
                     <p className="font-mono text-sm text-accent">{roleLabel}</p>
-                    {!isAdmin && <p className="font-mono text-sm text-text-secondary mt-1">Credits: {credits}</p>}
+                    {isCompany && (
+                      <p className="font-mono text-sm text-text-secondary mt-1">
+                        Access code credits: {user?.availableAccessCodes ?? 0}
+                      </p>
+                    )}
+                    {!isAdmin && !isCompany && <p className="font-mono text-sm text-text-secondary mt-1">Credits: {credits}</p>}
                   </div>
                   {user?.role === 'user' && (
                     <Link
