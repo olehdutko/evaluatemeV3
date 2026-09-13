@@ -20,9 +20,11 @@ export function CreateAccessCodeForm({ campaignId, companyId, onCreated }: Creat
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isEmailValid = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const isFormValid =
     testeeName.trim().length > 0 &&
-    testeeEmail.trim().length > 0 &&
+    isEmailValid(testeeEmail.trim()) &&
     typeof questionCount === 'number' &&
     questionCount > 0 &&
     typeof durationMinutes === 'number' &&

@@ -40,6 +40,7 @@ describe('TestSessionPage', () => {
         status: 'in_progress',
         score: null,
         currentQuestionIndex: 0,
+        durationMinutes: 2,
         questions: [
           {
             id: questionId,
@@ -52,6 +53,7 @@ describe('TestSessionPage', () => {
             ],
           },
         ],
+        userAnswers: [],
       },
     });
 
@@ -61,6 +63,12 @@ describe('TestSessionPage', () => {
     });
 
     render(<TestSessionPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Let's start/i })).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Let's start/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Question 01 of 01')).toBeInTheDocument();

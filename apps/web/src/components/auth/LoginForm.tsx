@@ -65,12 +65,7 @@ export function LoginForm(): JSX.Element {
         </label>
       </div>
 
-      {error && (
-        <>
-          <ErrorMessage message={error} />
-          <p className="text-error font-body">{error}</p>
-        </>
-      )}
+      {error && <ErrorMessage message={error} />}
 
       <button
         type="submit"
