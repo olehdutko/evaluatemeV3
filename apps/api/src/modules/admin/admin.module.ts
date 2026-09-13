@@ -7,6 +7,8 @@ import { UpdateCreditSettingUseCase } from '../../application/admin/credit-setti
 import { ListEmailTemplatesUseCase } from '../../application/admin/email-templates/list-email-templates.use-case';
 import { GetEmailTemplateUseCase } from '../../application/admin/email-templates/get-email-template.use-case';
 import { UpdateEmailTemplateUseCase } from '../../application/admin/email-templates/update-email-template.use-case';
+import { GetEmailServiceConfigUseCase } from '../../application/admin/email-service/get-email-service-config.use-case';
+import { UpdateEmailServiceConfigUseCase } from '../../application/admin/email-service/update-email-service-config.use-case';
 import { ListLandingAdsUseCase } from '../../application/admin/landing-ads/list-landing-ads.use-case';
 import { CreateLandingAdUseCase } from '../../application/admin/landing-ads/create-landing-ad.use-case';
 import { UpdateLandingAdUseCase } from '../../application/admin/landing-ads/update-landing-ad.use-case';
@@ -14,14 +16,16 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { PrismaUserRepository } from '../../infrastructure/prisma/repositories/prisma-user.repository';
 import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repositories/prisma-credit-setting.repository';
 import { PrismaEmailTemplateRepository } from '../../infrastructure/prisma/repositories/prisma-email-template.repository';
+import { PrismaEmailServiceConfigRepository } from '../../infrastructure/prisma/repositories/prisma-email-service-config.repository';
 import { PrismaLandingAdRepository } from '../../infrastructure/prisma/repositories/prisma-landing-ad.repository';
 import {
   IUserRepository,
-  ICreditSettingRepository,
-  IEmailTemplateRepository,
-  ILandingAdRepository,
+    ICreditSettingRepository,
+    IEmailTemplateRepository,
+    IEmailServiceConfigRepository,
+    ILandingAdRepository,
 
-  ITechnologyRepository,
+    ITechnologyRepository,
   IQuestionRepository,
   IAnswerRepository} from '@evaluateme/domain';
 import { ListUsersUseCase } from '../../application/admin/users/list-users.use-case';
@@ -49,6 +53,8 @@ import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories
     ListEmailTemplatesUseCase,
     GetEmailTemplateUseCase,
     UpdateEmailTemplateUseCase,
+    GetEmailServiceConfigUseCase,
+    UpdateEmailServiceConfigUseCase,
     ListLandingAdsUseCase,
     CreateLandingAdUseCase,
     UpdateLandingAdUseCase,
@@ -65,6 +71,7 @@ import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories
     { provide: IUserRepository, useClass: PrismaUserRepository },
     { provide: ICreditSettingRepository, useClass: PrismaCreditSettingRepository },
     { provide: IEmailTemplateRepository, useClass: PrismaEmailTemplateRepository },
+    { provide: IEmailServiceConfigRepository, useClass: PrismaEmailServiceConfigRepository },
     { provide: ILandingAdRepository, useClass: PrismaLandingAdRepository },
     { provide: ITechnologyRepository, useClass: PrismaTechnologyRepository },
     { provide: IQuestionRepository, useClass: PrismaQuestionRepository },

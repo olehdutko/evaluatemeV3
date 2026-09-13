@@ -9,6 +9,7 @@ const navLinks = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/pricing', label: 'Pricing' },
   { href: '/admin/email-templates', label: 'Email Templates' },
+  { href: '/admin/email-service', label: 'Email Service' },
   { href: '/admin/landing-ads', label: 'Landing Ads' },
   { href: '/admin/users', label: 'Users' },
   { href: '/admin/technologies', label: 'Technologies' },

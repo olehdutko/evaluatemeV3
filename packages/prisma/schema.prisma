@@ -384,6 +384,22 @@ model CreditSetting {
   @@map("credit_settings")
 }
 
+model EmailServiceConfig {
+  id             String   @id @default(uuid()) @db.VarChar(36)
+  provider       String   @default("custom") @db.VarChar(50)
+  smtpHost       String   @db.VarChar(255)
+  smtpPort       Int
+  smtpUser       String   @db.VarChar(255)
+  smtpPass       String   @db.Text
+  fromEmail      String   @db.VarChar(255)
+  secure         Boolean  @default(false)
+  enabled        Boolean  @default(false)
+  updatedByUserId String  @db.VarChar(36)
+  updatedAt      DateTime @updatedAt
+
+  @@map("email_service_configs")
+}
+
 // ============= Legacy Read-Only Reference Models =============
 // These models map existing MyISAM tables and MUST NOT be written to in feature code.
 

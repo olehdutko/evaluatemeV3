@@ -12,6 +12,7 @@ export * from './order-repository.port';
 export * from './email-template-repository.port';
 export * from './landing-ad-repository.port';
 export * from './credit-setting-repository.port';
+export * from './email-service-config-repository.port';
 export * from './health-repository.port';
 export * from './auth';
 export * from './password-hasher.port';

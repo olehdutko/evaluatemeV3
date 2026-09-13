@@ -12,3 +12,4 @@ export * from './order.entity';
 export * from './email-template.entity';
 export * from './landing-ad.entity';
 export * from './credit-setting.entity';
+export * from './email-service-config.entity';

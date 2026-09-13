@@ -9,6 +9,9 @@ import { UpdateCreditSettingUseCase } from '../../application/admin/credit-setti
 import { ListEmailTemplatesUseCase } from '../../application/admin/email-templates/list-email-templates.use-case';
 import { GetEmailTemplateUseCase } from '../../application/admin/email-templates/get-email-template.use-case';
 import { UpdateEmailTemplateUseCase } from '../../application/admin/email-templates/update-email-template.use-case';
+import { GetEmailServiceConfigUseCase } from '../../application/admin/email-service/get-email-service-config.use-case';
+import { UpdateEmailServiceConfigUseCase } from '../../application/admin/email-service/update-email-service-config.use-case';
+import { DynamicEmailService } from '../../infrastructure/email/dynamic-email.service';
 import { ListLandingAdsUseCase } from '../../application/admin/landing-ads/list-landing-ads.use-case';
 import { CreateLandingAdUseCase } from '../../application/admin/landing-ads/create-landing-ad.use-case';
 import { UpdateLandingAdUseCase } from '../../application/admin/landing-ads/update-landing-ad.use-case';
@@ -26,6 +29,8 @@ import { ZodValidationPipe } from '../../infrastructure/validation/zod-validatio
 import {
   updateCreditSettingRequestSchema,
   updateEmailTemplateRequestSchema,
+  updateEmailServiceConfigRequestSchema,
+  emailServiceTestRequestSchema,
   createUpdateLandingAdRequestSchema,
   updateUserRequestSchema,
 } from '../../lib/schemas/admin.schema';
@@ -50,6 +55,9 @@ export class AdminController {
     private readonly listEmailTemplatesUseCase: ListEmailTemplatesUseCase,
     private readonly getEmailTemplateUseCase: GetEmailTemplateUseCase,
     private readonly updateEmailTemplateUseCase: UpdateEmailTemplateUseCase,
+    private readonly getEmailServiceConfigUseCase: GetEmailServiceConfigUseCase,
+    private readonly updateEmailServiceConfigUseCase: UpdateEmailServiceConfigUseCase,
+    private readonly emailService: DynamicEmailService,
     private readonly listLandingAdsUseCase: ListLandingAdsUseCase,
     private readonly createLandingAdUseCase: CreateLandingAdUseCase,
     private readonly updateLandingAdUseCase: UpdateLandingAdUseCase,
@@ -105,6 +113,41 @@ export class AdminController {
     },
   ): Promise<ReturnType<UpdateEmailTemplateUseCase['execute']>> {
     return this.updateEmailTemplateUseCase.execute({ id, ...body });
+  }
+
+  @Get('email-service/config')
+  async emailServiceConfig(): Promise<ReturnType<GetEmailServiceConfigUseCase['execute']>> {
+    return this.getEmailServiceConfigUseCase.execute();
+  }
+
+  @Put('email-service/config')
+  async updateEmailServiceConfig(
+    @Body(new ZodValidationPipe(updateEmailServiceConfigRequestSchema)) body: {
+      provider: string;
+      smtpHost: string;
+      smtpPort: number;
+      smtpUser: string;
+      smtpPass: string;
+      fromEmail: string;
+      secure: boolean;
+      enabled: boolean;
+    },
+    @Req() request: RequestWithUser,
+  ): Promise<ReturnType<UpdateEmailServiceConfigUseCase['execute']>> {
+    const result = await this.updateEmailServiceConfigUseCase.execute({
+      ...body,
+      updatedByUserId: request.user!.sub,
+    });
+    await this.emailService.refresh();
+    return result;
+  }
+
+  @Post('email-service/test')
+  async testEmailService(
+    @Body(new ZodValidationPipe(emailServiceTestRequestSchema)) body: { to: string },
+  ): Promise<{ success: true; message: string }> {
+    await this.emailService.sendTest(body.to);
+    return { success: true, message: 'Test email queued successfully' };
   }
 
   @Get('landing-ads')

@@ -129,6 +129,9 @@ class FakeAccessCodeRepository implements IAccessCodeRepository {
   async countSentByCompanyId(): Promise<number> {
     return 0;
   }
+  async countByCampaignId(): Promise<number> {
+    return 0;
+  }
   async updateStatusByCampaignId(): Promise<number> {
     return 0;
   }

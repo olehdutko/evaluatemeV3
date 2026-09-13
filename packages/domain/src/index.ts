@@ -15,6 +15,7 @@ export * from './entities/email-template.entity';
 export * from './entities/password-reset-token.entity';
 export * from './entities/landing-ad.entity';
 export * from './entities/credit-setting.entity';
+export * from './entities/email-service-config.entity';
 export * from './entities/token-blacklist.entity';
 
 export * from './ports/user-repository.port';
@@ -33,6 +34,7 @@ export * from './ports/password-reset-token-repository.port';
 export * from './ports/email-service.port';
 export * from './ports/landing-ad-repository.port';
 export * from './ports/credit-setting-repository.port';
+export * from './ports/email-service-config-repository.port';
 export * from './ports/health-repository.port';
 export * from './ports/auth';
 export * from './ports/password-hasher.port';

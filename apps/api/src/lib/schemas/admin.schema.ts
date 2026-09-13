@@ -124,3 +124,35 @@ export const updateUserRequestSchema = z.object({
   role: z.enum(['user', 'company']).optional(),
   activationStatus: z.enum(['pending', 'active', 'suspended']).optional(),
 });
+
+export const emailServiceConfigSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    id: z.string().uuid(),
+    provider: z.string().min(1).max(50),
+    smtpHost: z.string().min(1).max(255),
+    smtpPort: z.number().int().min(1).max(65535),
+    smtpUser: z.string().min(1).max(255),
+    smtpPass: z.string().min(1),
+    fromEmail: z.string().email().max(255),
+    secure: z.boolean(),
+    enabled: z.boolean(),
+    updatedByUserId: z.string().uuid(),
+    updatedAt: z.string().datetime(),
+  }).nullable(),
+});
+
+export const updateEmailServiceConfigRequestSchema = z.object({
+  provider: z.string().min(1).max(50),
+  smtpHost: z.string().min(1).max(255),
+  smtpPort: z.number().int().min(1).max(65535),
+  smtpUser: z.string().min(1).max(255),
+  smtpPass: z.string().min(1),
+  fromEmail: z.string().email().max(255),
+  secure: z.boolean(),
+  enabled: z.boolean(),
+});
+
+export const emailServiceTestRequestSchema = z.object({
+  to: z.string().email().max(255),
+});

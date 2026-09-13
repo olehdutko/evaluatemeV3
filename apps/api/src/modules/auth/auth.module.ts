@@ -24,9 +24,9 @@ import { OAuthLoginUseCase } from '../../application/auth/oauth-login.use-case';
 import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repositories/prisma-credit-setting.repository';
 import { PrismaCompanyProfileRepository } from '../../infrastructure/prisma/repositories/prisma-company-profile.repository';
 import { PrismaPasswordResetTokenRepository } from '../../infrastructure/prisma/repositories/prisma-password-reset-token.repository';
-import { ConsoleEmailService } from '../../infrastructure/email/console-email.service';
-import { NodemailerEmailService } from '../../infrastructure/email/nodemailer-email.service';
+import { DynamicEmailService } from '../../infrastructure/email/dynamic-email.service';
 import { PrismaEmailTemplateRepository } from '../../infrastructure/prisma/repositories/prisma-email-template.repository';
+import { PrismaEmailServiceConfigRepository } from '../../infrastructure/prisma/repositories/prisma-email-service-config.repository';
 import { GoogleOAuthConfig } from '../../infrastructure/auth/oauth/google-oauth.config';
 import { GoogleOAuthService } from '../../infrastructure/auth/oauth/google-oauth.service';
 import { AuthController } from './auth.controller';
@@ -40,11 +40,12 @@ import {
   ISecurityAuditLogger,
   IRateLimitStore,
   ICreditSettingRepository,
-  ICompanyProfileRepository,
-  IPasswordResetTokenRepository,
-  IEmailService,
-  IEmailTemplateRepository,
-} from '@evaluateme/domain';
+    ICompanyProfileRepository,
+    IPasswordResetTokenRepository,
+    IEmailService,
+    IEmailTemplateRepository,
+    IEmailServiceConfigRepository,
+  } from '@evaluateme/domain';
 
 @Module({
   imports: [ConfigModule],
@@ -77,7 +78,8 @@ import {
     { provide: ICompanyProfileRepository, useClass: PrismaCompanyProfileRepository },
     { provide: IPasswordResetTokenRepository, useClass: PrismaPasswordResetTokenRepository },
     { provide: IEmailTemplateRepository, useClass: PrismaEmailTemplateRepository },
-    { provide: IEmailService, useClass: process.env.SMTP_HOST ? NodemailerEmailService : ConsoleEmailService },
+    { provide: IEmailServiceConfigRepository, useClass: PrismaEmailServiceConfigRepository },
+    { provide: IEmailService, useClass: DynamicEmailService },
   ],
   exports: [JwtAuthGuard, IJwtStrategy, ISessionStrategy, RolesGuard, LogSecurityEventUseCase],
 })

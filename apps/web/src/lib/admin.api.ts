@@ -3,6 +3,10 @@ import { apiGet, apiPost, apiPut, apiDelete } from './api-client';
 import {
   updateCreditSettingRequestSchema,
   updateEmailTemplateRequestSchema,
+  emailServiceConfigSchema,
+  updateEmailServiceConfigRequestSchema,
+  emailServiceTestRequestSchema,
+  emptySuccessMessageSchema,
   createUpdateLandingAdRequestSchema,
   updateUserRequestSchema,
   userListSchema,
@@ -93,6 +97,18 @@ export function updateEmailTemplate(
   body: z.infer<typeof updateEmailTemplateRequestSchema>,
 ) {
   return apiPut(`/api/v1/admin/email-templates/${encodeURIComponent(id)}`, body, updateEmailTemplateRequestSchema, emailTemplateDetailSchema);
+}
+
+export function getEmailServiceConfig() {
+  return apiGet('/api/v1/admin/email-service/config', emailServiceConfigSchema);
+}
+
+export function updateEmailServiceConfig(body: z.infer<typeof updateEmailServiceConfigRequestSchema>) {
+  return apiPut('/api/v1/admin/email-service/config', body, updateEmailServiceConfigRequestSchema, emailServiceConfigSchema);
+}
+
+export function testEmailService(to: string) {
+  return apiPost('/api/v1/admin/email-service/test', { to }, emailServiceTestRequestSchema, emptySuccessMessageSchema);
 }
 
 export const landingAdsSchema = z.object({
