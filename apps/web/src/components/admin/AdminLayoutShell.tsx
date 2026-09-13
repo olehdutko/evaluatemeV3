@@ -12,7 +12,6 @@ const navLinks = [
   { href: '/admin/landing-ads', label: 'Landing Ads' },
   { href: '/admin/users', label: 'Users' },
   { href: '/admin/technologies', label: 'Technologies' },
-  { href: '/admin/questions', label: 'Questions' },
 ];
 
 function ToggleIcon({ isOpen }: { isOpen: boolean }) {
