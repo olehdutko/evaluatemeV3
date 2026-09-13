@@ -53,6 +53,17 @@ export default function AdminEmailServicePage(): JSX.Element {
     setConfig((prev) => ({ ...prev, [key]: value }));
   }
 
+  function humanizeError(err: unknown): string {
+    const message = err instanceof Error ? err.message : 'Failed to save config';
+    if (message.includes('SMTP authentication failed')) {
+      return 'Authentication failed. For Gmail enter a 16-character App Password (not your Google password) and make sure the SMTP user matches the account that generated it.';
+    }
+    if (message.includes('Cannot reach SMTP server')) {
+      return 'Cannot connect to the SMTP server. Check the host and port (Gmail: smtp.gmail.com:465 with Secure enabled). If the port is wrong, it may time out.';
+    }
+    return message;
+  }
+
   function handleSave() {
     setSaving(true);
     setSaveError(null);
@@ -62,7 +73,7 @@ export default function AdminEmailServicePage(): JSX.Element {
           setConfig(response.data);
         }
       })
-      .catch((err) => setSaveError(err instanceof Error ? err.message : 'Failed to save config'))
+      .catch((err) => setSaveError(humanizeError(err)))
       .finally(() => setSaving(false));
   }
 
@@ -72,7 +83,7 @@ export default function AdminEmailServicePage(): JSX.Element {
     setTestSuccess(null);
     testEmailService(to)
       .then((response) => setTestSuccess(response.message))
-      .catch((err) => setTestError(err instanceof Error ? err.message : 'Failed to send test email'))
+      .catch((err) => setTestError(humanizeError(err)))
       .finally(() => setTesting(false));
   }
 
@@ -92,6 +103,7 @@ export default function AdminEmailServicePage(): JSX.Element {
         <p className="mt-3 text-text-secondary font-body max-w-prose">
           Configure SMTP credentials so the application can send transactional emails to users.
           For Gmail use an App Password, not your Google account password.
+          Gmail: host <strong>smtp.gmail.com</strong>, port <strong>465</strong>, enable <strong>Secure</strong>.
         </p>
       </header>
 
@@ -152,12 +164,12 @@ export default function AdminEmailServicePage(): JSX.Element {
               <input
                 type="password"
                 value={config.smtpPass}
-                onChange={(e) => handleChange('smtpPass', e.target.value)}
+                onChange={(e) => handleChange('smtpPass', e.target.value.replace(/\s/g, ''))}
                 placeholder="16-character App Password for Gmail"
                 className="input-field w-full"
               />
               <p className="text-text-muted text-xs mt-1 font-body">
-                For Gmail generate an App Password at Google Account → Security → 2-Step Verification → App passwords.
+                For Gmail generate an App Password at Google Account → Security → 2-Step Verification → App passwords. Spaces are removed automatically.
               </p>
             </label>
 

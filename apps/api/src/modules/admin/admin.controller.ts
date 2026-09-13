@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Req, UseGuards, BadRequestException } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { RolesGuard } from '../../infrastructure/security/roles.guard';
@@ -134,6 +134,15 @@ export class AdminController {
     },
     @Req() request: RequestWithUser,
   ): Promise<ReturnType<UpdateEmailServiceConfigUseCase['execute']>> {
+    if (body.enabled) {
+      try {
+        await this.emailService.verifyConfig(body);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'SMTP configuration is invalid';
+        throw new BadRequestException(message);
+      }
+    }
+
     const result = await this.updateEmailServiceConfigUseCase.execute({
       ...body,
       updatedByUserId: request.user!.sub,

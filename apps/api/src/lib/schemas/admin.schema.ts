@@ -147,7 +147,7 @@ export const updateEmailServiceConfigRequestSchema = z.object({
   smtpHost: z.string().min(1).max(255),
   smtpPort: z.number().int().min(1).max(65535),
   smtpUser: z.string().min(1).max(255),
-  smtpPass: z.string().min(1),
+  smtpPass: z.string().min(1).transform((v) => v.replace(/\s/g, '')),
   fromEmail: z.string().email().max(255),
   secure: z.boolean(),
   enabled: z.boolean(),
