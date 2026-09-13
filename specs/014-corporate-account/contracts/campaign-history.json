@@ -1,0 +1,42 @@
+{
+  "name": "Campaign History API",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns/:id?companyId=<uuid>",
+      "description": "Campaign history is returned as part of the campaign detail response (see Campaigns API). No standalone history endpoint is required.",
+      "auth": "JWT + role company",
+      "response": {
+        "data": {
+          "history": [
+            {
+              "id": "uuid",
+              "campaignId": "uuid",
+              "action": "created | status_changed | access_code_created | access_code_sent",
+              "status": "open | closed | archived | null",
+              "changedByUserId": "uuid",
+              "metadata": "object | null",
+              "changedAt": "ISO 8601",
+              "createdAt": "ISO 8601"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "metadataShape": {
+    "created": null,
+    "status_changed": {
+      "previousStatus": "open | closed | archived"
+    },
+    "access_code_created": {
+      "accessCodeId": "uuid",
+      "quizId": "uuid",
+      "quizType": "technology | company_quiz"
+    },
+    "access_code_sent": {
+      "accessCodeId": "uuid",
+      "recipientEmail": "string"
+    }
+  }
+}

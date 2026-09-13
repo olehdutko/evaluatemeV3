@@ -1,0 +1,73 @@
+{
+  "name": "Company Quizzes API",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/v1/corporate/quizzes/custom",
+      "description": "Create a custom company quiz by selecting existing questions from one or more technologies.",
+      "auth": "JWT + role company",
+      "body": {
+        "companyId": "uuid",
+        "name": "string (1-255 chars)",
+        "description": "string | null (optional, max 5000)",
+        "questionIds": "uuid[] (min 1)"
+      },
+      "response": {
+        "data": {
+          "id": "uuid",
+          "name": "string"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/corporate/quizzes/personal",
+      "description": "Create a personal company quiz with original questions and marked answers.",
+      "auth": "JWT + role company",
+      "body": {
+        "companyId": "uuid",
+        "name": "string (1-255 chars)",
+        "description": "string | null (optional, max 5000)",
+        "questions": [
+          {
+            "content": "string (1-5000 chars)",
+            "type": "single_choice | multiple_choice",
+            "score": "number (optional, min 1)",
+            "answers": [
+              {
+                "content": "string (1-1000 chars)",
+                "isCorrect": "boolean"
+              }
+            ]
+          }
+        ]
+      },
+      "response": {
+        "data": {
+          "id": "uuid",
+          "name": "string"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/quizzes?companyId=<uuid>",
+      "description": "List quizzes owned by the company. Quizzes from other companies are never returned.",
+      "auth": "JWT + role company",
+      "response": {
+        "data": [
+          {
+            "id": "uuid",
+            "companyId": "uuid",
+            "type": "custom | personal",
+            "name": "string",
+            "description": "string | null",
+            "status": "draft | published | archived",
+            "createdByUserId": "uuid",
+            "createdAt": "ISO 8601"
+          }
+        ]
+      }
+    }
+  ]
+}

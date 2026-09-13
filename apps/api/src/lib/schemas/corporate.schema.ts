@@ -60,12 +60,31 @@ export const listCompanyQuizzesSchema = z.object({
 
 export type ListCompanyQuizzesDto = z.infer<typeof listCompanyQuizzesSchema>;
 
+export const getCompanyQuizQuestionsSchema = z.object({
+  companyId: z.string().uuid(),
+});
+
+export type GetCompanyQuizQuestionsDto = z.infer<typeof getCompanyQuizQuestionsSchema>;
+
+export const createAccessCodeResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    id: z.string().uuid(),
+    code: z.string(),
+    createdCount: z.number().int().min(0),
+    activatedCount: z.number().int().min(0),
+    limit: z.number().int().min(0).nullable(),
+  }),
+});
+
+export type CreateAccessCodeResponseDto = z.infer<typeof createAccessCodeResponseSchema>;
+
 export const createAccessCodeSchema = z.object({
   companyId: z.string().uuid(),
-  campaignId: z.string().uuid(),
-  quizId: z.string().uuid(),
-  quizType: z.enum(['technology', 'company_quiz']),
-  technologyId: z.string().uuid().optional().nullable(),
+  testeeName: z.string().min(1).max(255),
+  testeeEmail: z.string().email().max(255),
+  questionCount: z.number().int().min(1),
+  durationMinutes: z.number().int().min(1),
 });
 
 export type CreateAccessCodeDto = z.infer<typeof createAccessCodeSchema>;
@@ -79,7 +98,7 @@ export type ListAccessCodesDto = z.infer<typeof listAccessCodesSchema>;
 
 export const sendAccessCodeSchema = z.object({
   companyId: z.string().uuid(),
-  email: z.string().email(),
+  email: z.string().email().max(255).optional().nullable(),
 });
 
 export type SendAccessCodeDto = z.infer<typeof sendAccessCodeSchema>;

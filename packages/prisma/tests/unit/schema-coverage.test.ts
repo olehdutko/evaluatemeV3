@@ -34,7 +34,7 @@ describe('Prisma schema coverage', () => {
 
   it('declares natural-key unique constraints for test/question/answer', () => {
     expect(schema).toMatch(/@@unique\(\[technologyId, title\]\)/);
-    expect(schema).toMatch(/@@unique\(\[testId, orderIndex\]\)/);
+    expect(schema).toMatch(/@@unique\(\[technologyId, orderIndex\]\)/);
     expect(schema).toMatch(/@@unique\(\[questionId, orderIndex\]\)/);
   });
 });

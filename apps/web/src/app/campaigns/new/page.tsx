@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '../../../components/ui/Button';
-import { Card } from '../../../components/ui/Card';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
+import { PageHeader } from '../../../components/ui/PageHeader';
 import { CORPORATE_API_BASE } from '../../../lib/corporate-api';
 
 export default function NewCampaignPage(): JSX.Element {
@@ -46,47 +45,61 @@ export default function NewCampaignPage(): JSX.Element {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">New Campaign</h1>
-      <Card className="max-w-xl">
-        {error && <ErrorMessage message={error} />}
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <PageHeader title="New Campaign" description="Create a campaign to organize your assessments and access codes." />
+
+      <section className="panel p-5 sm:p-6">
+        <h2 className="font-display text-lg font-bold text-text-primary mb-4">Campaign details</h2>
         <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium" htmlFor="name">Name</label>
+          <label className="block">
+            <span className="label-mono">Name</span>
             <input
               id="name"
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded border px-3 py-2"
+              maxLength={255}
+              className="input-field py-2"
+              placeholder="e.g. Senior JS hiring Q3 2026"
             />
+          </label>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="label-mono">Description</span>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="input-field min-h-[72px] py-2"
+                rows={2}
+                placeholder="Short description"
+              />
+            </label>
+
+            <label className="block">
+              <span className="label-mono">Notes</span>
+              <textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="input-field min-h-[72px] py-2"
+                rows={2}
+                placeholder="Internal notes (optional)"
+              />
+            </label>
           </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded border px-3 py-2"
-              rows={3}
-            />
+
+          {error && <ErrorMessage message={error} />}
+
+          <div className="flex items-center justify-end pt-1">
+            <button type="submit" disabled={loading || !name.trim()} className="btn-primary">
+              {loading ? 'Creating…' : 'Create Campaign'}
+            </button>
           </div>
-          <div>
-            <label className="block text-sm font-medium" htmlFor="notes">Notes</label>
-            <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full rounded border px-3 py-2"
-              rows={3}
-            />
-          </div>
-          <Button type="submit" disabled={loading || !name.trim()}>
-            {loading ? 'Creating...' : 'Create Campaign'}
-          </Button>
         </form>
-      </Card>
+      </section>
     </div>
   );
 }

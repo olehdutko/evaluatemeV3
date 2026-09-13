@@ -15,6 +15,7 @@ interface Campaign {
   description: string | null;
   status: 'open' | 'closed' | 'archived';
   createdAt: string;
+  updatedAt: string;
 }
 
 interface CampaignsResponse {
@@ -77,19 +78,51 @@ export default function CampaignsPage() {
       {campaigns.length === 0 ? (
         <p className="text-gray-600">No campaigns found.</p>
       ) : (
-        <div className="grid gap-4">
-          {campaigns.map((campaign) => (
-            <Link key={campaign.id} href={`/campaigns/${campaign.id}?companyId=${localStorage.getItem('companyId') ?? ''}`}>
-              <Card className="cursor-pointer hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">{campaign.name}</h2>
-                  <span className="rounded-full px-2 py-1 text-xs font-medium uppercase">{campaign.status}</span>
-                </div>
-                {campaign.description && <p className="mt-2 text-sm text-gray-600">{campaign.description}</p>}
-                <p className="mt-2 text-xs text-gray-500">Created {new Date(campaign.createdAt).toLocaleDateString()}</p>
-              </Card>
-            </Link>
-          ))}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {campaigns.map((campaign) => {
+            const isClosed = campaign.status === 'closed';
+            const isArchived = campaign.status === 'archived';
+            const isInactive = isClosed || isArchived;
+            const cardClasses = isInactive
+              ? 'border border-gray-300 bg-gray-100 text-gray-600'
+              : 'border border-gray-200 bg-white';
+            const statusClasses = isClosed
+              ? 'bg-red-100 text-red-800 ring-1 ring-red-300'
+              : isArchived
+                ? 'bg-gray-300 text-gray-700 ring-1 ring-gray-400'
+                : 'bg-emerald-100 text-emerald-800';
+            return (
+              <Link
+                key={campaign.id}
+                href={`/campaigns/${campaign.id}?companyId=${localStorage.getItem('companyId') ?? ''}`}
+                className={isInactive ? 'opacity-90' : ''}
+              >
+                <Card className={`cursor-pointer hover:shadow-md ${cardClasses}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="truncate text-lg font-semibold">{campaign.name}</h2>
+                      {campaign.description && (
+                        <p className="mt-1 line-clamp-2 text-sm text-gray-600">{campaign.description}</p>
+                      )}
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${statusClasses}`}
+                    >
+                      {campaign.status}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                    <span>Created {new Date(campaign.createdAt).toLocaleDateString()}</span>
+                    {isClosed ? (
+                      <span className="font-medium text-amber-700">Closed {new Date(campaign.updatedAt).toLocaleDateString()}</span>
+                    ) : isArchived ? (
+                      <span className="font-medium text-gray-600">Archived {new Date(campaign.updatedAt).toLocaleDateString()}</span>
+                    ) : null}
+                  </div>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

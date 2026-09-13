@@ -1,0 +1,33 @@
+{
+  "name": "Test Engine (Access-Code Start) API",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/v1/test-engine/sessions",
+      "description": "Start a candidate test session using an access code. Supports technology quizzes and company quizzes.",
+      "auth": "Public (session token issued for the candidate)",
+      "body": {
+        "accessCode": "string"
+      },
+      "response": {
+        "data": {
+          "sessionToken": "string",
+          "sessionId": "uuid",
+          "questions": [
+            {
+              "id": "uuid",
+              "content": "string",
+              "type": "single_choice | multiple_choice",
+              "answers": [
+                {
+                  "id": "uuid",
+                  "content": "string"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

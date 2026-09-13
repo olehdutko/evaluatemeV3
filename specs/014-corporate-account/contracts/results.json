@@ -1,0 +1,62 @@
+{
+  "name": "Campaign Results API",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns/:campaignId/results?companyId=<uuid>",
+      "description": "List candidate results scoped to a campaign. Historical results remain visible regardless of current campaign status.",
+      "auth": "JWT + role company",
+      "response": {
+        "data": [
+          {
+            "id": "uuid",
+            "resultCode": "string",
+            "candidateId": "uuid | null",
+            "technologyId": "uuid | null",
+            "companyQuizId": "uuid | null",
+            "score": "number | null",
+            "maxScore": "number | null",
+            "status": "string",
+            "sessionId": "string | null",
+            "createdAt": "ISO 8601"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns/:campaignId/results/:resultId?companyId=<uuid>",
+      "description": "Get a detailed candidate result with per-question correctness and a chart summary.",
+      "auth": "JWT + role company",
+      "response": {
+        "data": {
+          "id": "uuid",
+          "resultCode": "string",
+          "campaignId": "uuid | null",
+          "candidateId": "uuid | null",
+          "accessCodeId": "uuid | null",
+          "technologyId": "uuid | null",
+          "companyQuizId": "uuid | null",
+          "score": "number | null",
+          "maxScore": "number | null",
+          "status": "string",
+          "sessionId": "string | null",
+          "createdAt": "ISO 8601",
+          "questions": [
+            {
+              "questionId": "uuid",
+              "answerId": "uuid | null",
+              "correctness": "correct | incorrect | partially_correct",
+              "points": "number"
+            }
+          ],
+          "chart": {
+            "correct": "number",
+            "incorrect": "number",
+            "partiallyCorrect": "number"
+          }
+        }
+      }
+    }
+  ]
+}

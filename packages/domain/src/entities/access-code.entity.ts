@@ -1,6 +1,8 @@
 import { Entity } from './base.entity';
 import { AccessCodeStatus } from './status.enums';
 
+export { AccessCodeStatus };
+
 export interface AccessCode extends Entity {
   code: string;
   companyId: string;
@@ -14,4 +16,8 @@ export interface AccessCode extends Entity {
   maxUses: number;
   expiresAt: Date | null;
   usedAt: Date | null;
+  testeeName: string | null;
+  testeeEmail: string | null;
+  questionCount: number | null;
+  durationMinutes: number | null;
 }

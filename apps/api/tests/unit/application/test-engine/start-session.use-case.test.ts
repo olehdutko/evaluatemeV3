@@ -27,6 +27,10 @@ const accessCode: AccessCode = {
   status: 'active',
   expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000),
   usedAt: null,
+  testeeName: null,
+  testeeEmail: null,
+  questionCount: null,
+  durationMinutes: null,
   createdAt: now,
   updatedAt: now,
 };
@@ -67,6 +71,15 @@ class FakeAccessCodeRepository implements IAccessCodeRepository {
   }
   save(c: AccessCode): Promise<AccessCode> {
     return Promise.resolve(c);
+  }
+  countByCompanyId(): Promise<number> {
+    return Promise.resolve(0);
+  }
+  countSentByCompanyId(): Promise<number> {
+    return Promise.resolve(0);
+  }
+  updateStatusByCampaignId(): Promise<number> {
+    return Promise.resolve(0);
   }
 }
 

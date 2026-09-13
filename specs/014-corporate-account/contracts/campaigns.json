@@ -1,0 +1,83 @@
+{
+  "name": "Campaigns API",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/v1/corporate/campaigns",
+      "description": "Create a new campaign for the authenticated company administrator.",
+      "auth": "JWT + role company",
+      "body": {
+        "companyId": "uuid",
+        "name": "string (1-255 chars)",
+        "description": "string | null (optional, max 5000)",
+        "notes": "string | null (optional, max 5000)"
+      },
+      "response": {
+        "data": {
+          "id": "uuid",
+          "name": "string",
+          "description": "string | null",
+          "notes": "string | null",
+          "status": "open",
+          "createdByUserId": "uuid",
+          "companyId": "uuid",
+          "createdAt": "ISO 8601"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns?companyId=<uuid>&status=open|closed|archived",
+      "description": "List campaigns for the company, optionally filtered by status.",
+      "auth": "JWT + role company",
+      "response": {
+        "data": [
+          {
+            "id": "uuid",
+            "companyId": "uuid",
+            "name": "string",
+            "description": "string | null",
+            "status": "open | closed | archived",
+            "createdByUserId": "uuid",
+            "createdAt": "ISO 8601"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns/:id?companyId=<uuid>",
+      "description": "Get a single campaign including its change history.",
+      "auth": "JWT + role company",
+      "response": {
+        "data": {
+          "id": "uuid",
+          "companyId": "uuid",
+          "name": "string",
+          "description": "string | null",
+          "notes": "string | null",
+          "status": "open | closed | archived",
+          "createdByUserId": "uuid",
+          "createdAt": "ISO 8601",
+          "history": "CampaignHistoryEntry[]"
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/corporate/campaigns/:id/status",
+      "description": "Transition campaign status. Closing disables unsent access codes; archiving disables all access codes; reopening does not reactivate previously disabled codes.",
+      "auth": "JWT + role company",
+      "body": {
+        "companyId": "uuid",
+        "status": "open | closed | archived"
+      },
+      "response": {
+        "data": {
+          "id": "uuid",
+          "status": "open | closed | archived"
+        }
+      }
+    }
+  ]
+}

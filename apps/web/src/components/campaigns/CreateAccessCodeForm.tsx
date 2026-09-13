@@ -1,58 +1,50 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CORPORATE_API_BASE } from '../../lib/corporate-api';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ErrorMessage } from '../ui/ErrorMessage';
 
-interface QuizOption {
+interface CreatedAccessCode {
   id: string;
-  name: string;
-  type: string;
-}
-
-interface TechnologyOption {
-  id: string;
-  name: string;
+  code: string;
 }
 
 interface CreateAccessCodeFormProps {
   campaignId: string;
   companyId: string;
-  onCreated: () => void;
+  onCreated: (createdCount: number, activatedCount: number, limit: number | null) => void;
 }
 
 export function CreateAccessCodeForm({ campaignId, companyId, onCreated }: CreateAccessCodeFormProps) {
-  const [quizzes, setQuizzes] = useState<QuizOption[]>([]);
-  const [technologies, setTechnologies] = useState<TechnologyOption[]>([]);
-  const [selectedQuiz, setSelectedQuiz] = useState('');
-  const [quizType, setQuizType] = useState<'technology' | 'company_quiz'>('technology');
-  const [selectedTechnology, setSelectedTechnology] = useState('');
+  const [testeeName, setTesteeName] = useState('');
+  const [testeeEmail, setTesteeEmail] = useState('');
+  const [questionCount, setQuestionCount] = useState<number | ''>('');
+  const [durationMinutes, setDurationMinutes] = useState<number | ''>('');
+  const [created, setCreated] = useState<CreatedAccessCode | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      fetch('/api/v1/technologies').then(async (res) => ((await res.json()) as { data: TechnologyOption[] }).data),
-      fetch(`${CORPORATE_API_BASE}/api/v1/corporate/quizzes?companyId=${companyId}`, { credentials: 'include' }).then(async (res) => ((await res.json()) as { data: QuizOption[] }).data),
-    ])
-      .then(([techs, qs]) => {
-        setTechnologies(techs);
-        setQuizzes(qs);
-      })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load quizzes'));
-  }, [companyId]);
+  const isFormValid =
+    testeeName.trim().length > 0 &&
+    testeeEmail.trim().length > 0 &&
+    typeof questionCount === 'number' &&
+    questionCount > 0 &&
+    typeof durationMinutes === 'number' &&
+    durationMinutes > 0;
 
-  const submit = async () => {
+  const create = async () => {
+    if (!isFormValid) return;
     setLoading(true);
     setError(null);
     const payload = {
       companyId,
-      campaignId,
-      quizId: selectedQuiz,
-      quizType,
-      technologyId: quizType === 'technology' ? selectedTechnology : null,
+      testeeName: testeeName.trim(),
+      testeeEmail: testeeEmail.trim(),
+      questionCount: Number(questionCount),
+      durationMinutes: Number(durationMinutes),
     };
     const res = await fetch(`${CORPORATE_API_BASE}/api/v1/corporate/campaigns/${campaignId}/access-codes`, {
       method: 'POST',
@@ -63,63 +55,118 @@ export function CreateAccessCodeForm({ campaignId, companyId, onCreated }: Creat
     if (!res.ok) {
       const err = (await res.json().catch(() => ({}))) as { message?: string };
       setError(err.message || 'Failed to create access code');
+      setCreated(null);
     } else {
-      onCreated();
+      const json = (await res.json()) as {
+        data: {
+          id: string;
+          code: string;
+          createdCount: number;
+          activatedCount: number;
+          limit: number | null;
+        };
+      };
+      setCreated({ id: json.data.id, code: json.data.code });
+      onCreated(json.data.createdCount, json.data.activatedCount, json.data.limit);
     }
     setLoading(false);
+  };
+
+  const useCode = async () => {
+    if (!created) return;
+    setSending(true);
+    setError(null);
+    const res = await fetch(`${CORPORATE_API_BASE}/api/v1/corporate/access-codes/${created.id}/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyId }),
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string };
+      setError(err.message || 'Failed to send access code');
+    } else {
+      const json = (await res.json()) as { data: { activatedCount: number; remaining: number | null } };
+      onCreated(0, json.data.activatedCount, json.data.remaining);
+    }
+    setSending(false);
   };
 
   return (
     <Card className="mb-6">
       {error && <ErrorMessage message={error} />}
-      <div className="mb-4">
-        <label className="block text-sm font-medium">Quiz source</label>
-        <select
-          value={quizType}
-          onChange={(e) => setQuizType(e.target.value as typeof quizType)}
-          className="w-full rounded border px-3 py-2"
-        >
-          <option value="technology">Global technology</option>
-          <option value="company_quiz">Company quiz</option>
-        </select>
+      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="testeeName" className="mb-1 block text-sm font-medium">
+            Testee name
+          </label>
+          <input
+            id="testeeName"
+            type="text"
+            value={testeeName}
+            onChange={(e) => setTesteeName(e.target.value)}
+            placeholder="Enter testee name"
+            className="w-full rounded border px-3 py-2"
+          />
+        </div>
+        <div>
+          <label htmlFor="testeeEmail" className="mb-1 block text-sm font-medium">
+            Testee email
+          </label>
+          <input
+            id="testeeEmail"
+            type="email"
+            value={testeeEmail}
+            onChange={(e) => setTesteeEmail(e.target.value)}
+            placeholder="Enter testee email"
+            className="w-full rounded border px-3 py-2"
+          />
+        </div>
+        <div>
+          <label htmlFor="questionCount" className="mb-1 block text-sm font-medium">
+            Number of questions
+          </label>
+          <input
+            id="questionCount"
+            type="number"
+            min={1}
+            value={questionCount}
+            onChange={(e) => setQuestionCount(e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="Questions"
+            className="w-full rounded border px-3 py-2"
+          />
+        </div>
+        <div>
+          <label htmlFor="durationMinutes" className="mb-1 block text-sm font-medium">
+            Number of minutes
+          </label>
+          <input
+            id="durationMinutes"
+            type="number"
+            min={1}
+            value={durationMinutes}
+            onChange={(e) => setDurationMinutes(e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="Minutes"
+            className="w-full rounded border px-3 py-2"
+          />
+        </div>
       </div>
 
-      {quizType === 'technology' ? (
-        <div className="mb-4">
-          <label className="block text-sm font-medium">Technology</label>
-          <select
-            value={selectedTechnology}
-            onChange={(e) => {
-              setSelectedTechnology(e.target.value);
-              setSelectedQuiz(e.target.value);
-            }}
-            className="w-full rounded border px-3 py-2"
-          >
-            <option value="">-- select technology --</option>
-            {technologies.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
-        </div>
-      ) : (
-        <div className="mb-4">
-          <label className="block text-sm font-medium">Company quiz</label>
-          <select
-            value={selectedQuiz}
-            onChange={(e) => setSelectedQuiz(e.target.value)}
-            className="w-full rounded border px-3 py-2"
-          >
-            <option value="">-- select quiz --</option>
-            {quizzes.map((q) => (
-              <option key={q.id} value={q.id}>{q.name} ({q.type})</option>
-            ))}
-          </select>
+      <div className="flex gap-2">
+        <Button onClick={() => void create()} disabled={!isFormValid || loading}>
+          {loading ? 'Creating...' : 'Create Access Code'}
+        </Button>
+        <Button onClick={() => void useCode()} disabled={!created || sending || loading} variant="secondary">
+          {sending ? 'Sending...' : 'Use Access Code'}
+        </Button>
+      </div>
+
+      {created && (
+        <div className="mt-4 rounded border bg-gray-50 p-3">
+          <p className="text-sm text-gray-600">Generated access code:</p>
+          <p className="text-lg font-mono font-semibold">{created.code}</p>
         </div>
       )}
-
-      <Button onClick={() => void submit()} disabled={!selectedQuiz || loading}>
-        {loading ? 'Creating...' : 'Create Access Code'}
-      </Button>
     </Card>
   );
 }

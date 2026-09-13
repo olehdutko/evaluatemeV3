@@ -10,6 +10,7 @@ export interface CampaignListItem {
   status: CampaignStatus;
   createdByUserId: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface ListCampaignsInput {
@@ -45,6 +46,7 @@ export class ListCampaignsUseCase {
         status: campaign.status,
         createdByUserId: campaign.createdByUserId,
         createdAt: campaign.createdAt.toISOString(),
+        updatedAt: campaign.updatedAt.toISOString(),
       })),
     };
   }

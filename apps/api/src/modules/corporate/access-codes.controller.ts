@@ -43,9 +43,10 @@ export class AccessCodesController {
       userId: user.sub,
       companyId: dto.companyId,
       campaignId,
-      quizId: dto.quizId,
-      quizType: dto.quizType,
-      technologyId: dto.technologyId ?? undefined,
+      testeeName: dto.testeeName,
+      testeeEmail: dto.testeeEmail,
+      questionCount: dto.questionCount,
+      durationMinutes: dto.durationMinutes,
     });
   }
 
@@ -72,7 +73,7 @@ export class AccessCodesController {
       userId: user.sub,
       companyId: dto.companyId,
       accessCodeId: id,
-      email: dto.email,
+      email: dto.email ?? undefined,
     });
   }
 }

@@ -57,6 +57,10 @@ export default function CampaignDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [createdCount, setCreatedCount] = useState<number | null>(null);
+  const [activatedCount, setActivatedCount] = useState<number | null>(null);
+  const [accessCodeLimit, setAccessCodeLimit] = useState<number | null>(null);
+  const [confirmStatus, setConfirmStatus] = useState<'open' | 'closed' | 'archived' | null>(null);
 
   const fetchCampaign = useCallback(() => {
     if (!companyId) {
@@ -91,7 +95,13 @@ export default function CampaignDetailPage() {
       setError(err.message || 'Failed to update status');
       return;
     }
+    setConfirmStatus(null);
     fetchCampaign();
+  };
+
+  const requestStatusChange = (newStatus: 'open' | 'closed' | 'archived') => {
+    setError(null);
+    setConfirmStatus(newStatus);
   };
 
   if (loading) return <Loading />;
@@ -116,7 +126,7 @@ export default function CampaignDetailPage() {
         </div>
         <div className="flex gap-2">
           {nextStatuses.map((status) => (
-            <Button key={status} onClick={() => void changeStatus(status)} variant="secondary">
+            <Button key={status} onClick={() => requestStatusChange(status)} variant="secondary">
               Mark {status}
             </Button>
           ))}
@@ -129,31 +139,88 @@ export default function CampaignDetailPage() {
         <p className="text-sm text-gray-500">Created {new Date(campaign.createdAt).toLocaleString()}</p>
       </Card>
 
+      {accessCodeLimit !== null && (
+        <div className="mb-4 text-sm text-gray-600">
+          Access codes: {createdCount ?? 0} created
+          {activatedCount !== null && (
+            <>, {activatedCount} activated</>
+          )}
+          {accessCodeLimit !== -1 && activatedCount !== null && (
+            <span className="ml-1">({Math.max(0, accessCodeLimit - activatedCount)} remaining)</span>
+          )}
+          {accessCodeLimit === -1 && <span className="ml-1">(unlimited)</span>}
+        </div>
+      )}
+
       {campaign.status === 'open' && (
         <CreateAccessCodeForm
           campaignId={campaign.id}
           companyId={companyId}
-          onCreated={() => setRefreshToken((t) => t + 1)}
+          onCreated={(count, activated, limit) => {
+            setCreatedCount(count);
+            setActivatedCount(activated);
+            setAccessCodeLimit(limit);
+            setRefreshToken((t) => t + 1);
+          }}
         />
       )}
 
+      {confirmStatus && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-w-sm rounded bg-white p-6 shadow-lg">
+            <h3 className="mb-2 text-lg font-semibold">Confirm status change</h3>
+            <p className="mb-4 text-sm text-gray-600">
+              Are you sure you want to mark this campaign as <strong>{confirmStatus}</strong>?
+              {confirmStatus !== 'open' && (
+                <> This may disable access codes.</>
+              )}
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => setConfirmStatus(null)} variant="secondary">Cancel</Button>
+              <Button onClick={() => void changeStatus(confirmStatus)}>Confirm</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h2 className="mb-4 text-xl font-semibold">Access Codes</h2>
-      <AccessCodeGrid campaignId={campaign.id} companyId={companyId} refreshToken={refreshToken} />
+      <AccessCodeGrid
+        campaignId={campaign.id}
+        companyId={companyId}
+        refreshToken={refreshToken}
+        onSent={(activated, remaining) => {
+          setActivatedCount(activated);
+          if (remaining !== null && accessCodeLimit !== null && accessCodeLimit !== -1) {
+            // no-op: remaining already derived
+          }
+        }}
+      />
 
       <h2 className="mb-4 mt-8 text-xl font-semibold">History</h2>
       {campaign.history.length === 0 ? (
         <p className="text-gray-600">No history yet.</p>
       ) : (
         <ul className="space-y-2">
-          {campaign.history.map((entry) => (
-            <li key={entry.id} className="rounded border p-3">
-              <div className="flex items-center justify-between">
-                <span className="font-medium capitalize">{entry.action.replace('_', ' ')}</span>
-                <span className="text-sm text-gray-500">{new Date(entry.changedAt).toLocaleString()}</span>
-              </div>
-              {entry.status && <p className="text-sm text-gray-600">Status: {entry.status}</p>}
-            </li>
-          ))}
+          {campaign.history.map((entry) => {
+            const metadata = entry.metadata ? (JSON.parse(entry.metadata) as Record<string, unknown>) : {};
+            const previousStatus = metadata.previousStatus ? String(metadata.previousStatus) : null;
+            const recipientEmail = metadata.recipientEmail ? String(metadata.recipientEmail) : null;
+            return (
+              <li key={entry.id} className="rounded border p-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium capitalize">{entry.action.replace(/_/g, ' ')}</span>
+                  <span className="text-sm text-gray-500">{new Date(entry.changedAt).toLocaleString()}</span>
+                </div>
+                {entry.status && <p className="text-sm text-gray-600">Status: {entry.status}</p>}
+                {previousStatus && (
+                  <p className="text-sm text-gray-600">Previous status: {previousStatus}</p>
+                )}
+                {recipientEmail && (
+                  <p className="text-sm text-gray-600">Sent to: {recipientEmail}</p>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

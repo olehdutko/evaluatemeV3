@@ -24,6 +24,28 @@ export class PrismaAccessCodeRepository implements IAccessCodeRepository {
     return rows.map((row) => this.toDomain(row));
   }
 
+  async countByCompanyId(companyId: string): Promise<number> {
+    const count = await this.prisma.accessCode.count({ where: { companyId } });
+    return count;
+  }
+
+  async countSentByCompanyId(companyId: string): Promise<number> {
+    const count = await this.prisma.accessCode.count({ where: { companyId, sentAt: { not: null } } });
+    return count;
+  }
+
+  async updateStatusByCampaignId(
+    campaignId: string,
+    fromStatus: AccessCodeStatus,
+    toStatus: AccessCodeStatus,
+  ): Promise<number> {
+    const result = await this.prisma.accessCode.updateMany({
+      where: { campaignId, status: fromStatus },
+      data: { status: toStatus, updatedAt: new Date() },
+    });
+    return result.count;
+  }
+
   async save(accessCode: AccessCode): Promise<AccessCode> {
     const saved = await this.prisma.accessCode.upsert({
       where: { id: accessCode.id },
@@ -41,6 +63,10 @@ export class PrismaAccessCodeRepository implements IAccessCodeRepository {
         maxUses: accessCode.maxUses,
         expiresAt: accessCode.expiresAt,
         usedAt: accessCode.usedAt,
+        testeeName: accessCode.testeeName,
+        testeeEmail: accessCode.testeeEmail,
+        questionCount: accessCode.questionCount,
+        durationMinutes: accessCode.durationMinutes,
       },
       update: {
         companyId: accessCode.companyId,
@@ -54,6 +80,10 @@ export class PrismaAccessCodeRepository implements IAccessCodeRepository {
         maxUses: accessCode.maxUses,
         expiresAt: accessCode.expiresAt,
         usedAt: accessCode.usedAt,
+        testeeName: accessCode.testeeName,
+        testeeEmail: accessCode.testeeEmail,
+        questionCount: accessCode.questionCount,
+        durationMinutes: accessCode.durationMinutes,
       },
     });
     return this.toDomain(saved);
@@ -75,6 +105,10 @@ export class PrismaAccessCodeRepository implements IAccessCodeRepository {
       maxUses: typeof data.maxUses === 'number' ? data.maxUses : Number(data.maxUses ?? 1),
       expiresAt: data.expiresAt ? new Date(data.expiresAt as string) : null,
       usedAt: data.usedAt ? new Date(data.usedAt as string) : null,
+      testeeName: (data.testeeName as string | null) ?? null,
+      testeeEmail: (data.testeeEmail as string | null) ?? null,
+      questionCount: typeof data.questionCount === 'number' ? data.questionCount : (data.questionCount === null ? null : Number(data.questionCount ?? 0)),
+      durationMinutes: typeof data.durationMinutes === 'number' ? data.durationMinutes : (data.durationMinutes === null ? null : Number(data.durationMinutes ?? 0)),
       createdAt: data.createdAt as Date,
       updatedAt: data.updatedAt as Date,
     };

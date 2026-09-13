@@ -21,9 +21,10 @@ interface AccessCodeGridProps {
   campaignId: string;
   companyId: string;
   refreshToken: number;
+  onSent?: (activatedCount: number, remaining: number | null) => void;
 }
 
-export function AccessCodeGrid({ campaignId, companyId, refreshToken }: AccessCodeGridProps) {
+export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: AccessCodeGridProps) {
   const [codes, setCodes] = useState<AccessCode[]>([]);
   const [email, setEmail] = useState('');
   const [sendingId, setSendingId] = useState<string | null>(null);
@@ -52,7 +53,12 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken }: AccessCo
       credentials: 'include',
     });
     setSendingId(null);
-    if (res.ok) load();
+    if (res.ok) {
+      const json = (await res.json()) as { data: { activatedCount: number; remaining: number | null } };
+      onSent?.(json.data.activatedCount, json.data.remaining);
+      setEmail('');
+      load();
+    }
   };
 
   return (
@@ -88,10 +94,10 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken }: AccessCo
                 <td className="py-2">
                   <Button
                     onClick={() => void send(code.id)}
-                    disabled={sendingId === code.id || !email || code.status !== 'active'}
+                    disabled={sendingId === code.id || !email || code.status !== 'active' || !!code.sentAt}
                     variant="secondary"
                   >
-                    {sendingId === code.id ? 'Sending...' : 'Send'}
+                    {sendingId === code.id ? 'Sending...' : code.sentAt ? 'Sent' : 'Send'}
                   </Button>
                 </td>
               </tr>

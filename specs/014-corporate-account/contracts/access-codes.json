@@ -1,0 +1,59 @@
+{
+  "name": "Access Codes API",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/v1/corporate/campaigns/:campaignId/access-codes",
+      "description": "Create an access code inside an open campaign. Rejected if campaign is closed or archived, or if the company has exhausted its access-code limit.",
+      "auth": "JWT + role company",
+      "body": {
+        "companyId": "uuid",
+        "quizId": "uuid",
+        "quizType": "technology | company_quiz",
+        "technologyId": "uuid | null (required when quizType=technology)"
+      },
+      "response": {
+        "data": {
+          "id": "uuid",
+          "code": "string"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/corporate/campaigns/:campaignId/access-codes?companyId=<uuid>",
+      "description": "List access codes for a campaign with sent/used/active/revoked status.",
+      "auth": "JWT + role company",
+      "response": {
+        "data": [
+          {
+            "id": "uuid",
+            "code": "string",
+            "status": "active | used | expired | revoked",
+            "sentAt": "ISO 8601 | null",
+            "sentToEmail": "string | null",
+            "usedCount": "number",
+            "maxUses": "number",
+            "usedAt": "ISO 8601 | null",
+            "createdAt": "ISO 8601"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/corporate/access-codes/:id/send",
+      "description": "Send an active access code to a candidate by email and record the action in campaign history.",
+      "auth": "JWT + role company",
+      "body": {
+        "companyId": "uuid",
+        "email": "string (valid email)"
+      },
+      "response": {
+        "data": {
+          "sentAt": "ISO 8601"
+        }
+      }
+    }
+  ]
+}

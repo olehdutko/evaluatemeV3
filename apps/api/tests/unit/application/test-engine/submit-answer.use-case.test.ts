@@ -27,6 +27,10 @@ const accessCode: AccessCode = {
   maxUses: 1,
   expiresAt: null,
   usedAt: null,
+  testeeName: null,
+  testeeEmail: null,
+  questionCount: null,
+  durationMinutes: null,
   createdAt: now,
   updatedAt: now,
 };
@@ -118,6 +122,15 @@ class FakeAccessCodeRepository implements IAccessCodeRepository {
   }
   async save(c: AccessCode): Promise<AccessCode> {
     return c;
+  }
+  async countByCompanyId(): Promise<number> {
+    return 0;
+  }
+  async countSentByCompanyId(): Promise<number> {
+    return 0;
+  }
+  async updateStatusByCampaignId(): Promise<number> {
+    return 0;
   }
 }
 

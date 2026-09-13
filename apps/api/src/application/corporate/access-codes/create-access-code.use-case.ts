@@ -1,15 +1,31 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { IAccessCodeRepository, ICompanyProfileRepository, ICampaignRepository, ICompanyQuizRepository, AccessCode, AccessCodeStatus, CampaignHistory } from '@evaluateme/domain';
+import {
+  IAccessCodeRepository,
+  ICompanyProfileRepository,
+  ICampaignRepository,
+  AccessCode,
+  AccessCodeStatus,
+  CampaignHistory,
+} from '@evaluateme/domain';
 import { NotFoundError, BadRequestError, ConflictError } from '../../../infrastructure/errors/app-error';
 
 export interface CreateAccessCodeInput {
   userId: string;
   companyId: string;
   campaignId: string;
-  quizId: string;
-  quizType: 'technology' | 'company_quiz';
-  technologyId?: string;
+  testeeName: string;
+  testeeEmail: string;
+  questionCount: number;
+  durationMinutes: number;
+}
+
+export interface CreateAccessCodeOutput {
+  id: string;
+  code: string;
+  createdCount: number;
+  activatedCount: number;
+  limit: number | null;
 }
 
 @Injectable()
@@ -18,10 +34,9 @@ export class CreateAccessCodeUseCase {
     @Inject(IAccessCodeRepository) private readonly accessCodeRepository: IAccessCodeRepository,
     @Inject(ICompanyProfileRepository) private readonly companyProfileRepository: ICompanyProfileRepository,
     @Inject(ICampaignRepository) private readonly campaignRepository: ICampaignRepository,
-    @Inject(ICompanyQuizRepository) private readonly companyQuizRepository: ICompanyQuizRepository,
   ) {}
 
-  async execute(input: CreateAccessCodeInput): Promise<{ success: true; data: { id: string; code: string } }> {
+  async execute(input: CreateAccessCodeInput): Promise<{ success: true; data: CreateAccessCodeOutput }> {
     const profile = await this.companyProfileRepository.findById(input.companyId);
     if (!profile || profile.userId !== input.userId) {
       throw new NotFoundError('company profile');
@@ -35,19 +50,7 @@ export class CreateAccessCodeUseCase {
       throw new BadRequestError({ campaign: ['Access codes can only be created in open campaigns'] });
     }
 
-    if (input.quizType === 'company_quiz') {
-      const quiz = await this.companyQuizRepository.findById(input.quizId);
-      if (!quiz || quiz.companyId !== input.companyId) {
-        throw new NotFoundError('quiz');
-      }
-    }
-
-    if (profile.availableAccessCodes > 0 && profile.availableAccessCodes <= 0) {
-      // unreachable but keeps lint happy
-    }
-    if (profile.availableAccessCodes !== -1 && profile.availableAccessCodes <= 0) {
-      throw new BadRequestError({ accessCodes: ['No access codes available for this company'] });
-    }
+    const createdCount = await this.accessCodeRepository.countByCompanyId(input.companyId);
 
     const code = this.generateCode();
     const existing = await this.accessCodeRepository.findByCode(code);
@@ -61,8 +64,8 @@ export class CreateAccessCodeUseCase {
       code,
       companyId: input.companyId,
       campaignId: input.campaignId,
-      quizId: input.quizId,
-      technologyId: input.technologyId ?? null,
+      quizId: null,
+      technologyId: null,
       status: AccessCodeStatus.ACTIVE,
       sentAt: null,
       sentToEmail: null,
@@ -70,18 +73,15 @@ export class CreateAccessCodeUseCase {
       maxUses: 1,
       expiresAt: null,
       usedAt: null,
+      testeeName: input.testeeName,
+      testeeEmail: input.testeeEmail,
+      questionCount: input.questionCount,
+      durationMinutes: input.durationMinutes,
       createdAt: now,
       updatedAt: now,
     };
 
     const saved = await this.accessCodeRepository.save(accessCode);
-
-    if (profile.availableAccessCodes > 0) {
-      await this.companyProfileRepository.save({
-        ...profile,
-        availableAccessCodes: profile.availableAccessCodes - 1,
-      });
-    }
 
     const historyNow = new Date();
     const history: CampaignHistory = {
@@ -90,7 +90,13 @@ export class CreateAccessCodeUseCase {
       action: 'access_code_created',
       status: null,
       changedByUserId: input.userId,
-      metadata: JSON.stringify({ accessCodeId: saved.id, quizId: input.quizId, quizType: input.quizType }),
+      metadata: JSON.stringify({
+        accessCodeId: saved.id,
+        testeeName: input.testeeName,
+        testeeEmail: input.testeeEmail,
+        questionCount: input.questionCount,
+        durationMinutes: input.durationMinutes,
+      }),
       changedAt: historyNow,
       createdAt: historyNow,
       updatedAt: historyNow,
@@ -102,6 +108,9 @@ export class CreateAccessCodeUseCase {
       data: {
         id: saved.id,
         code: saved.code,
+        createdCount: createdCount + 1,
+        activatedCount: 0,
+        limit: profile.availableAccessCodes === -1 ? null : profile.availableAccessCodes,
       },
     };
   }
