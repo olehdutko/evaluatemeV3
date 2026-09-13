@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { getEmailServiceConfig, updateEmailServiceConfig, testEmailService } from '../../../lib/admin.api';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';

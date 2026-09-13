@@ -79,8 +79,9 @@ import {
     { provide: IPasswordResetTokenRepository, useClass: PrismaPasswordResetTokenRepository },
     { provide: IEmailTemplateRepository, useClass: PrismaEmailTemplateRepository },
     { provide: IEmailServiceConfigRepository, useClass: PrismaEmailServiceConfigRepository },
-    { provide: IEmailService, useClass: DynamicEmailService },
+    DynamicEmailService,
+    { provide: IEmailService, useExisting: DynamicEmailService },
   ],
-  exports: [JwtAuthGuard, IJwtStrategy, ISessionStrategy, RolesGuard, LogSecurityEventUseCase],
+  exports: [JwtAuthGuard, IJwtStrategy, ISessionStrategy, RolesGuard, LogSecurityEventUseCase, DynamicEmailService, IEmailServiceConfigRepository],
 })
 export class AuthModule {}
