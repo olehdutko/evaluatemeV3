@@ -13,7 +13,6 @@ import { useAuth } from '../../../../lib/auth/auth-context';
 export default function TechnologyDetailPage(): JSX.Element {
   const params = useParams();
   const slug = params.slug as string;
-  const { user } = useAuth();
 
   const [preview, setPreview] = useState<Awaited<ReturnType<typeof fetchTechnologyPreview>>['data'] | null>(null);
   const [selectedQuestionSetId, setSelectedQuestionSetId] = useState<string | null>(null);
@@ -57,9 +56,21 @@ export default function TechnologyDetailPage(): JSX.Element {
     );
   }
 
-  const isPersonalUser = user?.role === 'user';
-  const isAdminUser = user?.role === 'admin';
+  const { isAuthenticated, isAdmin: isAdminUser, isCompany, isUser: isPersonalUser } = useAuth();
   const selectedQuestionSet = preview.questionSets.find((qs) => qs.id === selectedQuestionSetId) ?? preview.questionSets[0];
+
+  const pageDescription = ((): string => {
+    if (isAdminUser) {
+      return 'Admin accounts cannot take tests. Use the admin panel to configure the application.';
+    }
+    if (isCompany) {
+      return 'Corporate accounts cannot take tests directly. Create a campaign to invite participants.';
+    }
+    if (isPersonalUser) {
+      return 'Select a question set and review the quiz details before you start.';
+    }
+    return 'Read-only technology details. Log in or register to start a test.';
+  })();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -89,13 +100,7 @@ export default function TechnologyDetailPage(): JSX.Element {
 
       <PageHeader
         title={preview.name}
-        description={
-          isAdminUser
-            ? 'Admin accounts cannot take tests. Use the admin panel to configure the application.'
-            : isPersonalUser
-              ? 'Select a question set and review the quiz details before you start.'
-              : 'Read-only technology details. Log in or register to start a test.'
-        }
+        description={pageDescription}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -194,26 +199,7 @@ export default function TechnologyDetailPage(): JSX.Element {
           <p className="label-mono">Slug</p>
           <p className="font-mono text-sm text-text-secondary">{preview.slug}</p>
 
-          {isAdminUser ? (
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-text-secondary font-body">
-                Admin accounts cannot take tests. Switch to a personal account to start a quiz.
-              </p>
-              <div className="flex flex-col gap-3 mt-4">
-                <Link href="/admin/dashboard" className="btn-secondary text-center">Go to admin panel</Link>
-              </div>
-            </div>
-          ) : isPersonalUser ? (
-            <div className="space-y-3 pt-4 border-t border-border">
-              <QuizStartButtonWithDialog
-                slug={preview.slug}
-                questionSetId={selectedQuestionSetId ?? ''}
-                variant="primary"
-                className="w-full"
-                initialPreview={preview}
-              />
-            </div>
-          ) : (
+          {!isAuthenticated ? (
             <div className="pt-4 border-t border-border">
               <p className="text-sm text-text-secondary font-body">
                 Want to test your skills? Create an account or log in to start a quiz.
@@ -222,6 +208,35 @@ export default function TechnologyDetailPage(): JSX.Element {
                 <Link href="/register" className="btn-primary text-center">Sign up</Link>
                 <Link href="/login" className="btn-secondary text-center">Log in</Link>
               </div>
+            </div>
+          ) : isAdminUser ? (
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm text-text-secondary font-body">
+                Admin accounts cannot take tests. Switch to a personal account to start a quiz.
+              </p>
+              <div className="flex flex-col gap-3 mt-4">
+                <Link href="/admin/dashboard" className="btn-secondary text-center">Go to admin panel</Link>
+              </div>
+            </div>
+          ) : isCompany ? (
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm text-text-secondary font-body">
+                Corporate accounts cannot take tests directly. Create a campaign to invite participants.
+              </p>
+              <div className="flex flex-col gap-3 mt-4">
+                <Link href="/campaigns/new" className="btn-secondary text-center">Create campaign</Link>
+                <Link href="/campaigns" className="btn-secondary text-center">My campaigns</Link>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 pt-4 border-t border-border">
+              <QuizStartButtonWithDialog
+                slug={preview.slug}
+                questionSetId={selectedQuestionSetId ?? ''}
+                variant="primary"
+                className="w-full"
+                initialPreview={preview}
+              />
             </div>
           )}
         </div>
