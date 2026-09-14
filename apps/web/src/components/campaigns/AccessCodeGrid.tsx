@@ -280,8 +280,10 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
         <div className="space-y-4">
           <p className="font-body text-text-primary">
             Are you sure you want to delete access code <strong className="font-mono">{deleteCode?.code}</strong>?
-            {deleteCode?.sentAt ? ' This code has already been sent.' : ''}
-            {deleteCode?.result ? ' This code has a completed quiz result.' : ''}
+          </p>
+          <p className="font-body text-text-secondary text-sm">
+            {deleteCode?.sentAt ? 'This code has already been sent. ' : ''}
+            {deleteCode?.result ? 'This code has a completed quiz result. ' : ''}
             This action cannot be undone.
           </p>
           {deleteError && <ErrorMessage message={deleteError} />}
