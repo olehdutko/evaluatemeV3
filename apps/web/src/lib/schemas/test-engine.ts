@@ -16,6 +16,10 @@ export const startTestRequestSchema = z.object({
   questionSetId: z.string().uuid(),
 });
 
+export const startSessionRequestSchema = z.object({
+  accessCode: z.string().min(1).max(100),
+});
+
 export const startTestResponseSchema = z.object({
   success: z.literal(true),
   data: z.object({
@@ -92,6 +96,7 @@ export const submitAnswerResponseSchema = z.object({
 export type StartPersonalQuizRequest = z.infer<typeof startPersonalQuizRequestSchema>;
 export type StartPersonalQuizResponse = z.infer<typeof startPersonalQuizResponseSchema>;
 export type StartTestRequest = z.infer<typeof startTestRequestSchema>;
+export type StartSessionRequest = z.infer<typeof startSessionRequestSchema>;
 export type StartTestResponse = z.infer<typeof startTestResponseSchema>;
 export type TestSessionStateResponse = z.infer<typeof testSessionStateResponseSchema>;
 export type SubmitAnswerRequest = z.infer<typeof submitAnswerRequestSchema>;

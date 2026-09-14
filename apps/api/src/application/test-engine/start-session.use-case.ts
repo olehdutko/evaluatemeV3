@@ -1,18 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import {
   IAccessCodeRepository,
   IQuestionSetRepository,
   IQuestionRepository,
   IQuizSessionRepository,
-  ISessionStrategy,
   Question,
 } from '@evaluateme/domain';
 import { NotFoundError, BadRequestError } from '../../infrastructure/errors/app-error';
 
 export interface StartSessionResult {
-  sessionToken: string;
   sessionId: string;
+  questionSet: { id: string; title: string };
   questions: Question[];
 }
 
@@ -23,7 +21,6 @@ export class StartSessionUseCase {
     @Inject(IQuestionSetRepository) private readonly questionSetRepository: IQuestionSetRepository,
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
-    @Inject(ISessionStrategy) private readonly sessionStrategy: ISessionStrategy,
   ) {}
 
   async execute(accessCode: string): Promise<{ success: true; data: StartSessionResult }> {
@@ -39,13 +36,15 @@ export class StartSessionUseCase {
     }
 
     const questionSet = await this.questionSetRepository.findById(code.questionSetId ?? '');
-    const questionCount = questionSet?.quizQuestionCount ?? 20;
+    if (!questionSet) {
+      throw new NotFoundError('question set for access code');
+    }
+    const questionCount = questionSet.quizQuestionCount ?? 20;
     const questions = await this.questionRepository.findByQuestionSetIdRandomized(code.questionSetId ?? '', questionCount);
     if (questions.length === 0) {
       throw new NotFoundError('questions for question set');
     }
 
-    const candidateId = `candidate-${randomUUID()}`;
     const session = await this.quizSessionRepository.create({
       userId: null,
       questionSetId: code.questionSetId ?? '',
@@ -56,13 +55,11 @@ export class StartSessionUseCase {
       questionIdsSnapshot: questions.map((q) => q.id),
     });
 
-    const sessionToken = await this.sessionStrategy.issueSessionToken(candidateId, code.id, 7 * 24 * 60);
-
     return {
       success: true,
       data: {
-        sessionToken,
         sessionId: session.id,
+        questionSet: { id: questionSet.id, title: questionSet.title },
         questions,
       },
     };

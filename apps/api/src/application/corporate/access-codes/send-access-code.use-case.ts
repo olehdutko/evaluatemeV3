@@ -6,6 +6,8 @@ import {
   IEmailService,
   ICampaignRepository,
   ICreditSettingRepository,
+  IEmailTemplateRepository,
+  IQuestionSetRepository,
   CampaignHistory,
 } from '@evaluateme/domain';
 import { NotFoundError, BadRequestError, PaymentRequiredError } from '../../../infrastructure/errors/app-error';
@@ -13,6 +15,7 @@ import { NotFoundError, BadRequestError, PaymentRequiredError } from '../../../i
 const DEFAULT_ACCESS_CODE_PRICE = 1;
 const ACCESS_CODE_PRICE_KEY = 'company_access_code_price';
 const FALLBACK_ACCESS_CODE_PRICE_KEY = 'access_code_price_credits';
+const TEST_INVITATION_TEMPLATE_NAME = 'test_invitation';
 
 export interface SendAccessCodeInput {
   userId: string;
@@ -36,6 +39,8 @@ export class SendAccessCodeUseCase {
     @Inject(IEmailService) private readonly emailService: IEmailService,
     @Inject(ICampaignRepository) private readonly campaignRepository: ICampaignRepository,
     @Inject(ICreditSettingRepository) private readonly creditSettingRepository: ICreditSettingRepository,
+    @Inject(IEmailTemplateRepository) private readonly templateRepository: IEmailTemplateRepository,
+    @Inject(IQuestionSetRepository) private readonly questionSetRepository: IQuestionSetRepository,
   ) {}
 
   async execute(input: SendAccessCodeInput): Promise<{ success: true; data: SendAccessCodeOutput }> {
@@ -72,12 +77,27 @@ export class SendAccessCodeUseCase {
       );
     }
 
+    const template = await this.templateRepository.findByName(TEST_INVITATION_TEMPLATE_NAME);
+    const questionSet = code.questionSetId ? await this.questionSetRepository.findById(code.questionSetId) : null;
+    const testName = questionSet?.title ?? 'the assessment';
+    const candidateName = code.testeeName ?? recipientEmail;
+    const frontendOrigin = process.env.WEB_ORIGIN || 'http://localhost:4000';
+    const testLink = `${frontendOrigin}/tests/start?accessCode=${encodeURIComponent(code.code)}`;
+
+    const subject = template?.subject.replace(/{{testName}}/g, testName) ?? `You are invited to take ${testName}`;
+    const html = template?.bodyHtml
+      ? this.applyTemplate(template.bodyHtml, { candidateName, testName, testLink, accessCode: code.code })
+      : this.defaultInvitationHtml(candidateName, testName, testLink, code.code);
+    const text = template?.bodyText
+      ? this.applyTemplate(template.bodyText, { candidateName, testName, testLink, accessCode: code.code })
+      : this.defaultInvitationText(candidateName, testName, testLink, code.code);
+
     const now = new Date();
     await this.emailService.send({
       to: recipientEmail,
-      subject: 'Your EvaluateMe assessment access code',
-      html: `<p>Use this access code to start your assessment: <strong>${code.code}</strong></p>`,
-      text: `Use this access code to start your assessment: ${code.code}`,
+      subject,
+      html,
+      text,
     });
 
     // Deduct the configured access code price from company credits only when the code is actually used (sent).
@@ -139,5 +159,27 @@ export class SendAccessCodeUseCase {
     }
     const parsed = Number(setting.value);
     return Number.isNaN(parsed) || parsed < 0 ? DEFAULT_ACCESS_CODE_PRICE : parsed;
+  }
+
+  private applyTemplate(
+    template: string,
+    values: { candidateName: string; testName: string; testLink: string; accessCode: string },
+  ): string {
+    return template
+      .replace(/{{candidateName}}/g, values.candidateName)
+      .replace(/{{testName}}/g, values.testName)
+      .replace(/{{testLink}}/g, values.testLink)
+      .replace(/{{accessCode}}/g, values.accessCode);
+  }
+
+  private defaultInvitationHtml(candidateName: string, testName: string, testLink: string, accessCode: string): string {
+    return `<p>Hello ${candidateName},</p>
+<p>You have been invited to take ${testName}.</p>
+<p><a href="${testLink}">Start Test</a></p>
+<p>Or use this access code: <strong>${accessCode}</strong></p>`;
+  }
+
+  private defaultInvitationText(candidateName: string, testName: string, testLink: string, accessCode: string): string {
+    return `Hello ${candidateName},\n\nYou have been invited to take ${testName}.\n\nStart here: ${testLink}\nAccess code: ${accessCode}`;
   }
 }

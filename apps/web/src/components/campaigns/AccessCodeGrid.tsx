@@ -188,7 +188,7 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
                 </p>
               )}
               <p className="mt-2">
-                Start here: {typeof window !== 'undefined' ? window.location.origin : ''}/start?accessCode={previewCode.code}
+                Start here: {typeof window !== 'undefined' ? window.location.origin : ''}/tests/start?accessCode={previewCode.code}
               </p>
               <p className="mt-2">Good luck!</p>
             </div>

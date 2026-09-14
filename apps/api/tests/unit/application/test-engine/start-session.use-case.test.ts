@@ -3,7 +3,6 @@ import {
   IAccessCodeRepository,
   IQuestionRepository,
   IQuizSessionRepository,
-  ISessionStrategy,
   IQuestionSetRepository,
   AccessCode,
   Question,
@@ -18,6 +17,7 @@ const questionSet: QuestionSet = {
   title: 'C# Basics',
   technologyId: 'tech-1',
   status: 'active',
+  description: null,
   quizQuestionCount: 20,
   quizDurationMinutes: 40,
   createdByUserId: 'user-1',
@@ -111,6 +111,9 @@ class FakeQuestionRepository implements IQuestionRepository {
   findByQuestionSetIdRandomized(): Promise<Question[]> {
     return Promise.resolve([question]);
   }
+  countByQuestionSetId(): Promise<number> {
+    return Promise.resolve(1);
+  }
   save(q: Question): Promise<Question> {
     return Promise.resolve(q);
   }
@@ -140,18 +143,6 @@ class FakeQuizSessionRepository implements IQuizSessionRepository {
   }
 }
 
-class FakeSessionStrategy implements ISessionStrategy {
-  issueSessionToken(): Promise<string> {
-    return Promise.resolve('session-token-123');
-  }
-  verifySessionToken(): Promise<null> {
-    return Promise.resolve(null);
-  }
-  revokeSessionToken(): Promise<void> {
-    return Promise.resolve();
-  }
-}
-
 class FakeQuestionSetRepository implements IQuestionSetRepository {
   findById(id: string): Promise<QuestionSet | null> {
     return Promise.resolve(id === questionSet.id ? questionSet : null);
@@ -176,13 +167,13 @@ describe('StartSessionUseCase', () => {
     new FakeQuestionSetRepository(),
     new FakeQuestionRepository(),
     new FakeQuizSessionRepository(),
-    new FakeSessionStrategy(),
   );
 
   it('starts a session for a valid access code', async () => {
     const result = await useCase.execute('CODE-123');
-    expect(result.data.sessionToken).toBe('session-token-123');
     expect(result.data.sessionId).toBe('session-1');
+    expect(result.data.questionSet.id).toBe(questionSet.id);
+    expect(result.data.questionSet.title).toBe(questionSet.title);
     expect(result.data.questions).toHaveLength(1);
   });
 

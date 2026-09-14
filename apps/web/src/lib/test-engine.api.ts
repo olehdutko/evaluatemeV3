@@ -4,12 +4,14 @@ import {
   startPersonalQuizResponseSchema,
   startTestRequestSchema,
   startTestResponseSchema,
+  startSessionRequestSchema,
   testSessionStateResponseSchema,
   submitAnswerRequestSchema,
   submitAnswerResponseSchema,
 } from './schemas/test-engine';
 import type {
   StartPersonalQuizResponse,
+  StartSessionRequest,
   StartTestRequest,
   StartTestResponse,
   TestSessionStateResponse,
@@ -23,6 +25,11 @@ export function startPersonalQuiz(): Promise<StartPersonalQuizResponse> {
 
 export function startTest(input: StartTestRequest): Promise<StartTestResponse> {
   return apiPost('/api/v1/tests/start', input, startTestRequestSchema, startTestResponseSchema);
+}
+
+export function startSessionByAccessCode(accessCode: string): Promise<StartTestResponse> {
+  const body: StartSessionRequest = { accessCode };
+  return apiPost('/api/v1/sessions/start', body, startSessionRequestSchema, startTestResponseSchema);
 }
 
 export function getTestSession(sessionId: string): Promise<TestSessionStateResponse> {
