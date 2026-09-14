@@ -131,20 +131,18 @@ export default function TechnologyDetailPage(): JSX.Element {
                 {preview.questionSets.map((questionSet) => {
                   const isSelected = questionSet.id === selectedQuestionSetId;
                   return (
-                    <div
+                    <button
                       key={questionSet.id}
-                      className={`p-4 border transition-colors ${
+                      type="button"
+                      onClick={() => setSelectedQuestionSetId(questionSet.id)}
+                      className={`text-left p-4 border transition-colors ${
                         isSelected
                           ? 'border-border-strong bg-bg-secondary'
                           : 'border-border bg-bg-primary'
                       }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedQuestionSetId(questionSet.id)}
-                          className="flex-1 text-left min-w-0"
-                        >
+                        <div className="flex-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
                             <div className="min-w-0">
                               <h3 className="font-display text-lg font-bold text-text-primary">{questionSet.title}</h3>
@@ -158,9 +156,13 @@ export default function TechnologyDetailPage(): JSX.Element {
                               </p>
                             </div>
                           </div>
-                        </button>
+                        </div>
                         {isPersonalUser && (
-                          <div className="shrink-0">
+                          <div
+                            className="shrink-0"
+                            onClick={(event) => { event.stopPropagation(); }}
+                            role="presentation"
+                          >
                             <QuizStartButtonWithDialog
                               slug={preview.slug}
                               questionSetId={questionSet.id}
@@ -171,7 +173,7 @@ export default function TechnologyDetailPage(): JSX.Element {
                           </div>
                         )}
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
