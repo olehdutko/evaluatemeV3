@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { fetchTechnologies } from '../../lib/technology.api';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { ErrorMessage } from '../../components/ui/ErrorMessage';
+import { useAuth } from '../../lib/auth/auth-context';
 
 interface Technology {
   id: string;
@@ -18,6 +19,7 @@ interface TechnologiesListProps {
 }
 
 function TechnologiesList({ technologies }: TechnologiesListProps): JSX.Element {
+  const { isCompany } = useAuth();
   return (
     <ul className="border-t border-border">
       {technologies.map((technology, index) => (
@@ -39,12 +41,14 @@ function TechnologiesList({ technologies }: TechnologiesListProps): JSX.Element 
             </div>
             <div className="flex flex-col sm:items-end gap-3 shrink-0 sm:self-center">
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link
-                  href={`/technologies/${technology.slug}/start`}
-                  className="btn-primary text-sm py-2 px-4 text-center"
-                >
-                  Start quiz
-                </Link>
+                {!isCompany && (
+                  <Link
+                    href={`/technologies/${technology.slug}/start`}
+                    className="btn-primary text-sm py-2 px-4 text-center"
+                  >
+                    Start quiz
+                  </Link>
+                )}
                 <Link
                   href={`/technologies/${technology.slug}/start`}
                   className="btn-secondary text-sm py-2 px-4 text-center"
