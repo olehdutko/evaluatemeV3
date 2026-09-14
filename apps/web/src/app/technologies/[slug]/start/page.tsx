@@ -139,36 +139,38 @@ export default function TechnologyDetailPage(): JSX.Element {
                           : 'border-border bg-bg-primary'
                       }`}
                     >
-                      <button
-                        type="button"
-                        onClick={() => setSelectedQuestionSetId(questionSet.id)}
-                        className="w-full text-left"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <h3 className="font-display text-lg font-bold text-text-primary">{questionSet.title}</h3>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedQuestionSetId(questionSet.id)}
+                          className="flex-1 text-left min-w-0"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                            <div className="min-w-0">
+                              <h3 className="font-display text-lg font-bold text-text-primary">{questionSet.title}</h3>
+                            </div>
+                            <div className="text-left sm:text-right shrink-0">
+                              <p className="font-mono text-xs text-text-secondary">
+                                {questionSet.questionCount} questions / {questionSet.durationMinutes} min
+                              </p>
+                              <p className="font-mono text-[10px] text-text-muted">
+                                {questionSet.actualQuestionCount.toLocaleString()} available
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-right shrink-0">
-                            <p className="font-mono text-xs text-text-secondary">
-                              {questionSet.questionCount} questions / {questionSet.durationMinutes} min
-                            </p>
-                            <p className="font-mono text-[10px] text-text-muted">
-                              {questionSet.actualQuestionCount.toLocaleString()} available
-                            </p>
+                        </button>
+                        {isPersonalUser && (
+                          <div className="shrink-0">
+                            <QuizStartButtonWithDialog
+                              slug={preview.slug}
+                              questionSetId={questionSet.id}
+                              variant="primary"
+                              className="w-full sm:w-auto"
+                              initialPreview={preview}
+                            />
                           </div>
-                        </div>
-                      </button>
-                      {isPersonalUser && (
-                        <div className="mt-4 pt-4 border-t border-border">
-                          <QuizStartButtonWithDialog
-                            slug={preview.slug}
-                            questionSetId={questionSet.id}
-                            variant="primary"
-                            className="w-full"
-                            initialPreview={preview}
-                          />
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   );
                 })}
