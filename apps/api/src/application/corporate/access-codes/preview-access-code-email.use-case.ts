@@ -6,8 +6,7 @@ import {
   IQuestionSetRepository,
 } from '@evaluateme/domain';
 import { NotFoundError, BadRequestError } from '../../../infrastructure/errors/app-error';
-
-const TEST_INVITATION_TEMPLATE_NAME = 'test_invitation';
+import { renderAccessCodeEmail, getTestInvitationTemplateName } from './access-code-email-renderer';
 
 export interface PreviewAccessCodeEmailInput {
   userId: string;
@@ -51,43 +50,27 @@ export class PreviewAccessCodeEmailUseCase {
       throw new BadRequestError({ email: ['Recipient email is required'] });
     }
 
-    const template = await this.templateRepository.findByName(TEST_INVITATION_TEMPLATE_NAME);
+    const template = await this.templateRepository.findByName(getTestInvitationTemplateName());
     if (!template) {
-      throw new NotFoundError('email template', TEST_INVITATION_TEMPLATE_NAME);
+      throw new NotFoundError('email template', getTestInvitationTemplateName());
     }
 
     const questionSet = code.questionSetId ? await this.questionSetRepository.findById(code.questionSetId) : null;
-    const testName = questionSet?.title ?? 'the assessment';
-    const candidateName = code.testeeName ?? recipientEmail;
     const frontendOrigin = process.env.WEB_ORIGIN || 'http://localhost:4000';
-    const testLink = `${frontendOrigin}/tests/start?accessCode=${encodeURIComponent(code.code)}`;
-
-    const subject = this.applyTemplate(template.subject, { candidateName, testName, testLink, accessCode: code.code }, false);
-    const html = this.applyTemplate(template.bodyHtml, { candidateName, testName, testLink, accessCode: code.code }, true);
-    const text = template.bodyText
-      ? this.applyTemplate(template.bodyText, { candidateName, testName, testLink, accessCode: code.code }, false)
-      : undefined;
+    const { subject, html, text } = renderAccessCodeEmail({
+      template,
+      questionSet,
+      accessCode: {
+        code: code.code,
+        testeeName: code.testeeName,
+        testeeEmail: recipientEmail,
+      },
+      frontendOrigin,
+    });
 
     return {
       success: true,
       data: { to: recipientEmail, subject, html, text },
     };
   }
-
-  private applyTemplate(
-    template: string,
-    values: { candidateName: string; testName: string; testLink: string; accessCode: string },
-    convertNewlinesToHtml: boolean,
-  ): string {
-    let result = template
-      .replace(/{{candidateName}}/g, values.candidateName)
-      .replace(/{{testName}}/g, values.testName)
-      .replace(/{{testLink}}/g, values.testLink)
-      .replace(/{{accessCode}}/g, values.accessCode);
-    if (convertNewlinesToHtml) {
-      result = result.replace(/\n/g, '<br>');
-    }
-    return result;
-  }
-
 }

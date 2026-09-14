@@ -1,4 +1,5 @@
 import { PreviewAccessCodeEmailUseCase } from '../../../../../src/application/corporate/access-codes/preview-access-code-email.use-case';
+import { renderAccessCodeEmail } from '../../../../../src/application/corporate/access-codes/access-code-email-renderer';
 import {
   IAccessCodeRepository,
   ICompanyProfileRepository,
@@ -201,5 +202,21 @@ describe('PreviewAccessCodeEmailUseCase', () => {
         accessCodeId: accessCode.id,
       }),
     ).rejects.toThrow('email template');
+  });
+});
+
+describe('renderAccessCodeEmail', () => {
+  it('converts newlines to <br> only in HTML', () => {
+    const result = renderAccessCodeEmail({
+      template,
+      questionSet,
+      accessCode: { code: 'CODE-123', testeeName: 'John Doe', testeeEmail: 'john@example.com' },
+      frontendOrigin: 'http://localhost:4000',
+    });
+
+    expect(result.html).toContain('<br>');
+    expect(result.html).not.toContain('\n');
+    expect(result.text).toContain('\n');
+    expect(result.text).not.toContain('<br>');
   });
 });
