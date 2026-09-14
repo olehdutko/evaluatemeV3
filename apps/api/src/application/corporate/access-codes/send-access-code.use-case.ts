@@ -84,7 +84,7 @@ export class SendAccessCodeUseCase {
 
     const questionSet = code.questionSetId ? await this.questionSetRepository.findById(code.questionSetId) : null;
     const frontendOrigin = process.env.WEB_ORIGIN || 'http://localhost:4000';
-    const { subject, html, text } = renderAccessCodeEmail({
+    const { subject, html } = renderAccessCodeEmail({
       template,
       questionSet,
       accessCode: {
@@ -100,7 +100,6 @@ export class SendAccessCodeUseCase {
       to: recipientEmail,
       subject,
       html,
-      text,
     });
 
     // Deduct the configured access code price from company credits only when the code is actually used (sent).

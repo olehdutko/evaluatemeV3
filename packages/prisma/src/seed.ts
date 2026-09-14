@@ -30,15 +30,6 @@ const emailTemplates = [
   <p>Best regards,<br>The EvaluateMe.IT Team</p>
 </body>
 </html>`,
-    bodyText: `Welcome, {{userName}}!
-
-Thanks for creating a personal account on EvaluateMe.IT.
-Please verify your email address by opening the link below:
-
-{{verificationLink}}
-
-Best regards,
-The EvaluateMe.IT Team`,
     variables: JSON.stringify({ userName: 'string', verificationLink: 'string' }),
   },
   {
@@ -64,15 +55,6 @@ The EvaluateMe.IT Team`,
   <p>Best regards,<br>The EvaluateMe.IT Team</p>
 </body>
 </html>`,
-    bodyText: `Welcome, {{companyName}}!
-
-Thanks for creating a corporate account on EvaluateMe.IT.
-Please verify your email address by opening the link below:
-
-{{verificationLink}}
-
-Best regards,
-The EvaluateMe.IT Team`,
     variables: JSON.stringify({ companyName: 'string', verificationLink: 'string' }),
   },
   {
@@ -99,18 +81,6 @@ The EvaluateMe.IT Team`,
   <p>Best regards,<br>The EvaluateMe.IT Team</p>
 </body>
 </html>`,
-    bodyText: `Password reset
-
-Hello {{userName}},
-
-We received a request to reset your password. Open the link below to choose a new one:
-
-{{resetLink}}
-
-If you did not request a password reset, you can safely ignore this email.
-
-Best regards,
-The EvaluateMe.IT Team`,
     variables: JSON.stringify({ userName: 'string', resetLink: 'string' }),
   },
   {
@@ -129,14 +99,6 @@ The EvaluateMe.IT Team`,
   <p>Best regards,<br>The EvaluateMe.IT Team</p>
 </body>
 </html>`,
-    bodyText: `Password changed
-
-Hello {{userName}},
-
-Your EvaluateMe.IT password was just changed. If this was not you, please contact support immediately.
-
-Best regards,
-The EvaluateMe.IT Team`,
     variables: JSON.stringify({ userName: 'string' }),
   },
   {
@@ -159,17 +121,6 @@ The EvaluateMe.IT Team`,
   <p>Best regards,<br>The EvaluateMe.IT Team</p>
 </body>
 </html>`,
-    bodyText: `Thank you for your payment!
-
-Hello {{userName}},
-
-We have received your payment for order #{{orderNumber}}.
-
-Amount: {{amount}} {{currency}}
-Date: {{paymentDate}}
-
-Best regards,
-The EvaluateMe.IT Team`,
     variables: JSON.stringify({
       userName: 'string',
       orderNumber: 'string',
@@ -201,17 +152,6 @@ The EvaluateMe.IT Team`,
   <p>Best regards,<br>The EvaluateMe.IT Team</p>
 </body>
 </html>`,
-    bodyText: `You are invited
-
-Hello {{candidateName}},
-
-You have been invited to take the test "{{testName}}".
-
-Start here: {{testLink}}
-Access code: {{accessCode}}
-
-Best regards,
-The EvaluateMe.IT Team`,
     variables: JSON.stringify({
       candidateName: 'string',
       testName: 'string',
@@ -237,17 +177,6 @@ The EvaluateMe.IT Team`,
   <p>Best regards,<br>The EvaluateMe.IT Team</p>
 </body>
 </html>`,
-    bodyText: `Test results
-
-Hello {{candidateName}},
-
-You have completed the test "{{testName}}".
-
-Your score: {{score}} / {{maxScore}}
-Status: {{status}}
-
-Best regards,
-The EvaluateMe.IT Team`,
     variables: JSON.stringify({
       candidateName: 'string',
       testName: 'string',
@@ -278,19 +207,6 @@ The EvaluateMe.IT Team`,
   <p>Best regards,<br>The EvaluateMe.IT Team</p>
 </body>
 </html>`,
-    bodyText: `Your quiz result is ready
-
-Hello {{userName}},
-
-You have completed the {{technologyName}} quiz.
-Your score: {{score}} / {{maxScore}}
-
-Your unique result code: {{resultCode}}
-
-View and share your result: {{resultLink}}
-
-Best regards,
-The EvaluateMe.IT Team`,
     variables: JSON.stringify({ userName: 'string', technologyName: 'string', score: 'string', maxScore: 'string', resultCode: 'string', resultLink: 'string' }),
   },
 ];

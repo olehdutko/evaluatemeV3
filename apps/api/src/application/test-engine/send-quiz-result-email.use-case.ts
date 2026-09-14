@@ -41,17 +41,10 @@ export class SendQuizResultEmailUseCase {
       .replace(/{{score}}/g, String(input.score))
       .replace(/{{maxScore}}/g, String(input.maxScore))
       .replace(/{{resultCode}}/g, input.resultCode)
-      .replace(/{{resultLink}}/g, resultLink);
+      .replace(/{{resultLink}}/g, resultLink)
+      .replace(/\n/g, '<br>');
 
-    const text = (template.bodyText || '')
-      .replace(/{{userName}}/g, name)
-      .replace(/{{technologyName}}/g, input.technologyName)
-      .replace(/{{score}}/g, String(input.score))
-      .replace(/{{maxScore}}/g, String(input.maxScore))
-      .replace(/{{resultCode}}/g, input.resultCode)
-      .replace(/{{resultLink}}/g, resultLink);
-
-    await this.emailService.send({ to: user.email, subject: template.subject, html, text });
+    await this.emailService.send({ to: user.email, subject: template.subject, html });
 
     return { success: true };
   }

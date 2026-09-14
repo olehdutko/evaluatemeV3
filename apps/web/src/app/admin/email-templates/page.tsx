@@ -13,7 +13,6 @@ interface TemplateSummary {
 
 interface TemplateDetail extends TemplateSummary {
   bodyHtml: string;
-  bodyText: string | null;
   variables: Record<string, string> | null;
 }
 
@@ -46,7 +45,6 @@ export default function AdminEmailTemplatesPage(): JSX.Element {
     updateEmailTemplate(updated.id, {
       subject: updated.subject,
       bodyHtml: updated.bodyHtml,
-      bodyText: updated.bodyText,
       variables: updated.variables,
     })
       .then((response) => {
@@ -121,13 +119,11 @@ function EmailTemplateEditor({
 }): JSX.Element {
   const [subject, setSubject] = useState(template.subject);
   const [bodyHtml, setBodyHtml] = useState(template.bodyHtml);
-  const [bodyText, setBodyText] = useState(template.bodyText ?? '');
   const [variablesJson, setVariablesJson] = useState(JSON.stringify(template.variables ?? {}, null, 2));
 
   useEffect(() => {
     setSubject(template.subject);
     setBodyHtml(template.bodyHtml);
-    setBodyText(template.bodyText ?? '');
     setVariablesJson(JSON.stringify(template.variables ?? {}, null, 2));
   }, [template]);
 
@@ -144,7 +140,6 @@ function EmailTemplateEditor({
       ...template,
       subject,
       bodyHtml,
-      bodyText: bodyText.trim() || null,
       variables,
     });
   }
@@ -170,16 +165,6 @@ function EmailTemplateEditor({
           onChange={setBodyHtml}
         />
       </div>
-
-      <label className="block">
-        <span className="label-mono">Plain Text Body</span>
-        <textarea
-          value={bodyText}
-          onChange={(e) => setBodyText(e.target.value)}
-          rows={6}
-          className="input-field font-mono text-sm"
-        />
-      </label>
 
       <label className="block">
         <span className="label-mono">Variables (JSON)</span>

@@ -19,7 +19,6 @@ export interface PreviewAccessCodeEmailOutput {
   to: string;
   subject: string;
   html: string;
-  text: string | undefined;
 }
 
 @Injectable()
@@ -57,7 +56,7 @@ export class PreviewAccessCodeEmailUseCase {
 
     const questionSet = code.questionSetId ? await this.questionSetRepository.findById(code.questionSetId) : null;
     const frontendOrigin = process.env.WEB_ORIGIN || 'http://localhost:4000';
-    const { subject, html, text } = renderAccessCodeEmail({
+    const { subject, html } = renderAccessCodeEmail({
       template,
       questionSet,
       accessCode: {
@@ -70,7 +69,7 @@ export class PreviewAccessCodeEmailUseCase {
 
     return {
       success: true,
-      data: { to: recipientEmail, subject, html, text },
+      data: { to: recipientEmail, subject, html },
     };
   }
 }

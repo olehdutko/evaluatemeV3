@@ -63,13 +63,10 @@ export class ChangePasswordUseCase {
     const template = await this.emailTemplateRepository.findByName('password_changed');
     const subject = template?.subject ?? 'Your EvaluateMe.IT password was changed';
     const html = template?.bodyHtml
-      ? this.replaceVariables(template.bodyHtml, { userName: displayName })
+      ? this.replaceVariables(template.bodyHtml, { userName: displayName }).replace(/\n/g, '<br>')
       : this.defaultHtml(displayName);
-    const text = template?.bodyText
-      ? this.replaceVariables(template.bodyText, { userName: displayName })
-      : this.defaultText(displayName);
 
-    await this.emailService.send({ to, subject, html, text });
+    await this.emailService.send({ to, subject, html });
   }
 
   private replaceVariables(template: string, variables: Record<string, string>): string {
@@ -90,14 +87,5 @@ export class ChangePasswordUseCase {
   <p>Best regards,<br>The EvaluateMe.IT Team</p>
 </body>
 </html>`;
-  }
-
-  private defaultText(displayName: string): string {
-    return `Hello ${displayName},
-
-Your EvaluateMe.IT password was just changed. If this was not you, please contact support immediately.
-
-Best regards,
-The EvaluateMe.IT Team`;
   }
 }

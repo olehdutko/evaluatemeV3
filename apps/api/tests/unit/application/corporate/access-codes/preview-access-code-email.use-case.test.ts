@@ -67,7 +67,6 @@ const template: EmailTemplate = {
   name: 'test_invitation',
   subject: 'You are invited to take {{testName}}',
   bodyHtml: '<p>Hello {{candidateName}},</p>\n<p>You are invited to {{testName}}.</p>\n<p><a href="{{testLink}}">Start</a></p>\n<p>Code: {{accessCode}}</p>',
-  bodyText: 'Hello {{candidateName}},\nYou are invited to {{testName}}.\nStart: {{testLink}}\nCode: {{accessCode}}',
   variables: { candidateName: 'string', testName: 'string', testLink: 'string', accessCode: 'string' },
   createdAt: now,
   updatedAt: now,
@@ -168,7 +167,7 @@ describe('PreviewAccessCodeEmailUseCase', () => {
     expect(result.data.html).toContain('/tests/start?accessCode=CODE-123');
   });
 
-  it('converts newlines to <br> in HTML but keeps them in plain text', async () => {
+  it('converts newlines to <br> in rendered HTML', async () => {
     const result = await useCase.execute({
       userId: companyProfile.userId,
       companyId: companyProfile.id,
@@ -177,8 +176,6 @@ describe('PreviewAccessCodeEmailUseCase', () => {
 
     expect(result.data.html).toContain('</p><br><p>');
     expect(result.data.html).not.toContain('\n');
-    expect(result.data.text).toContain('\n');
-    expect(result.data.text).not.toContain('<br>');
   });
 
   it('throws when the test_invitation template is missing', async () => {
@@ -206,7 +203,7 @@ describe('PreviewAccessCodeEmailUseCase', () => {
 });
 
 describe('renderAccessCodeEmail', () => {
-  it('converts newlines to <br> only in HTML', () => {
+  it('converts newlines to <br> in HTML output', () => {
     const result = renderAccessCodeEmail({
       template,
       questionSet,
@@ -216,7 +213,6 @@ describe('renderAccessCodeEmail', () => {
 
     expect(result.html).toContain('<br>');
     expect(result.html).not.toContain('\n');
-    expect(result.text).toContain('\n');
-    expect(result.text).not.toContain('<br>');
+    expect('text' in result).toBe(false);
   });
 });

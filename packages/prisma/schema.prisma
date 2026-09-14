@@ -293,7 +293,6 @@ model EmailTemplate {
   name      String   @unique @db.VarChar(100)
   subject   String   @db.VarChar(255)
   bodyHtml  String   @db.Text
-  bodyText  String?  @db.Text
   variables String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

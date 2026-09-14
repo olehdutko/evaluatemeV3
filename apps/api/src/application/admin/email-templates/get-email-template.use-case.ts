@@ -13,7 +13,6 @@ export class GetEmailTemplateUseCase {
       name: string;
       subject: string;
       bodyHtml: string;
-      bodyText: string | null;
       variables: Record<string, string> | null;
       updatedAt: string;
     };
@@ -29,7 +28,6 @@ export class GetEmailTemplateUseCase {
         name: template.name,
         subject: template.subject,
         bodyHtml: template.bodyHtml,
-        bodyText: template.bodyText,
         variables: template.variables,
         updatedAt: template.updatedAt.toISOString(),
       },

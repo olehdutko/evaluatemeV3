@@ -56,13 +56,10 @@ export class ForgotPasswordUseCase {
     const template = await this.emailTemplateRepository.findByName('password_reset');
     const subject = template?.subject ?? 'Reset your EvaluateMe.IT password';
     const html = template?.bodyHtml
-      ? this.replaceVariables(template.bodyHtml, { userName: displayName, resetLink })
+      ? this.replaceVariables(template.bodyHtml, { userName: displayName, resetLink }).replace(/\n/g, '<br>')
       : this.defaultHtml(displayName, resetLink);
-    const text = template?.bodyText
-      ? this.replaceVariables(template.bodyText, { userName: displayName, resetLink })
-      : this.defaultText(displayName, resetLink);
 
-    await this.emailService.send({ to: user.email, subject, html, text });
+    await this.emailService.send({ to: user.email, subject, html });
 
     return { success: true };
   }
@@ -91,18 +88,4 @@ export class ForgotPasswordUseCase {
 </html>`;
   }
 
-  private defaultText(displayName: string, resetLink: string): string {
-    return `Password reset
-
-Hello ${displayName},
-
-We received a request to reset your password. Open the link below to choose a new one:
-
-${resetLink}
-
-If you did not request a password reset, you can safely ignore this email.
-
-Best regards,
-The EvaluateMe.IT Team`;
-  }
 }

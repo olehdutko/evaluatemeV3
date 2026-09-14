@@ -29,14 +29,12 @@ export class PrismaEmailTemplateRepository implements IEmailTemplateRepository {
         name: template.name,
         subject: template.subject,
         bodyHtml: template.bodyHtml,
-        bodyText: template.bodyText,
         variables: template.variables ? JSON.stringify(template.variables) : null,
       },
       update: {
         name: template.name,
         subject: template.subject,
         bodyHtml: template.bodyHtml,
-        bodyText: template.bodyText,
         variables: template.variables ? JSON.stringify(template.variables) : null,
       },
     });
@@ -58,7 +56,6 @@ export class PrismaEmailTemplateRepository implements IEmailTemplateRepository {
       name: data.name as string,
       subject: data.subject as string,
       bodyHtml: data.bodyHtml as string,
-      bodyText: (data.bodyText as string | null) ?? null,
       variables,
       createdAt: data.createdAt as Date,
       updatedAt: data.updatedAt as Date,

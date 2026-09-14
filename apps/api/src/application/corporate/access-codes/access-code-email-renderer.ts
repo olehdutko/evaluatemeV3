@@ -12,7 +12,6 @@ interface RenderAccessCodeEmailInput {
 export interface RenderedAccessCodeEmail {
   subject: string;
   html: string;
-  text: string | undefined;
 }
 
 export function renderAccessCodeEmail(input: RenderAccessCodeEmailInput): RenderedAccessCodeEmail {
@@ -22,7 +21,7 @@ export function renderAccessCodeEmail(input: RenderAccessCodeEmailInput): Render
   const testName = questionSet?.title ?? 'the assessment';
   const testLink = `${frontendOrigin}/tests/start?accessCode=${encodeURIComponent(accessCode.code)}`;
 
-  const subject = applyTemplate(template.subject, {
+    const subject = applyTemplate(template.subject, {
     candidateName,
     testName,
     testLink,
@@ -34,16 +33,8 @@ export function renderAccessCodeEmail(input: RenderAccessCodeEmailInput): Render
     testLink,
     accessCode: accessCode.code,
   }).replace(/\n/g, '<br>');
-  const text = template.bodyText
-    ? applyTemplate(template.bodyText, {
-        candidateName,
-        testName,
-        testLink,
-        accessCode: accessCode.code,
-      })
-    : undefined;
 
-  return { subject, html, text };
+  return { subject, html };
 }
 
 export function getTestInvitationTemplateName(): string {

@@ -118,7 +118,6 @@ export class AdminController {
     @Body(new ZodValidationPipe(updateEmailTemplateRequestSchema)) body: {
       subject: string;
       bodyHtml: string;
-      bodyText?: string | null;
       variables?: Record<string, string> | null;
     },
   ): Promise<ReturnType<UpdateEmailTemplateUseCase['execute']>> {

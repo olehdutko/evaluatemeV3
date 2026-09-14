@@ -80,7 +80,6 @@ export const emailTemplateDetailSchema = z.object({
     name: z.string(),
     subject: z.string(),
     bodyHtml: z.string(),
-    bodyText: z.string().nullable(),
     variables: z.record(z.string()).nullable(),
     updatedAt: z.string().datetime(),
   }),

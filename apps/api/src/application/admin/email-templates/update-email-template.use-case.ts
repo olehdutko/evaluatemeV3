@@ -6,7 +6,6 @@ export interface UpdateEmailTemplateInput {
   id: string;
   subject: string;
   bodyHtml: string;
-  bodyText?: string | null;
   variables?: Record<string, string> | null;
 }
 
@@ -21,7 +20,6 @@ export class UpdateEmailTemplateUseCase {
       name: string;
       subject: string;
       bodyHtml: string;
-      bodyText: string | null;
       variables: Record<string, string> | null;
       updatedAt: string;
     };
@@ -38,7 +36,6 @@ export class UpdateEmailTemplateUseCase {
       ...existing,
       subject: input.subject.trim(),
       bodyHtml: input.bodyHtml.trim(),
-      bodyText: input.bodyText?.trim() ?? null,
       variables: input.variables ?? null,
       updatedAt: new Date(),
     });
@@ -50,7 +47,6 @@ export class UpdateEmailTemplateUseCase {
         name: saved.name,
         subject: saved.subject,
         bodyHtml: saved.bodyHtml,
-        bodyText: saved.bodyText,
         variables: saved.variables,
         updatedAt: saved.updatedAt.toISOString(),
       },
