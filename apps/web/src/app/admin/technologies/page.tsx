@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getTechnologies, createTechnology, updateTechnology, deleteTechnology } from '../../../lib/admin.api';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
+import { Breadcrumbs } from '../../../components/ui/Breadcrumbs';
 
 interface Technology {
   id: string;
@@ -104,8 +105,8 @@ export default function AdminTechnologiesPage(): JSX.Element {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Breadcrumbs items={[{ label: 'Admin' }, { label: 'Technologies' }]} />
       <header className="mb-10 border-b border-border pb-6">
-        <p className="font-mono text-xs uppercase tracking-[0.12em] text-accent mb-3">Content</p>
         <h1 className="font-display text-3xl sm:text-4xl font-bold text-text-primary">Technologies</h1>
       </header>
 

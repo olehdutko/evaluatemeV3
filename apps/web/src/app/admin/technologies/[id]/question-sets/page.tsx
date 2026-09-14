@@ -10,10 +10,10 @@ import {
   deleteQuestionSet,
 } from '../../../../../lib/admin.api';
 import { ErrorMessage } from '../../../../../components/ui/ErrorMessage';
+import { Breadcrumbs } from '../../../../../components/ui/Breadcrumbs';
 
 interface QuestionSet {
   id: string;
-  technologyId: string;
   name: string;
   description: string | null;
   questionCount: number;
@@ -48,8 +48,8 @@ export default function AdminTechnologyQuestionSetsPage(): JSX.Element {
     setLoading(true);
     getTechnologyQuestionSets(technologyId)
       .then((response) => {
-        setQuestionSets(response.data);
-        setTechnologyName('');
+        setQuestionSets(response.data.questionSets);
+        setTechnologyName(response.data.technologyName);
         setError(null);
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load question sets'))
@@ -124,8 +124,15 @@ export default function AdminTechnologyQuestionSetsPage(): JSX.Element {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Breadcrumbs
+        items={[
+          { label: 'Admin' },
+          { label: 'Technologies', href: '/admin/technologies' },
+          { label: technologyName || 'Technology' },
+          { label: 'Question Sets' },
+        ]}
+      />
       <header className="mb-10 border-b border-border pb-6">
-        <p className="font-mono text-xs uppercase tracking-[0.12em] text-accent mb-3">Content · Technology</p>
         <h1 className="font-display text-3xl sm:text-4xl font-bold text-text-primary">{title}</h1>
       </header>
 

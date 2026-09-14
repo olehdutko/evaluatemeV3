@@ -183,18 +183,21 @@ export const technologyValueSchema = z.object({
 
 export const questionSetsSchema = z.object({
   success: z.literal(true),
-  data: z.array(
-    z.object({
-      id: z.string().uuid(),
-      technologyId: z.string().uuid(),
-      name: z.string(),
-      description: z.string().nullable(),
-      questionCount: z.number().int(),
-      durationMinutes: z.number().int(),
-      status: z.enum(['active', 'suspended']),
-      updatedAt: z.string().datetime(),
-    }),
-  ),
+  data: z.object({
+    technologyId: z.string().uuid(),
+    technologyName: z.string(),
+    questionSets: z.array(
+      z.object({
+        id: z.string().uuid(),
+        name: z.string(),
+        description: z.string().nullable(),
+        questionCount: z.number().int(),
+        durationMinutes: z.number().int(),
+        status: z.enum(['active', 'suspended']),
+        updatedAt: z.string().datetime(),
+      }),
+    ),
+  }),
 });
 
 export const questionSetValueSchema = z.object({
