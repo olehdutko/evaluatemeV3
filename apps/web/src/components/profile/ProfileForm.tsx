@@ -402,18 +402,20 @@ export function ProfileForm(): JSX.Element {
         <div className="border-t border-border mt-8 pt-8">
           <h3 className="font-display text-lg font-semibold text-text-primary mb-4">Forgot your current password?</h3>
           <form onSubmit={(event) => { void handleResetRequest(event); }} className="space-y-5">
-            <label className="block">
+            <div className="block">
               <span className="label-mono">Send reset link to</span>
               <input
                 type="email"
                 value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                required
+                readOnly
+                disabled
                 autoComplete="email"
-                className="input-field"
-                placeholder="you@example.com"
+                className="input-field cursor-not-allowed opacity-70"
               />
-            </label>
+              <p className="mt-1.5 font-mono text-xs text-text-secondary">
+                Reset links can only be sent to your account email.
+              </p>
+            </div>
 
             {resetError && <ErrorMessage message={resetError} />}
             {resetSuccess && (
