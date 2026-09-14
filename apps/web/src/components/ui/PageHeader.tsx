@@ -2,15 +2,16 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  borderless?: boolean;
 }
 
 interface PageHeaderClassNameProps {
   className?: string;
 }
 
-export function PageHeader({ title, description, action, className }: PageHeaderProps & PageHeaderClassNameProps): JSX.Element {
+export function PageHeader({ title, description, action, className, borderless }: PageHeaderProps & PageHeaderClassNameProps): JSX.Element {
   return (
-    <div className={`border-b border-border pb-6 mb-8 lg:mb-10 ${className ?? ''}`}>
+    <div className={`${borderless ? '' : 'border-b border-border pb-6 mb-8 lg:mb-10'} ${className ?? ''}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
