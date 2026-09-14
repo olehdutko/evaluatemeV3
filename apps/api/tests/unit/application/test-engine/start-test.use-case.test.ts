@@ -17,6 +17,7 @@ const questionSet: QuestionSet = {
   title: 'C# Basics',
   technologyId: 'tech-1',
   status: 'active',
+  description: null,
   quizQuestionCount: 20,
   quizDurationMinutes: 40,
   createdByUserId: 'user-1',
@@ -97,6 +98,9 @@ class FakeQuestionRepository implements IQuestionRepository {
   }
   async findByQuestionSetIdRandomized(): Promise<Question[]> {
     return [question];
+  }
+  async countByQuestionSetId(): Promise<number> {
+    return 1;
   }
   async save(q: Question): Promise<Question> {
     return q;
