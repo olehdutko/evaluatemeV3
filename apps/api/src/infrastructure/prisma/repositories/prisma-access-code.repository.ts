@@ -51,6 +51,10 @@ export class PrismaAccessCodeRepository implements IAccessCodeRepository {
     return result.count;
   }
 
+  async delete(id: string): Promise<void> {
+    await this.prisma.accessCode.delete({ where: { id } });
+  }
+
   async save(accessCode: AccessCode): Promise<AccessCode> {
     const saved = await this.prisma.accessCode.upsert({
       where: { id: accessCode.id },

@@ -7,6 +7,8 @@ import { useAuth } from '../../lib/auth/auth-context';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Loading } from '../ui/Loading';
+import { Modal } from '../ui/Modal';
+import { ErrorMessage } from '../ui/ErrorMessage';
 
 interface AccessCodeResult {
   id: string;
@@ -49,6 +51,9 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
   const [previewEmail, setPreviewEmail] = useState<{ to: string; subject: string; html: string; text: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [deleteCode, setDeleteCode] = useState<AccessCode | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     const params = new URLSearchParams({ companyId, campaignId });
@@ -117,6 +122,29 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
     setPreviewError(null);
   };
 
+  const handleDeleteConfirm = async () => {
+    if (!deleteCode) return;
+    setDeleteLoading(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`${CORPORATE_API_BASE}/api/v1/corporate/access-codes/${deleteCode.id}?${new URLSearchParams({ companyId }).toString()}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        throw new Error(body.message || `Failed to delete access code (${res.status})`);
+      }
+      setDeleteCode(null);
+      await refreshUser();
+      load();
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete access code');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   if (codes.length === 0) {
     return (
       <Card>
@@ -172,26 +200,36 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
                     </span>
                   </td>
                   <td className="px-4 py-2">
-                    {canUse ? (
+                    <div className="flex items-center gap-2">
+                      {canUse ? (
+                        <Button
+                          onClick={() => void loadPreview(code)}
+                          disabled={sendingId === code.id}
+                          variant="primary"
+                        >
+                          {sendingId === code.id ? 'Sending...' : 'Use'}
+                        </Button>
+                      ) : hasResult ? (
+                        <Button
+                          onClick={() => router.push(`/campaigns/${campaignId}/results?companyId=${encodeURIComponent(companyId)}`)}
+                          variant="secondary"
+                        >
+                          View Result
+                        </Button>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+                          Waiting for quiz
+                        </span>
+                      )}
                       <Button
-                        onClick={() => void loadPreview(code)}
-                        disabled={sendingId === code.id}
-                        variant="primary"
-                      >
-                        {sendingId === code.id ? 'Sending...' : 'Use'}
-                      </Button>
-                    ) : hasResult ? (
-                      <Button
-                        onClick={() => router.push(`/campaigns/${campaignId}/results?companyId=${encodeURIComponent(companyId)}`)}
+                        onClick={() => setDeleteCode(code)}
+                        disabled={deleteLoading}
                         variant="secondary"
+                        className="text-error hover:text-error"
                       >
-                        View Result
+                        Delete
                       </Button>
-                    ) : (
-                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
-                        Waiting for quiz
-                      </span>
-                    )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -233,6 +271,30 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
           </div>
         </div>
       )}
+
+      <Modal
+        open={!!deleteCode}
+        onClose={() => setDeleteCode(null)}
+        title="Delete access code?"
+      >
+        <div className="space-y-4">
+          <p className="font-body text-text-primary">
+            Are you sure you want to delete access code <strong className="font-mono">{deleteCode?.code}</strong>?
+            {deleteCode?.sentAt ? ' This code has already been sent.' : ''}
+            {deleteCode?.result ? ' This code has a completed quiz result.' : ''}
+            This action cannot be undone.
+          </p>
+          {deleteError && <ErrorMessage message={deleteError} />}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Button onClick={() => setDeleteCode(null)} variant="secondary" className="flex-1" disabled={deleteLoading}>
+              Cancel
+            </Button>
+            <Button onClick={() => void handleDeleteConfirm()} variant="primary" className="flex-1" disabled={deleteLoading}>
+              {deleteLoading ? 'Deleting...' : 'Delete'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </Card>
   );
 }

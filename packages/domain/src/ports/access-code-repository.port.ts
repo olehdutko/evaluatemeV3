@@ -11,4 +11,5 @@ export interface IAccessCodeRepository {
   countByCampaignId(campaignId: string): Promise<number>;
   countSentByCompanyId(companyId: string): Promise<number>;
   updateStatusByCampaignId(campaignId: string, fromStatus: string, toStatus: string): Promise<number>;
+  delete(id: string): Promise<void>;
 }

@@ -20,6 +20,7 @@ import { ListCampaignResultsUseCase } from '../../application/corporate/results/
 import { GetCandidateResultDetailUseCase } from '../../application/corporate/results/get-candidate-result-detail.use-case';
 import { PrismaCampaignRepository } from '../../infrastructure/prisma/repositories/prisma-campaign.repository';
 import { PrismaCompanyQuizRepository } from '../../infrastructure/prisma/repositories/prisma-company-quiz.repository';
+import { DeleteAccessCodeUseCase } from '../../application/corporate/access-codes/delete-access-code.use-case';
 import { PrismaAccessCodeRepository } from '../../infrastructure/prisma/repositories/prisma-access-code.repository';
 import { PrismaCompanyProfileRepository } from '../../infrastructure/prisma/repositories/prisma-company-profile.repository';
 import { PrismaUserRepository } from '../../infrastructure/prisma/repositories/prisma-user.repository';
@@ -66,6 +67,7 @@ import {
     ListAccessCodesUseCase,
     SendAccessCodeUseCase,
     PreviewAccessCodeEmailUseCase,
+    DeleteAccessCodeUseCase,
     ListCampaignResultsUseCase,
     GetCandidateResultDetailUseCase,
     { provide: ICampaignRepository, useClass: PrismaCampaignRepository },

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../infrastructure/auth/jwt-auth.guard';
 import { RolesGuard } from '../../infrastructure/security/roles.guard';
 import { Roles } from '../../infrastructure/security/roles.decorator';
@@ -8,6 +8,7 @@ import { CreateAccessCodeUseCase } from '../../application/corporate/access-code
 import { ListAccessCodesUseCase } from '../../application/corporate/access-codes/list-access-codes.use-case';
 import { SendAccessCodeUseCase } from '../../application/corporate/access-codes/send-access-code.use-case';
 import { PreviewAccessCodeEmailUseCase } from '../../application/corporate/access-codes/preview-access-code-email.use-case';
+import { DeleteAccessCodeUseCase } from '../../application/corporate/access-codes/delete-access-code.use-case';
 import {
   createAccessCodeSchema,
   CreateAccessCodeDto,
@@ -33,6 +34,7 @@ export class AccessCodesController {
     private readonly listAccessCodesUseCase: ListAccessCodesUseCase,
     private readonly sendAccessCodeUseCase: SendAccessCodeUseCase,
     private readonly previewAccessCodeEmailUseCase: PreviewAccessCodeEmailUseCase,
+    private readonly deleteAccessCodeUseCase: DeleteAccessCodeUseCase,
   ) {}
 
   @Post('campaigns/:campaignId/access-codes')
@@ -90,6 +92,19 @@ export class AccessCodesController {
       companyId: query.companyId,
       accessCodeId: id,
       email: query.email ?? undefined,
+    });
+  }
+
+  @Delete('access-codes/:id')
+  async delete(
+    @Param('id') id: string,
+    @Query(new ZodValidationPipe(sendAccessCodeSchema)) query: SendAccessCodeDto,
+    @GetUser() user: AuthenticatedUser,
+  ): Promise<ReturnType<DeleteAccessCodeUseCase['execute']>> {
+    return this.deleteAccessCodeUseCase.execute({
+      userId: user.sub,
+      companyId: query.companyId,
+      accessCodeId: id,
     });
   }
 }
