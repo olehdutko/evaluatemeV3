@@ -7,6 +7,7 @@ import { ZodValidationPipe } from '../../infrastructure/validation/zod-validatio
 import { CreateAccessCodeUseCase } from '../../application/corporate/access-codes/create-access-code.use-case';
 import { ListAccessCodesUseCase } from '../../application/corporate/access-codes/list-access-codes.use-case';
 import { SendAccessCodeUseCase } from '../../application/corporate/access-codes/send-access-code.use-case';
+import { PreviewAccessCodeEmailUseCase } from '../../application/corporate/access-codes/preview-access-code-email.use-case';
 import {
   createAccessCodeSchema,
   CreateAccessCodeDto,
@@ -31,6 +32,7 @@ export class AccessCodesController {
     private readonly createAccessCodeUseCase: CreateAccessCodeUseCase,
     private readonly listAccessCodesUseCase: ListAccessCodesUseCase,
     private readonly sendAccessCodeUseCase: SendAccessCodeUseCase,
+    private readonly previewAccessCodeEmailUseCase: PreviewAccessCodeEmailUseCase,
   ) {}
 
   @Post('campaigns/:campaignId/access-codes')
@@ -74,6 +76,20 @@ export class AccessCodesController {
       companyId: dto.companyId,
       accessCodeId: id,
       email: dto.email ?? undefined,
+    });
+  }
+
+  @Get('access-codes/:id/email-preview')
+  async preview(
+    @Param('id') id: string,
+    @Query(new ZodValidationPipe(sendAccessCodeSchema)) query: SendAccessCodeDto,
+    @GetUser() user: AuthenticatedUser,
+  ): Promise<ReturnType<PreviewAccessCodeEmailUseCase['execute']>> {
+    return this.previewAccessCodeEmailUseCase.execute({
+      userId: user.sub,
+      companyId: query.companyId,
+      accessCodeId: id,
+      email: query.email ?? undefined,
     });
   }
 }

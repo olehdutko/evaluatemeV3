@@ -103,6 +103,18 @@ export const sendAccessCodeSchema = z.object({
 
 export type SendAccessCodeDto = z.infer<typeof sendAccessCodeSchema>;
 
+export const previewAccessCodeEmailResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    to: z.string().email(),
+    subject: z.string(),
+    html: z.string(),
+    text: z.string(),
+  }),
+});
+
+export type PreviewAccessCodeEmailResponseDto = z.infer<typeof previewAccessCodeEmailResponseSchema>;
+
 export const listCampaignResultsSchema = z.object({
   companyId: z.string().uuid(),
 });

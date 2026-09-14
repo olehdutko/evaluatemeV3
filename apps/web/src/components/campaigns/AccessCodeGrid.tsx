@@ -6,6 +6,7 @@ import { CORPORATE_API_BASE } from '../../lib/corporate-api';
 import { useAuth } from '../../lib/auth/auth-context';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { Loading } from '../ui/Loading';
 
 interface AccessCodeResult {
   id: string;
@@ -45,6 +46,9 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
   const [codes, setCodes] = useState<AccessCode[]>([]);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [previewCode, setPreviewCode] = useState<AccessCode | null>(null);
+  const [previewEmail, setPreviewEmail] = useState<{ to: string; subject: string; html: string; text: string } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     const params = new URLSearchParams({ companyId, campaignId });
@@ -61,6 +65,31 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
     load();
   }, [load, refreshToken]);
 
+  const loadPreview = async (code: AccessCode) => {
+    const email = code.testeeEmail ?? code.sentToEmail;
+    if (!email) return;
+    setPreviewCode(code);
+    setPreviewLoading(true);
+    setPreviewError(null);
+    setPreviewEmail(null);
+    try {
+      const res = await fetch(
+        `${CORPORATE_API_BASE}/api/v1/corporate/access-codes/${code.id}/email-preview?${new URLSearchParams({ companyId, email }).toString()}`,
+        { credentials: 'include' },
+      );
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        throw new Error(body.message || `Failed to load preview (${res.status})`);
+      }
+      const json = (await res.json()) as { data: { to: string; subject: string; html: string; text: string } };
+      setPreviewEmail(json.data);
+    } catch (err) {
+      setPreviewError(err instanceof Error ? err.message : 'Failed to load preview');
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   const send = async (code: AccessCode) => {
     const email = code.testeeEmail ?? code.sentToEmail;
     if (!email) return;
@@ -73,12 +102,19 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
     });
     setSendingId(null);
     setPreviewCode(null);
+    setPreviewEmail(null);
     if (res.ok) {
       const json = (await res.json()) as { data: { activatedCount: number; remaining: number | null; price: number } };
       onSent?.(json.data.activatedCount, json.data.remaining);
       await refreshUser();
       load();
     }
+  };
+
+  const closePreview = () => {
+    setPreviewCode(null);
+    setPreviewEmail(null);
+    setPreviewError(null);
   };
 
   if (codes.length === 0) {
@@ -138,7 +174,7 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
                   <td className="px-4 py-2">
                     {canUse ? (
                       <Button
-                        onClick={() => setPreviewCode(code)}
+                        onClick={() => void loadPreview(code)}
                         disabled={sendingId === code.id}
                         variant="primary"
                       >
@@ -166,35 +202,31 @@ export function AccessCodeGrid({ campaignId, companyId, refreshToken, onSent }: 
 
       {previewCode && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setPreviewCode(null)} role="presentation"
+          onClick={closePreview} role="presentation"
         >
-          <div className="max-w-2xl rounded bg-white p-6 shadow-lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+          <div className="max-w-2xl max-h-[80vh] overflow-y-auto rounded bg-white p-6 shadow-lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <h3 className="mb-4 text-lg font-semibold">Email preview</h3>
             <p className="mb-2 text-sm text-gray-600">
               This is the email that would be sent to <strong>{previewCode.testeeEmail}</strong>. After confirming, the access code will be marked as sent and the configured price will be deducted from your account balance.
             </p>
-            <div className="mb-4 rounded border bg-gray-50 p-4 font-mono text-sm text-gray-800">
-              <p className="font-semibold">To: {previewCode.testeeEmail}</p>
-              <p className="font-semibold">Subject: Your EvaluateMe assessment access code</p>
-              <hr className="my-2 border-gray-300" />
-              <p>Hello,</p>
-              <p className="mt-2">
-                You have been invited to take an assessment. Use the access code below to start:
-              </p>
-              <p className="mt-2 text-lg font-bold">{previewCode.code}</p>
-              {previewCode.questionCount !== null && previewCode.durationMinutes !== null && (
-                <p className="mt-2">
-                  The assessment contains {previewCode.questionCount} questions and must be completed within {previewCode.durationMinutes} minutes.
-                </p>
-              )}
-              <p className="mt-2">
-                Start here: {typeof window !== 'undefined' ? window.location.origin : ''}/tests/start?accessCode={previewCode.code}
-              </p>
-              <p className="mt-2">Good luck!</p>
-            </div>
+            {previewLoading ? (
+              <Loading message="Loading preview…" />
+            ) : previewError ? (
+              <p className="mb-4 text-sm text-red-600">{previewError}</p>
+            ) : previewEmail ? (
+              <div className="mb-4 rounded border bg-gray-50 p-4 text-sm text-gray-800">
+                <p className="font-semibold">To: {previewEmail.to}</p>
+                <p className="font-semibold">Subject: {previewEmail.subject}</p>
+                <hr className="my-2 border-gray-300" />
+                <div
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: previewEmail.html }}
+                />
+              </div>
+            ) : null}
             <div className="flex justify-end gap-2">
-              <Button onClick={() => setPreviewCode(null)} variant="secondary">Cancel</Button>
-              <Button onClick={() => void send(previewCode)} disabled={sendingId === previewCode.id}>
+              <Button onClick={closePreview} variant="secondary">Cancel</Button>
+              <Button onClick={() => void send(previewCode)} disabled={sendingId === previewCode.id || !previewEmail}>
                 {sendingId === previewCode.id ? 'Marking as sent...' : 'Mark as sent'}
               </Button>
             </div>

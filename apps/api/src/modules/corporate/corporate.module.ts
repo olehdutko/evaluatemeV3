@@ -15,6 +15,7 @@ import { ListCompanyQuizzesUseCase } from '../../application/corporate/quizzes/l
 import { CreateAccessCodeUseCase } from '../../application/corporate/access-codes/create-access-code.use-case';
 import { ListAccessCodesUseCase } from '../../application/corporate/access-codes/list-access-codes.use-case';
 import { SendAccessCodeUseCase } from '../../application/corporate/access-codes/send-access-code.use-case';
+import { PreviewAccessCodeEmailUseCase } from '../../application/corporate/access-codes/preview-access-code-email.use-case';
 import { ListCampaignResultsUseCase } from '../../application/corporate/results/list-campaign-results.use-case';
 import { GetCandidateResultDetailUseCase } from '../../application/corporate/results/get-candidate-result-detail.use-case';
 import { PrismaCampaignRepository } from '../../infrastructure/prisma/repositories/prisma-campaign.repository';
@@ -64,6 +65,7 @@ import {
     CreateAccessCodeUseCase,
     ListAccessCodesUseCase,
     SendAccessCodeUseCase,
+    PreviewAccessCodeEmailUseCase,
     ListCampaignResultsUseCase,
     GetCandidateResultDetailUseCase,
     { provide: ICampaignRepository, useClass: PrismaCampaignRepository },
