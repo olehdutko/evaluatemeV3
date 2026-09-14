@@ -46,7 +46,7 @@ export default function NewCampaignPage(): JSX.Element {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      <PageHeader title="New Campaign" description="Create a campaign to organize your assessments and access codes." />
+      <PageHeader title="New Campaign" description="Create a campaign to organize your assessments and access codes." borderless />
 
       <section className="panel p-5 sm:p-6">
         <h2 className="font-display text-lg font-bold text-text-primary mb-4">Campaign details</h2>
