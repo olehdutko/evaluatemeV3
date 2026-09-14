@@ -201,9 +201,9 @@ export default function CampaignDetailPage() {
                     if (entry.status) details.push(`Status: ${entry.status}`);
                     if (previousStatus) details.push(`From: ${previousStatus}`);
                     if (recipientEmail) details.push(`Sent to: ${recipientEmail}`);
+                    if (code) details.push(`Code: ${code}`);
                     if (testeeEmail) details.push(`For: ${testeeEmail}`);
                     if (testeeName) details.push(`Testee: ${testeeName}`);
-                    if (code) details.push(`Code: ${code}`);
                     return (
                       <tr key={entry.id}>
                         <td className="px-4 py-2 font-medium capitalize text-text-primary">{entry.action.replace(/_/g, ' ')}</td>
