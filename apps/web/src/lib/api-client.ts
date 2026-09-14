@@ -163,6 +163,8 @@ export async function apiPut<
 
   const parsed = responseSchema.safeParse(responseBody);
   if (!parsed.success) {
+    // eslint-disable-next-line no-console
+    console.warn(`Invalid response shape for PUT ${path}:`, parsed.error.flatten(), responseBody);
     throw new ApiError(response.status, responseBody, `Invalid response shape for PUT ${path}`);
   }
 

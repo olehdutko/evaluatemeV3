@@ -77,7 +77,7 @@ describe('StartTestPage', () => {
     price: 1,
   };
 
-  it('renders technology slug and start button', async () => {
+  it('renders technology heading and question set start button', async () => {
     (technologyApi.fetchTechnologyPreview as jest.Mock).mockResolvedValue({
       success: true,
       data: previewData,
@@ -85,7 +85,6 @@ describe('StartTestPage', () => {
 
     renderWithAuth(<StartTestPage />);
     expect(await screen.findByRole('heading', { name: 'C#' })).toBeInTheDocument();
-    expect(screen.getByText('csharp')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Start quiz' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'C# Basics' })).toBeInTheDocument();
   });

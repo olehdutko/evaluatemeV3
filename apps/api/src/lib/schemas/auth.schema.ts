@@ -114,11 +114,11 @@ export const updateProfileRequestSchema = z.object({
   username: z.string().min(2).max(100).optional().or(z.literal('')),
   firstName: z.string().min(1).max(100).optional().or(z.literal('')),
   lastName: z.string().min(1).max(100).optional().or(z.literal('')),
-  middleName: z.string().max(100).optional().or(z.literal('')),
-  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal('')),
+  middleName: z.string().max(100).nullable().optional().or(z.literal('')),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional().or(z.literal('')),
   country: z.string().min(1).max(100).optional().or(z.literal('')),
-  city: z.string().max(100).optional().or(z.literal('')),
-  phone: z.string().max(50).optional().or(z.literal('')),
+  city: z.string().max(100).nullable().optional().or(z.literal('')),
+  phone: z.string().max(50).nullable().optional().or(z.literal('')),
 });
 
 export const updateProfileResponseSchema = successEnvelopeSchema(
