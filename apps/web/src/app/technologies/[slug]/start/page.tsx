@@ -101,11 +101,11 @@ export default function TechnologyDetailPage(): JSX.Element {
       <PageHeader
         title={preview.name}
         description={pageDescription}
-        borderless={isCompany}
+        borderless={isCompany || isPersonalUser}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className={`space-y-6 ${isCompany ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
+        <div className={`space-y-6 ${isCompany || isPersonalUser ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
           <div className="panel accent p-6 sm:p-8">
             <h2 className="font-display text-xl sm:text-2xl font-bold text-text-primary">
               About this technology
@@ -131,30 +131,45 @@ export default function TechnologyDetailPage(): JSX.Element {
                 {preview.questionSets.map((questionSet) => {
                   const isSelected = questionSet.id === selectedQuestionSetId;
                   return (
-                    <button
+                    <div
                       key={questionSet.id}
-                      type="button"
-                      onClick={() => setSelectedQuestionSetId(questionSet.id)}
-                      className={`text-left p-4 border transition-colors ${
+                      className={`p-4 border transition-colors ${
                         isSelected
                           ? 'border-border-strong bg-bg-secondary'
-                          : 'border-border bg-bg-primary hover:bg-bg-secondary'
+                          : 'border-border bg-bg-primary'
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <h3 className="font-display text-lg font-bold text-text-primary">{questionSet.title}</h3>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedQuestionSetId(questionSet.id)}
+                        className="w-full text-left"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <h3 className="font-display text-lg font-bold text-text-primary">{questionSet.title}</h3>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-mono text-xs text-text-secondary">
+                              {questionSet.questionCount} questions / {questionSet.durationMinutes} min
+                            </p>
+                            <p className="font-mono text-[10px] text-text-muted">
+                              {questionSet.actualQuestionCount.toLocaleString()} available
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-right shrink-0">
-                          <p className="font-mono text-xs text-text-secondary">
-                            {questionSet.questionCount} questions / {questionSet.durationMinutes} min
-                          </p>
-                          <p className="font-mono text-[10px] text-text-muted">
-                            {questionSet.actualQuestionCount.toLocaleString()} available
-                          </p>
+                      </button>
+                      {isPersonalUser && (
+                        <div className="mt-4 pt-4 border-t border-border">
+                          <QuizStartButtonWithDialog
+                            slug={preview.slug}
+                            questionSetId={questionSet.id}
+                            variant="primary"
+                            className="w-full"
+                            initialPreview={preview}
+                          />
                         </div>
-                      </div>
-                    </button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -191,7 +206,7 @@ export default function TechnologyDetailPage(): JSX.Element {
           </div>
         </div>
 
-        {!isCompany && (
+        {(!isAuthenticated || isAdminUser) && (
           <div className="panel p-6 sm:p-8 h-fit space-y-4">
             <p className="label-mono">Slug</p>
             <p className="font-mono text-sm text-text-secondary">{preview.slug}</p>
@@ -206,7 +221,7 @@ export default function TechnologyDetailPage(): JSX.Element {
                   <Link href="/login" className="btn-secondary text-center">Log in</Link>
                 </div>
               </div>
-            ) : isAdminUser ? (
+            ) : (
               <div className="pt-4 border-t border-border">
                 <p className="text-sm text-text-secondary font-body">
                   Admin accounts cannot take tests. Switch to a personal account to start a quiz.
@@ -214,16 +229,6 @@ export default function TechnologyDetailPage(): JSX.Element {
                 <div className="flex flex-col gap-3 mt-4">
                   <Link href="/admin/dashboard" className="btn-secondary text-center">Go to admin panel</Link>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-3 pt-4 border-t border-border">
-                <QuizStartButtonWithDialog
-                  slug={preview.slug}
-                  questionSetId={selectedQuestionSetId ?? ''}
-                  variant="primary"
-                  className="w-full"
-                  initialPreview={preview}
-                />
               </div>
             )}
           </div>
