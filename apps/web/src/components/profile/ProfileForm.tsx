@@ -192,7 +192,7 @@ export function ProfileForm(): JSX.Element {
       {isAdmin ? (
         <PageHeader title="Admin profile" className="border-b-0 pb-0" />
       ) : (
-        <PageHeader title="Your profile" description="Manage your account details and security settings." />
+        <PageHeader title="Your profile" description="Manage your account details and security settings." borderless />
       )}
 
       {/* Profile details */}
