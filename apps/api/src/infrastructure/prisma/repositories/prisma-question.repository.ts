@@ -24,6 +24,10 @@ export class PrismaQuestionRepository implements IQuestionRepository {
     return row ? this.mapRow(row) : null;
   }
 
+  async countByQuestionSetId(questionSetId: string): Promise<number> {
+    return this.prisma.question.count({ where: { questionSetId } });
+  }
+
   async findByQuestionSetIdRandomized(questionSetId: string, limit: number): Promise<Question[]> {
     const rows = await this.prisma.$queryRaw<Array<{
       id: string;

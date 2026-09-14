@@ -8,6 +8,7 @@ export interface IQuestionRepository {
   findById(id: string): Promise<Question | null>;
   findByQuestionSetId(questionSetId: string): Promise<Question[]>;
   findByQuestionSetIdRandomized(questionSetId: string, limit: number): Promise<Question[]>;
+  countByQuestionSetId(questionSetId: string): Promise<number>;
   save(question: Question): Promise<Question>;
   delete(id: string): Promise<void>;
 }

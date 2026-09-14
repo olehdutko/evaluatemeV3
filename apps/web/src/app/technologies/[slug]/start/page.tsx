@@ -63,6 +63,20 @@ export default function TechnologyDetailPage(): JSX.Element {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <nav aria-label="Breadcrumb" className="mb-4">
+        <ol className="flex items-center gap-2 text-sm font-body text-text-secondary">
+          <li>
+            <Link href="/technologies" className="hover:text-accent transition-colors">
+              Technologies
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li className="text-text-primary" aria-current="page">
+            {preview.name}
+          </li>
+        </ol>
+      </nav>
+
       <PageHeader
         title={preview.name}
         description={
@@ -112,7 +126,10 @@ export default function TechnologyDetailPage(): JSX.Element {
                         </div>
                         <div className="text-right shrink-0">
                           <p className="font-mono text-xs text-text-secondary">
-                            {questionSet.questionCount} q / {questionSet.durationMinutes} min
+                            {questionSet.actualQuestionCount} questions / {questionSet.durationMinutes} min
+                          </p>
+                          <p className="font-mono text-[10px] text-text-muted">
+                            quiz uses {questionSet.questionCount}
                           </p>
                         </div>
                       </div>

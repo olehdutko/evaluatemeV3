@@ -103,8 +103,9 @@ export function QuizStartButtonWithDialog({
               </p>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="p-3 bg-bg-secondary rounded">
-                  <span className="label-mono">Questions</span>
-                  <p className="font-display text-lg font-bold">{selectedSet?.questionCount ?? 0}</p>
+                  <span className="label-mono">Questions in set</span>
+                  <p className="font-display text-lg font-bold">{selectedSet?.actualQuestionCount ?? 0}</p>
+                  <p className="text-[10px] text-text-muted">quiz uses {selectedSet?.questionCount ?? 0}</p>
                 </div>
                 <div className="p-3 bg-bg-secondary rounded">
                   <span className="label-mono">Time</span>

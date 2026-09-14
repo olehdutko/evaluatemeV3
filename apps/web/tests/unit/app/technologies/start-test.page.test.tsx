@@ -83,7 +83,7 @@ describe('StartTestPage', () => {
     });
 
     renderWithAuth(<StartTestPage />);
-    expect(await screen.findByText('C#')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'C#' })).toBeInTheDocument();
     expect(screen.getByText('csharp')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Start quiz' })).toBeInTheDocument();
     expect(screen.getByText('C# Basics')).toBeInTheDocument();

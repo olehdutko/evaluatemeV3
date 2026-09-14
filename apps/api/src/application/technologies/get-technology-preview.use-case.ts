@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   ITechnologyRepository,
   IQuestionSetRepository,
+  IQuestionRepository,
   ICreditSettingRepository,
   QuestionSet,
 } from '@evaluateme/domain';
@@ -19,6 +20,7 @@ export interface TechnologyPreviewResult {
     id: string;
     title: string;
     questionCount: number;
+    actualQuestionCount: number;
     durationMinutes: number;
   }>;
   price: number;
@@ -29,6 +31,7 @@ export class GetTechnologyPreviewUseCase {
   constructor(
     @Inject(ITechnologyRepository) private readonly technologyRepository: ITechnologyRepository,
     @Inject(IQuestionSetRepository) private readonly questionSetRepository: IQuestionSetRepository,
+    @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(ICreditSettingRepository) private readonly creditSettingRepository: ICreditSettingRepository,
   ) {}
 
@@ -43,6 +46,19 @@ export class GetTechnologyPreviewUseCase {
       this.resolveTestPrice(),
     ]);
 
+    const questionSetsWithCounts = await Promise.all(
+      questionSets.map(async (qs: QuestionSet) => {
+        const actualQuestionCount = await this.questionRepository.countByQuestionSetId(qs.id);
+        return {
+          id: qs.id,
+          title: qs.title,
+          questionCount: qs.quizQuestionCount,
+          actualQuestionCount,
+          durationMinutes: qs.quizDurationMinutes,
+        };
+      }),
+    );
+
     return {
       success: true,
       data: {
@@ -50,12 +66,7 @@ export class GetTechnologyPreviewUseCase {
         name: technology.name,
         slug: technology.slug,
         description: technology.description,
-        questionSets: questionSets.map((qs: QuestionSet) => ({
-          id: qs.id,
-          title: qs.title,
-          questionCount: qs.quizQuestionCount,
-          durationMinutes: qs.quizDurationMinutes,
-        })),
+        questionSets: questionSetsWithCounts,
         price,
       },
     };
