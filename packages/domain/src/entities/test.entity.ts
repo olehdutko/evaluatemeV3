@@ -4,7 +4,7 @@ export function validateSingleChoice(answers: Answer[]): boolean {
 
 export interface Question {
   id: string;
-  technologyId: string;
+  questionSetId: string;
   content: string;
   type: 'single' | 'multiple';
   orderIndex: number;

@@ -37,11 +37,13 @@ export class GetMyResultDetailUseCase {
       throw new NotFoundError('result');
     }
 
-    const technology = await this.prisma.technology.findUnique({
-      where: { id: result.technologyId },
-      select: { id: true, name: true },
-    });
-    const technologyName = technology?.name || 'Unknown';
+    const technologyId = result.technologyId ?? undefined;
+    const technologyName = technologyId
+      ? (await this.prisma.technology.findUnique({
+          where: { id: technologyId },
+          select: { name: true },
+        }))?.name ?? 'Unknown'
+      : 'Unknown';
 
     if (result.userId !== userId) {
       throw new ForbiddenError('This result does not belong to you.');
@@ -108,7 +110,7 @@ export class GetMyResultDetailUseCase {
   private toDetail(result: Record<string, unknown>, technologyName: string, questions: QuestionDetail[]): MyResultDetail {
     return {
       resultCode: result.resultCode as string,
-      technologyId: result.technologyId as string,
+      technologyId: (result.technologyId as string | null) ?? '',
       technologyName,
       score: result.score as number | null,
       maxScore: result.maxScore as number | null,

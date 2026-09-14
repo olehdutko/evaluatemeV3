@@ -7,8 +7,6 @@ export interface CreateTechnologyInput {
   name: string;
   slug?: string;
   description?: string | null;
-  quizQuestionCount?: number;
-  quizDurationMinutes?: number;
 }
 
 function generateSlug(name: string): string {
@@ -23,12 +21,10 @@ function generateSlug(name: string): string {
 export class CreateTechnologyUseCase {
   constructor(@Inject(ITechnologyRepository) private readonly repository: ITechnologyRepository) {}
 
-  async execute(input: CreateTechnologyInput): Promise<{ success: true; data: { id: string; name: string; slug: string; description: string | null; quizQuestionCount: number; quizDurationMinutes: number; updatedAt: string } }> {
+  async execute(input: CreateTechnologyInput): Promise<{ success: true; data: { id: string; name: string; slug: string; description: string | null; updatedAt: string } }> {
     const name = input.name.trim();
     const slug = input.slug?.trim() || generateSlug(name);
     const description = input.description?.trim() ?? null;
-    const quizQuestionCount = input.quizQuestionCount ?? 20;
-    const quizDurationMinutes = input.quizDurationMinutes ?? 40;
 
     if (!name) {
       throw new BadRequestError({ name: ['Name is required'] });
@@ -52,8 +48,6 @@ export class CreateTechnologyUseCase {
       name,
       slug,
       description,
-      quizQuestionCount,
-      quizDurationMinutes,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -65,8 +59,6 @@ export class CreateTechnologyUseCase {
         name: saved.name,
         slug: saved.slug,
         description: saved.description,
-        quizQuestionCount: saved.quizQuestionCount,
-        quizDurationMinutes: saved.quizDurationMinutes,
         updatedAt: saved.updatedAt.toISOString(),
       },
     };

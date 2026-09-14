@@ -9,11 +9,11 @@ import {
 
 describe('Test engine endpoint contracts', () => {
   it('validates start test request', () => {
-    expect(() => startTestRequestSchema.parse({ technologySlug: 'csharp' })).not.toThrow();
+    expect(() => startTestRequestSchema.parse({ questionSetId: '550e8400-e29b-41d4-a716-446655440000' })).not.toThrow();
   });
 
   it('rejects empty start test request', () => {
-    expect(() => startTestRequestSchema.parse({ technologySlug: '' })).toThrow();
+    expect(() => startTestRequestSchema.parse({ questionSetId: '' })).toThrow();
   });
 
   it('validates start test response', () => {
@@ -21,15 +21,14 @@ describe('Test engine endpoint contracts', () => {
       success: true,
       data: {
         sessionId: '550e8400-e29b-41d4-a716-446655440000',
-        technology: {
+        questionSet: {
           id: '550e8400-e29b-41d4-a716-446655440001',
-          name: 'C#',
-          slug: 'csharp',
+          title: 'C# Basics',
         },
         questions: [
           {
             id: '550e8400-e29b-41d4-a716-446655440002',
-            technologyId: '550e8400-e29b-41d4-a716-446655440001',
+            questionSetId: '550e8400-e29b-41d4-a716-446655440001',
             content: 'What is 2+2?',
             type: 'single',
             orderIndex: 0,

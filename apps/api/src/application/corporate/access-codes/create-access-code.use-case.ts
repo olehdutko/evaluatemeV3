@@ -65,7 +65,7 @@ export class CreateAccessCodeUseCase {
       companyId: input.companyId,
       campaignId: input.campaignId,
       quizId: null,
-      technologyId: null,
+      questionSetId: null,
       status: AccessCodeStatus.ACTIVE,
       sentAt: null,
       sentToEmail: null,

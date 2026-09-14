@@ -9,6 +9,8 @@ import {
   Answer,
   UserAnswer,
   AccessCode,
+  UserResult,
+  CandidateResult,
 } from '@evaluateme/domain';
 
 const now = new Date();
@@ -19,7 +21,7 @@ const accessCode: AccessCode = {
   companyId: 'company-1',
   campaignId: null,
   quizId: null,
-  technologyId: 'tech-1',
+  questionSetId: '550e8400-e29b-41d4-a716-446655440001',
   status: 'active',
   sentAt: null,
   sentToEmail: null,
@@ -38,7 +40,7 @@ const accessCode: AccessCode = {
 const session: QuizSession = {
   id: 'session-1',
   userId: 'user-1',
-  technologyId: 'tech-1',
+  questionSetId: '550e8400-e29b-41d4-a716-446655440001',
   status: 'in_progress',
   startedAt: now,
   currentQuestionIndex: 0,
@@ -99,11 +101,13 @@ class FakeAnswerRepository implements IAnswerRepository {
 
 
 class FakeUserResultRepository implements IUserResultRepository {
-  async findByUserId(): Promise<never[]> {
+  saved?: UserResult;
+  async findByUserId(): Promise<UserResult[]> {
     return [];
   }
-  async save(): Promise<never> {
-    throw new Error('not implemented');
+  async save(result: UserResult): Promise<UserResult> {
+    this.saved = result;
+    return result;
   }
   async findByResultCode(): Promise<never> {
     throw new Error('not implemented');
@@ -138,14 +142,16 @@ class FakeAccessCodeRepository implements IAccessCodeRepository {
 }
 
 class FakeCandidateResultRepository implements ICandidateResultRepository {
-  async findByCandidateId(): Promise<never[]> {
+  saved?: CandidateResult;
+  async findByCandidateId(): Promise<CandidateResult[]> {
     return [];
   }
-  async findByCampaignId(): Promise<never[]> {
+  async findByCampaignId(): Promise<CandidateResult[]> {
     return [];
   }
-  async save(): Promise<never> {
-    throw new Error('not implemented');
+  async save(result: CandidateResult): Promise<CandidateResult> {
+    this.saved = result;
+    return result;
   }
   async findByResultCode(): Promise<never> {
     throw new Error('not implemented');

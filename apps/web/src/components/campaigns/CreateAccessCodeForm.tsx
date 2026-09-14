@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CORPORATE_API_BASE } from '../../lib/corporate-api';
+import { fetchTechnologies, fetchTechnologyPreview } from '../../lib/technology.api';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { ErrorMessage } from '../ui/ErrorMessage';
@@ -12,34 +13,82 @@ interface CreateAccessCodeFormProps {
   onCreated: () => void;
 }
 
+interface TechnologyOption {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface QuestionSetOption {
+  id: string;
+  title: string;
+  questionCount: number;
+  durationMinutes: number;
+}
+
 export function CreateAccessCodeForm({ campaignId, companyId, onCreated }: CreateAccessCodeFormProps) {
   const [testeeName, setTesteeName] = useState('');
   const [testeeEmail, setTesteeEmail] = useState('');
-  const [questionCount, setQuestionCount] = useState<number | ''>('');
-  const [durationMinutes, setDurationMinutes] = useState<number | ''>('');
+  const [technologySlug, setTechnologySlug] = useState<string>('');
+  const [questionSetId, setQuestionSetId] = useState<string>('');
+  const [technologies, setTechnologies] = useState<TechnologyOption[]>([]);
+  const [questionSets, setQuestionSets] = useState<QuestionSetOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchTechnologies()
+      .then((response) => {
+        if (!cancelled) setTechnologies(response.data);
+      })
+      .catch(() => {
+        if (!cancelled) setError('Failed to load technologies');
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!technologySlug) {
+      setQuestionSets([]);
+      setQuestionSetId('');
+      return;
+    }
+    let cancelled = false;
+    fetchTechnologyPreview(technologySlug)
+      .then((response) => {
+        if (!cancelled) {
+          setQuestionSets(response.data.questionSets);
+          setQuestionSetId(response.data.questionSets[0]?.id ?? '');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setError('Failed to load question sets');
+      });
+    return () => { cancelled = true; };
+  }, [technologySlug]);
+
   const isEmailValid = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const selectedSet = questionSets.find((qs) => qs.id === questionSetId);
 
   const isFormValid =
     testeeName.trim().length > 0 &&
     isEmailValid(testeeEmail.trim()) &&
-    typeof questionCount === 'number' &&
-    questionCount > 0 &&
-    typeof durationMinutes === 'number' &&
-    durationMinutes > 0;
+    questionSetId.length > 0 &&
+    selectedSet !== undefined;
 
   const create = async () => {
-    if (!isFormValid) return;
+    if (!isFormValid || !selectedSet) return;
     setLoading(true);
     setError(null);
     const payload = {
       companyId,
       testeeName: testeeName.trim(),
       testeeEmail: testeeEmail.trim(),
-      questionCount: Number(questionCount),
-      durationMinutes: Number(durationMinutes),
+      questionSetId,
+      questionCount: selectedSet.questionCount,
+      durationMinutes: selectedSet.durationMinutes,
     };
     const res = await fetch(`${CORPORATE_API_BASE}/api/v1/corporate/campaigns/${campaignId}/access-codes`, {
       method: 'POST',
@@ -53,8 +102,8 @@ export function CreateAccessCodeForm({ campaignId, companyId, onCreated }: Creat
     } else {
       setTesteeName('');
       setTesteeEmail('');
-      setQuestionCount('');
-      setDurationMinutes('');
+      setTechnologySlug('');
+      setQuestionSetId('');
       onCreated();
     }
     setLoading(false);
@@ -86,29 +135,34 @@ export function CreateAccessCodeForm({ campaignId, companyId, onCreated }: Creat
             className="input-field w-full"
           />
         </label>
-        <label className="block w-full sm:w-28">
-          <span className="label-mono">Questions</span>
-          <input
-            id="questionCount"
-            type="number"
-            min={1}
-            value={questionCount}
-            onChange={(e) => setQuestionCount(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="Qty"
+        <label className="block flex-1">
+          <span className="label-mono">Technology</span>
+          <select
+            id="technology"
+            value={technologySlug}
+            onChange={(e) => setTechnologySlug(e.target.value)}
             className="input-field w-full"
-          />
+          >
+            <option value="">Select technology</option>
+            {technologies.map((t) => (
+              <option key={t.id} value={t.slug}>{t.name}</option>
+            ))}
+          </select>
         </label>
-        <label className="block w-full sm:w-28">
-          <span className="label-mono">Minutes</span>
-          <input
-            id="durationMinutes"
-            type="number"
-            min={1}
-            value={durationMinutes}
-            onChange={(e) => setDurationMinutes(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="Min"
+        <label className="block flex-1">
+          <span className="label-mono">Question set</span>
+          <select
+            id="questionSet"
+            value={questionSetId}
+            onChange={(e) => setQuestionSetId(e.target.value)}
+            disabled={questionSets.length === 0}
             className="input-field w-full"
-          />
+          >
+            <option value="">{questionSets.length === 0 ? 'Select technology first' : 'Select question set'}</option>
+            {questionSets.map((qs) => (
+              <option key={qs.id} value={qs.id}>{qs.title} ({qs.questionCount} q / {qs.durationMinutes} min)</option>
+            ))}
+          </select>
         </label>
         <Button onClick={() => void create()} disabled={!isFormValid || loading} className="w-full lg:w-auto">
           {loading ? 'Creating...' : 'Create'}

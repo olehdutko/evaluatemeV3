@@ -3,6 +3,7 @@ export * from './company-profile-repository.port';
 export * from './campaign-repository.port';
 export * from './technology-repository.port';
 export * from './question-repository.port';
+export * from './question-set-repository.port';
 export * from './test-repository.port';
 export * from './access-code-repository.port';
 export * from './session-repository.port';

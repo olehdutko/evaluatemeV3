@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  ITechnologyRepository,
+  IQuestionSetRepository,
   IQuestionRepository,
   IQuizSessionRepository,
   IUserRepository,
@@ -11,31 +11,31 @@ import { NotFoundError, ForbiddenError } from '../../infrastructure/errors/app-e
 
 export interface StartTestResult {
   sessionId: string;
-  technology: { id: string; name: string; slug: string };
+  questionSet: { id: string; title: string };
   questions: Question[];
 }
 
 @Injectable()
 export class StartTestUseCase {
   constructor(
-    @Inject(ITechnologyRepository) private readonly technologyRepository: ITechnologyRepository,
+    @Inject(IQuestionSetRepository) private readonly questionSetRepository: IQuestionSetRepository,
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(IQuizSessionRepository) private readonly quizSessionRepository: IQuizSessionRepository,
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
   ) {}
 
-  async execute(userId: string, technologySlug: string): Promise<{ success: true; data: StartTestResult }> {
-    const [user, technology] = await Promise.all([
+  async execute(userId: string, questionSetId: string): Promise<{ success: true; data: StartTestResult }> {
+    const [user, questionSet] = await Promise.all([
       this.userRepository.findById(userId),
-      this.technologyRepository.findBySlug(technologySlug),
+      this.questionSetRepository.findById(questionSetId),
     ]);
 
     if (!user) {
       throw new NotFoundError('user');
     }
 
-    if (!technology) {
-      throw new NotFoundError('technology');
+    if (!questionSet) {
+      throw new NotFoundError('question set');
     }
 
     // Admin users configure the application and are not allowed to take tests.
@@ -47,17 +47,17 @@ export class StartTestUseCase {
       throw new ForbiddenError('Insufficient credits to start a test.');
     }
 
-    const questions = await this.questionRepository.findByTechnologyIdRandomized(
-      technology.id,
-      technology.quizQuestionCount,
+    const questions = await this.questionRepository.findByQuestionSetIdRandomized(
+      questionSet.id,
+      questionSet.quizQuestionCount,
     );
     if (questions.length === 0) {
-      throw new NotFoundError('questions for technology');
+      throw new NotFoundError('questions for question set');
     }
 
     const session = await this.quizSessionRepository.create({
       userId,
-      technologyId: technology.id,
+      questionSetId: questionSet.id,
       status: 'in_progress',
       startedAt: new Date(),
       currentQuestionIndex: 0,
@@ -68,7 +68,7 @@ export class StartTestUseCase {
       success: true,
       data: {
         sessionId: session.id,
-        technology: { id: technology.id, name: technology.name, slug: technology.slug },
+        questionSet: { id: questionSet.id, title: questionSet.title },
         questions,
       },
     };

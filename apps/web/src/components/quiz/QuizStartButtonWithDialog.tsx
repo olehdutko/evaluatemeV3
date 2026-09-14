@@ -11,6 +11,7 @@ import { ErrorMessage } from '../ui/ErrorMessage';
 
 interface QuizStartButtonWithDialogProps {
   slug: string;
+  questionSetId: string;
   variant?: 'primary' | 'secondary';
   className?: string;
   initialPreview?: Awaited<ReturnType<typeof fetchTechnologyPreview>>['data'] | null;
@@ -18,6 +19,7 @@ interface QuizStartButtonWithDialogProps {
 
 export function QuizStartButtonWithDialog({
   slug,
+  questionSetId,
   variant = 'primary',
   className = '',
   initialPreview = null,
@@ -53,12 +55,12 @@ export function QuizStartButtonWithDialog({
   }
 
   async function handleConfirmStart(): Promise<void> {
-    if (!preview) return;
+    if (!preview || !questionSetId) return;
     setError(null);
     setIsLoading(true);
     try {
       await startPersonalQuiz();
-      const session = await startTest({ technologySlug: slug });
+      const session = await startTest({ questionSetId });
       await refreshUser();
       router.push(`/tests/${session.data.sessionId}`);
     } catch (err) {
@@ -72,6 +74,7 @@ export function QuizStartButtonWithDialog({
     }
   }
 
+  const selectedSet = preview?.questionSets.find((qs) => qs.id === questionSetId);
   const baseClass = variant === 'primary' ? 'btn-primary' : 'btn-secondary';
 
   return (
@@ -101,11 +104,11 @@ export function QuizStartButtonWithDialog({
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="p-3 bg-bg-secondary rounded">
                   <span className="label-mono">Questions</span>
-                  <p className="font-display text-lg font-bold">{preview.questionCount}</p>
+                  <p className="font-display text-lg font-bold">{selectedSet?.questionCount ?? 0}</p>
                 </div>
                 <div className="p-3 bg-bg-secondary rounded">
                   <span className="label-mono">Time</span>
-                  <p className="font-display text-lg font-bold">{preview.durationMinutes} min</p>
+                  <p className="font-display text-lg font-bold">{selectedSet?.durationMinutes ?? 0} min</p>
                 </div>
               </div>
             </>

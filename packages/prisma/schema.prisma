@@ -83,44 +83,42 @@ model CampaignHistory {
 }
 
 model Technology {
-  id              String   @id @default(uuid()) @db.VarChar(36)
-  name            String   @unique @db.VarChar(100)
-  slug            String   @unique @db.VarChar(100)
-  description     String?  @db.Text
-  quizQuestionCount Int    @default(20)
-  quizDurationMinutes Int  @default(40)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  name        String   @unique @db.VarChar(100)
+  slug        String   @unique @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("technologies")
 }
 
-model Test {
-  id              String   @id @default(uuid()) @db.VarChar(36)
-  title           String   @db.VarChar(255)
-  technologyId    String   @db.VarChar(36)
-  status          String   @db.VarChar(20)
-  durationMinutes Int?
-  passingScore    Int?
-  createdByUserId String   @db.VarChar(36)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+model QuestionSet {
+  id                  String   @id @default(uuid()) @db.VarChar(36)
+  title               String   @db.VarChar(255)
+  technologyId        String   @db.VarChar(36)
+  status              String   @db.VarChar(20)
+  quizQuestionCount   Int      @default(20)
+  quizDurationMinutes Int      @default(40)
+  createdByUserId     String   @db.VarChar(36)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@unique([technologyId, title])
-  @@map("tests")
+  @@map("question_sets")
 }
 
 model Question {
-  id           String   @id @default(uuid()) @db.VarChar(36)
-  technologyId String   @db.VarChar(36)
-  content      String   @db.Text
-  type         String   @db.VarChar(20)
-  orderIndex   Int
-  score        Int      @default(1)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(uuid()) @db.VarChar(36)
+  questionSetId String   @db.VarChar(36)
+  content       String   @db.Text
+  type          String   @db.VarChar(20)
+  orderIndex    Int
+  score         Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  @@unique([technologyId, orderIndex])
+  @@unique([questionSetId, orderIndex])
   @@map("questions")
 }
 
@@ -139,7 +137,7 @@ model Answer {
 model QuizSession {
   id                   String    @id @default(uuid()) @db.VarChar(36)
   userId               String?   @db.VarChar(36)
-  technologyId         String    @db.VarChar(36)
+  questionSetId        String    @db.VarChar(36)
   accessCodeId         String?   @db.VarChar(36)
   status               String    @db.VarChar(20)
   startedAt            DateTime  @default(now())
@@ -150,6 +148,7 @@ model QuizSession {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
+  @@index([questionSetId])
   @@map("quiz_sessions")
 }
 
@@ -194,17 +193,19 @@ model UserSession {
 }
 
 model UserResult {
-  id          String    @id @default(uuid()) @db.VarChar(36)
-  resultCode  String    @unique @db.VarChar(255)
-  userId      String    @db.VarChar(36)
-  technologyId String   @db.VarChar(36)
-  score       Int?
-  maxScore    Int?
-  status      String    @db.VarChar(20)
-  sessionId   String?   @db.VarChar(255)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  resultCode    String    @unique @db.VarChar(255)
+  userId        String    @db.VarChar(36)
+  technologyId  String?   @db.VarChar(36)
+  questionSetId String?   @db.VarChar(36)
+  score         Int?
+  maxScore      Int?
+  status        String    @db.VarChar(20)
+  sessionId     String?   @db.VarChar(255)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
+  @@index([questionSetId])
   @@map("user_results")
 }
 
@@ -226,21 +227,23 @@ model CandidateSession {
 }
 
 model CandidateResult {
-  id          String    @id @default(uuid()) @db.VarChar(36)
-  resultCode  String    @unique @db.VarChar(255)
-  campaignId  String?   @db.VarChar(36)
-  candidateId String?   @db.VarChar(36)
-  accessCodeId String?  @db.VarChar(36)
-  technologyId String?   @db.VarChar(36)
-  companyQuizId String? @db.VarChar(36)
-  score       Int?
-  maxScore    Int?
-  status      String    @db.VarChar(20)
-  sessionId   String?   @db.VarChar(255)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  resultCode    String    @unique @db.VarChar(255)
+  campaignId    String?   @db.VarChar(36)
+  candidateId   String?   @db.VarChar(36)
+  accessCodeId  String?   @db.VarChar(36)
+  technologyId  String?   @db.VarChar(36)
+  questionSetId String?   @db.VarChar(36)
+  companyQuizId String?   @db.VarChar(36)
+  score         Int?
+  maxScore      Int?
+  status        String    @db.VarChar(20)
+  sessionId     String?   @db.VarChar(255)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([campaignId])
+  @@index([questionSetId])
   @@map("candidate_results")
 }
 
@@ -250,7 +253,7 @@ model AccessCode {
   companyId       String    @db.VarChar(36)
   campaignId      String?   @db.VarChar(36)
   quizId          String?   @db.VarChar(36)
-  technologyId    String?   @db.VarChar(36)
+  questionSetId   String?   @db.VarChar(36)
   status          String    @db.VarChar(20)
   sentAt          DateTime?
   sentToEmail     String?   @db.VarChar(255)
@@ -267,6 +270,7 @@ model AccessCode {
 
   @@index([companyId])
   @@index([campaignId])
+  @@index([questionSetId])
   @@map("access_codes")
 }
 

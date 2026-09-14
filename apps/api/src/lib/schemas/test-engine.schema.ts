@@ -13,7 +13,7 @@ export const startPersonalQuizResponseSchema = successEnvelopeSchema(
 );
 
 export const startTestRequestSchema = z.object({
-  technologySlug: z.string().min(1).max(100),
+  questionSetId: z.string().uuid(),
 });
 
 export const startSessionRequestSchema = z.object({
@@ -23,15 +23,14 @@ export const startSessionRequestSchema = z.object({
 export const startTestResponseSchema = successEnvelopeSchema(
   z.object({
     sessionId: z.string().uuid(),
-    technology: z.object({
+    questionSet: z.object({
       id: z.string().uuid(),
-      name: z.string(),
-      slug: z.string(),
+      title: z.string(),
     }),
     questions: z.array(
       z.object({
         id: z.string().uuid(),
-        technologyId: z.string().uuid(),
+        questionSetId: z.string().uuid(),
         content: z.string(),
         type: z.enum(['single', 'multiple']),
         orderIndex: z.number().int(),

@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { IQuestionRepository, IAnswerRepository, Answer , Question } from '@evaluateme/domain';
+import { IQuestionRepository, IAnswerRepository, Answer, Question } from '@evaluateme/domain';
 import { BadRequestError, UnprocessableError } from '../../../infrastructure/errors/app-error';
 
 export interface SaveQuestionInput {
   id?: string;
-  technologyId: string;
+  questionSetId: string;
   content: string;
   type: 'single' | 'multiple';
   orderIndex: number;
@@ -60,7 +60,7 @@ export class SaveQuestionUseCase {
     const now = new Date();
     const savedQuestion = await this.questionRepository.save({
       id: questionId,
-      technologyId: input.technologyId,
+      questionSetId: input.questionSetId,
       content,
       type: input.type,
       orderIndex: input.orderIndex,

@@ -12,7 +12,7 @@ describe('Prisma schema coverage', () => {
       'model Campaign',
       'model CampaignHistory',
       'model Technology',
-      'model Test',
+      'model QuestionSet',
       'model Question',
       'model Answer',
       'model FreeSampleQuestion',
@@ -32,9 +32,9 @@ describe('Prisma schema coverage', () => {
     }
   });
 
-  it('declares natural-key unique constraints for test/question/answer', () => {
+  it('declares natural-key unique constraints for question set/question/answer', () => {
     expect(schema).toMatch(/@@unique\(\[technologyId, title\]\)/);
-    expect(schema).toMatch(/@@unique\(\[technologyId, orderIndex\]\)/);
+    expect(schema).toMatch(/@@unique\(\[questionSetId, orderIndex\]\)/);
     expect(schema).toMatch(/@@unique\(\[questionId, orderIndex\]\)/);
   });
 });

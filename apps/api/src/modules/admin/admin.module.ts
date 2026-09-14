@@ -20,25 +20,31 @@ import { PrismaEmailServiceConfigRepository } from '../../infrastructure/prisma/
 import { PrismaLandingAdRepository } from '../../infrastructure/prisma/repositories/prisma-landing-ad.repository';
 import {
   IUserRepository,
-    ICreditSettingRepository,
-    IEmailTemplateRepository,
-    IEmailServiceConfigRepository,
-    ILandingAdRepository,
-
-    ITechnologyRepository,
+  ICreditSettingRepository,
+  IEmailTemplateRepository,
+  IEmailServiceConfigRepository,
+  ILandingAdRepository,
+  ITechnologyRepository,
+  IQuestionSetRepository,
   IQuestionRepository,
-  IAnswerRepository} from '@evaluateme/domain';
+  IAnswerRepository,
+} from '@evaluateme/domain';
 import { ListUsersUseCase } from '../../application/admin/users/list-users.use-case';
 import { UpdateUserUseCase } from '../../application/admin/users/update-user.use-case';
 import { AdminListTechnologiesUseCase } from '../../application/admin/content/list-technologies.use-case';
 import { CreateTechnologyUseCase } from '../../application/admin/content/create-technology.use-case';
 import { UpdateTechnologyUseCase } from '../../application/admin/content/update-technology.use-case';
 import { DeleteTechnologyUseCase } from '../../application/admin/content/delete-technology.use-case';
-import { GetTechnologyWithQuestionsUseCase } from '../../application/admin/content/get-technology-with-questions.use-case';
+import { ListQuestionSetsUseCase } from '../../application/admin/content/list-question-sets.use-case';
+import { CreateQuestionSetUseCase } from '../../application/admin/content/create-question-set.use-case';
+import { UpdateQuestionSetUseCase } from '../../application/admin/content/update-question-set.use-case';
+import { DeleteQuestionSetUseCase } from '../../application/admin/content/delete-question-set.use-case';
+import { GetQuestionSetWithQuestionsUseCase } from '../../application/admin/content/get-question-set-with-questions.use-case';
 import { SaveQuestionUseCase } from '../../application/admin/content/save-question.use-case';
 import { DeleteQuestionUseCase } from '../../application/admin/content/delete-question.use-case';
 import { DeleteAnswerUseCase } from '../../application/admin/content/delete-answer.use-case';
 import { PrismaTechnologyRepository } from '../../infrastructure/prisma/repositories/prisma-technology.repository';
+import { PrismaQuestionSetRepository } from '../../infrastructure/prisma/repositories/prisma-question-set.repository';
 import { PrismaQuestionRepository } from '../../infrastructure/prisma/repositories/prisma-question.repository';
 import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories/prisma-answer.repository';
 
@@ -64,7 +70,11 @@ import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories
     CreateTechnologyUseCase,
     UpdateTechnologyUseCase,
     DeleteTechnologyUseCase,
-    GetTechnologyWithQuestionsUseCase,
+    ListQuestionSetsUseCase,
+    CreateQuestionSetUseCase,
+    UpdateQuestionSetUseCase,
+    DeleteQuestionSetUseCase,
+    GetQuestionSetWithQuestionsUseCase,
     SaveQuestionUseCase,
     DeleteQuestionUseCase,
     DeleteAnswerUseCase,
@@ -74,6 +84,7 @@ import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories
     { provide: IEmailServiceConfigRepository, useClass: PrismaEmailServiceConfigRepository },
     { provide: ILandingAdRepository, useClass: PrismaLandingAdRepository },
     { provide: ITechnologyRepository, useClass: PrismaTechnologyRepository },
+    { provide: IQuestionSetRepository, useClass: PrismaQuestionSetRepository },
     { provide: IQuestionRepository, useClass: PrismaQuestionRepository },
     { provide: IAnswerRepository, useClass: PrismaAnswerRepository },
   ],

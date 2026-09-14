@@ -34,15 +34,11 @@ export class PrismaTechnologyRepository implements ITechnologyRepository {
         name: technology.name,
         slug: technology.slug,
         description: technology.description,
-        quizQuestionCount: technology.quizQuestionCount,
-        quizDurationMinutes: technology.quizDurationMinutes,
       },
       update: {
         name: technology.name,
         slug: technology.slug,
         description: technology.description,
-        quizQuestionCount: technology.quizQuestionCount,
-        quizDurationMinutes: technology.quizDurationMinutes,
       },
     });
     return this.toDomain(row);
@@ -59,8 +55,6 @@ export class PrismaTechnologyRepository implements ITechnologyRepository {
       name: data.name as string,
       slug: data.slug as string,
       description: data.description as string | null,
-      quizQuestionCount: Number(data.quizQuestionCount ?? 20),
-      quizDurationMinutes: Number(data.quizDurationMinutes ?? 40),
       createdAt: data.createdAt as Date,
       updatedAt: data.updatedAt as Date,
     };

@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   ITechnologyRepository,
-  IQuestionRepository,
-  IAnswerRepository,
+  IQuestionSetRepository,
   ICreditSettingRepository,
+  QuestionSet,
 } from '@evaluateme/domain';
 import { NotFoundError } from '../../infrastructure/errors/app-error';
 
@@ -15,23 +15,20 @@ export interface TechnologyPreviewResult {
   name: string;
   slug: string;
   description: string | null;
-  questionCount: number;
-  durationMinutes: number;
-  price: number;
-  sampleQuestion: {
+  questionSets: Array<{
     id: string;
-    content: string;
-    type: 'single' | 'multiple';
-    answers: Array<{ id: string; content: string; orderIndex: number }>;
-  } | null;
+    title: string;
+    questionCount: number;
+    durationMinutes: number;
+  }>;
+  price: number;
 }
 
 @Injectable()
 export class GetTechnologyPreviewUseCase {
   constructor(
     @Inject(ITechnologyRepository) private readonly technologyRepository: ITechnologyRepository,
-    @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
-    @Inject(IAnswerRepository) private readonly answerRepository: IAnswerRepository,
+    @Inject(IQuestionSetRepository) private readonly questionSetRepository: IQuestionSetRepository,
     @Inject(ICreditSettingRepository) private readonly creditSettingRepository: ICreditSettingRepository,
   ) {}
 
@@ -41,17 +38,10 @@ export class GetTechnologyPreviewUseCase {
       throw new NotFoundError('Technology');
     }
 
-    const [questions, allAnswers, price] = await Promise.all([
-      this.questionRepository.findByTechnologyId(technology.id),
-      this.questionRepository.findByTechnologyId(technology.id).then((q) =>
-        this.answerRepository.findByQuestionIds(q.map((item) => item.id)),
-      ),
+    const [questionSets, price] = await Promise.all([
+      this.questionSetRepository.findByTechnologyId(technology.id),
       this.resolveTestPrice(),
     ]);
-
-    const sampleQuestion = this.pickSampleQuestion(questions, allAnswers);
-    const effectiveCount = Math.min(technology.quizQuestionCount, questions.length || technology.quizQuestionCount);
-    const durationMinutes = technology.quizDurationMinutes;
 
     return {
       success: true,
@@ -60,31 +50,14 @@ export class GetTechnologyPreviewUseCase {
         name: technology.name,
         slug: technology.slug,
         description: technology.description,
-        questionCount: effectiveCount,
-        durationMinutes,
+        questionSets: questionSets.map((qs: QuestionSet) => ({
+          id: qs.id,
+          title: qs.title,
+          questionCount: qs.quizQuestionCount,
+          durationMinutes: qs.quizDurationMinutes,
+        })),
         price,
-        sampleQuestion,
       },
-    };
-  }
-
-  private pickSampleQuestion(
-    questions: Array<{ id: string; content: string; type: 'single' | 'multiple'; orderIndex: number }>,
-    answers: Array<{ id: string; questionId: string; content: string; orderIndex: number }>,
-  ) {
-    if (questions.length === 0) {
-      return null;
-    }
-    const randomIndex = Math.floor(Math.random() * questions.length);
-    const question = questions[randomIndex];
-    const questionAnswers = answers
-      .filter((a) => a.questionId === question.id)
-      .sort((a, b) => a.orderIndex - b.orderIndex);
-    return {
-      id: question.id,
-      content: question.content,
-      type: question.type,
-      answers: questionAnswers.map((a) => ({ id: a.id, content: a.content, orderIndex: a.orderIndex })),
     };
   }
 

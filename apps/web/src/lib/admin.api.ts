@@ -12,6 +12,8 @@ import {
   userListSchema,
   userValueSchema,
   createTechnologyRequestSchema,
+  createQuestionSetRequestSchema,
+  updateQuestionSetRequestSchema,
   saveQuestionRequestSchema,
 } from './schemas/admin';
 
@@ -163,8 +165,6 @@ export const technologiesSchema = z.object({
       name: z.string(),
       slug: z.string(),
       description: z.string().nullable(),
-      quizQuestionCount: z.number().int(),
-      quizDurationMinutes: z.number().int(),
       updatedAt: z.string().datetime(),
     }),
   ),
@@ -177,21 +177,42 @@ export const technologyValueSchema = z.object({
     name: z.string(),
     slug: z.string(),
     description: z.string().nullable(),
-    quizQuestionCount: z.number().int(),
-    quizDurationMinutes: z.number().int(),
     updatedAt: z.string().datetime(),
   }),
 });
 
-export const technologyWithQuestionsSchema = z.object({
+export const questionSetsSchema = z.object({
+  success: z.literal(true),
+  data: z.array(
+    z.object({
+      id: z.string().uuid(),
+      technologyId: z.string().uuid(),
+      name: z.string(),
+      description: z.string().nullable(),
+      questionCount: z.number().int(),
+      updatedAt: z.string().datetime(),
+    }),
+  ),
+});
+
+export const questionSetValueSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    id: z.string().uuid(),
+    technologyId: z.string().uuid(),
+    name: z.string(),
+    description: z.string().nullable(),
+    questionCount: z.number().int(),
+    updatedAt: z.string().datetime(),
+  }),
+});
+
+export const questionSetWithQuestionsSchema = z.object({
   success: z.literal(true),
   data: z.object({
     id: z.string().uuid(),
     name: z.string(),
-    slug: z.string(),
     description: z.string().nullable(),
-    quizQuestionCount: z.number().int(),
-    quizDurationMinutes: z.number().int(),
     questions: z.array(
       z.object({
         id: z.string().uuid(),
@@ -241,8 +262,24 @@ export function deleteTechnology(id: string) {
   return apiDelete(`/api/v1/admin/technologies/${encodeURIComponent(id)}`, emptySuccessSchema);
 }
 
-export function getTechnologyQuestions(id: string) {
-  return apiGet(`/api/v1/admin/technologies/${encodeURIComponent(id)}/questions`, technologyWithQuestionsSchema);
+export function getTechnologyQuestionSets(id: string) {
+  return apiGet(`/api/v1/admin/technologies/${encodeURIComponent(id)}/question-sets`, questionSetsSchema);
+}
+
+export function createQuestionSet(body: z.infer<typeof createQuestionSetRequestSchema>) {
+  return apiPost('/api/v1/admin/question-sets', body, createQuestionSetRequestSchema, questionSetValueSchema);
+}
+
+export function updateQuestionSet(id: string, body: z.infer<typeof updateQuestionSetRequestSchema>) {
+  return apiPut(`/api/v1/admin/question-sets/${encodeURIComponent(id)}`, body, updateQuestionSetRequestSchema, questionSetValueSchema);
+}
+
+export function deleteQuestionSet(id: string) {
+  return apiDelete(`/api/v1/admin/question-sets/${encodeURIComponent(id)}`, emptySuccessSchema);
+}
+
+export function getQuestionSetQuestions(id: string) {
+  return apiGet(`/api/v1/admin/question-sets/${encodeURIComponent(id)}/questions`, questionSetWithQuestionsSchema);
 }
 
 export function saveQuestion(body: z.infer<typeof saveQuestionRequestSchema>) {

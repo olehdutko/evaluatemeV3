@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { fetchTechnologies } from '../../lib/technology.api';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { ErrorMessage } from '../../components/ui/ErrorMessage';
-import { QuizStartButtonWithDialog } from '../../components/quiz/QuizStartButtonWithDialog';
 
 interface Technology {
   id: string;
@@ -42,15 +41,16 @@ function TechnologiesList({ technologies }: TechnologiesListProps): JSX.Element 
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
                   href={`/technologies/${technology.slug}/start`}
+                  className="btn-primary text-sm py-2 px-4 text-center"
+                >
+                  Start quiz
+                </Link>
+                <Link
+                  href={`/technologies/${technology.slug}/start`}
                   className="btn-secondary text-sm py-2 px-4 text-center"
                 >
                   View Details
                 </Link>
-                <QuizStartButtonWithDialog
-                  slug={technology.slug}
-                  variant="primary"
-                  className="text-sm py-2 px-4"
-                />
               </div>
             </div>
           </div>

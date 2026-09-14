@@ -35,10 +35,13 @@ export class GetPublicResultByCodeUseCase {
       throw new NotFoundError('result');
     }
 
-    const technology = await this.prisma.technology.findUnique({
-      where: { id: result.technologyId },
-      select: { id: true, name: true },
-    });
+    const technologyId = result.technologyId ?? undefined;
+    const technologyName = technologyId
+      ? (await this.prisma.technology.findUnique({
+          where: { id: technologyId },
+          select: { name: true },
+        }))?.name ?? 'Unknown'
+      : 'Unknown';
 
     const questions: PublicQuestionDetail[] = [];
     if (result.sessionId) {
@@ -74,8 +77,8 @@ export class GetPublicResultByCodeUseCase {
       success: true,
       data: {
         resultCode: result.resultCode,
-        technologyId: result.technologyId,
-        technologyName: technology?.name || 'Unknown',
+        technologyId: technologyId ?? '',
+        technologyName,
         score: result.score,
         maxScore: result.maxScore,
         status: result.status,

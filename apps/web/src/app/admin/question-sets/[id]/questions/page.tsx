@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getTechnologyQuestions, saveQuestion, deleteQuestion } from '../../../../../lib/admin.api';
+import { getQuestionSetQuestions, saveQuestion, deleteQuestion } from '../../../../../lib/admin.api';
 import { ErrorMessage } from '../../../../../components/ui/ErrorMessage';
 
 interface AnswerInput {
@@ -14,7 +14,7 @@ interface AnswerInput {
 
 interface QuestionInput {
   id?: string;
-  technologyId: string;
+  questionSetId: string;
   content: string;
   type: 'single' | 'multiple';
   orderIndex: number;
@@ -31,16 +31,15 @@ interface QuestionDetail {
   answers: AnswerInput[];
 }
 
-interface TechnologyDetail {
+interface QuestionSetDetail {
   id: string;
   name: string;
-  slug: string;
   description: string | null;
   questions: QuestionDetail[];
 }
 
-const emptyQuestion = (technologyId: string): QuestionInput => ({
-  technologyId,
+const emptyQuestion = (questionSetId: string): QuestionInput => ({
+  questionSetId,
   content: '',
   type: 'single',
   orderIndex: 1,
@@ -51,10 +50,10 @@ const emptyQuestion = (technologyId: string): QuestionInput => ({
   ],
 });
 
-export default function AdminTechnologyQuestionsPage(): JSX.Element {
+export default function AdminQuestionSetQuestionsPage(): JSX.Element {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const [technology, setTechnology] = useState<TechnologyDetail | null>(null);
+  const [questionSet, setQuestionSet] = useState<QuestionSetDetail | null>(null);
   const [form, setForm] = useState<QuestionInput | null>(null);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,7 +67,7 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
 
   useEffect(() => {
     if (!id) return;
-    loadTechnology(id);
+    loadQuestionSet(id);
   }, [id]);
 
   useEffect(() => {
@@ -86,15 +85,15 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
     list.addEventListener('scroll', handleScroll);
     handleScroll();
     return () => list.removeEventListener('scroll', handleScroll);
-  }, [technology?.questions.length]);
+  }, [questionSet?.questions.length]);
 
-  function loadTechnology(technologyId: string) {
+  function loadQuestionSet(questionSetId: string) {
     setLoading(true);
-    getTechnologyQuestions(technologyId)
+    getQuestionSetQuestions(questionSetId)
       .then((response) => {
-        setTechnology(response.data);
+        setQuestionSet(response.data);
         if (!form) {
-          setForm(emptyQuestion(technologyId));
+          setForm(emptyQuestion(questionSetId));
         }
         setError(null);
       })
@@ -106,7 +105,7 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
     setEditingQuestionId(question.id);
     setForm({
       id: question.id,
-      technologyId: id ?? '',
+      questionSetId: id ?? '',
       content: question.content,
       type: question.type,
       orderIndex: question.orderIndex,
@@ -157,7 +156,7 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!form || !form.technologyId) return;
+    if (!form || !form.questionSetId) return;
 
     if (form.answers.filter((a) => a.isCorrect).length === 0) {
       setFormError('At least one answer must be marked correct.');
@@ -172,7 +171,7 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
     setFormError(null);
     const payload = {
       id: form.id,
-      technologyId: form.technologyId,
+      questionSetId: form.questionSetId,
       content: form.content,
       type: form.type,
       orderIndex: form.orderIndex,
@@ -182,8 +181,8 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
     saveQuestion(payload)
       .then(() => {
         if (!id) return;
-        return getTechnologyQuestions(id).then((response) => {
-          setTechnology(response.data);
+        return getQuestionSetQuestions(id).then((response) => {
+          setQuestionSet(response.data);
           resetForm();
         });
       })
@@ -197,8 +196,8 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
     deleteQuestion(questionId)
       .then(() => {
         if (!id) return;
-        return getTechnologyQuestions(id).then((response) => {
-          setTechnology(response.data);
+        return getQuestionSetQuestions(id).then((response) => {
+          setQuestionSet(response.data);
           if (editingQuestionId === questionId) {
             resetForm();
           }
@@ -209,12 +208,12 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
   }
 
   if (loading) return <p className="p-8 text-text-secondary font-body">Loading…</p>;
-  if (!technology) return <ErrorMessage message={error || 'Technology not found'} className="m-6" />;
+  if (!questionSet) return <ErrorMessage message={error || 'Question set not found'} className="m-6" />;
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col -mt-4">
       <header className="shrink-0 px-6 py-4 border-b border-border bg-bg-primary">
-        <p className="font-mono text-xs uppercase tracking-[0.12em] text-accent mb-1">Content · {technology.name}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.12em] text-accent mb-1">Content · {questionSet.name}</p>
         <h1 className="font-display text-2xl font-bold text-text-primary">Questions</h1>
       </header>
 
@@ -224,7 +223,7 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
         <section className="w-1/2 flex flex-col border-r border-border">
           <div className="shrink-0 border-b border-border bg-bg-primary">
             <h2 className="px-6 py-3 font-display text-lg font-bold text-text-primary">
-              Existing Questions ({technology.questions.length})
+              Existing Questions ({questionSet.questions.length})
             </h2>
             <div className="h-1 w-full bg-bg-secondary">
               <div
@@ -234,11 +233,11 @@ export default function AdminTechnologyQuestionsPage(): JSX.Element {
               />
             </div>
           </div>
-          {technology.questions.length === 0 ? (
-            <p className="p-6 text-text-secondary font-body">No questions for this technology yet.</p>
+          {questionSet.questions.length === 0 ? (
+            <p className="p-6 text-text-secondary font-body">No questions for this question set yet.</p>
           ) : (
             <ul ref={listRef} className="flex-1 overflow-y-auto divide-y divide-border bg-bg-primary">
-              {technology.questions.map((q) => {
+              {questionSet.questions.map((q) => {
                 const isSelected = editingQuestionId === q.id;
                 return (
                   <li

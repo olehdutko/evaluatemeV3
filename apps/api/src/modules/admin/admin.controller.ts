@@ -21,7 +21,11 @@ import { AdminListTechnologiesUseCase } from '../../application/admin/content/li
 import { CreateTechnologyUseCase } from '../../application/admin/content/create-technology.use-case';
 import { UpdateTechnologyUseCase } from '../../application/admin/content/update-technology.use-case';
 import { DeleteTechnologyUseCase } from '../../application/admin/content/delete-technology.use-case';
-import { GetTechnologyWithQuestionsUseCase } from '../../application/admin/content/get-technology-with-questions.use-case';
+import { ListQuestionSetsUseCase } from '../../application/admin/content/list-question-sets.use-case';
+import { CreateQuestionSetUseCase } from '../../application/admin/content/create-question-set.use-case';
+import { UpdateQuestionSetUseCase } from '../../application/admin/content/update-question-set.use-case';
+import { DeleteQuestionSetUseCase } from '../../application/admin/content/delete-question-set.use-case';
+import { GetQuestionSetWithQuestionsUseCase } from '../../application/admin/content/get-question-set-with-questions.use-case';
 import { SaveQuestionUseCase } from '../../application/admin/content/save-question.use-case';
 import { DeleteQuestionUseCase } from '../../application/admin/content/delete-question.use-case';
 import { DeleteAnswerUseCase } from '../../application/admin/content/delete-answer.use-case';
@@ -37,6 +41,8 @@ import {
 import {
   createTechnologyRequestSchema,
   saveQuestionRequestSchema,
+  createQuestionSetRequestSchema,
+  updateQuestionSetRequestSchema,
 } from '../../lib/schemas/content.schema';
 import { UserRole, LandingAdPosition, ActivationStatus } from '@evaluateme/domain';
 
@@ -67,7 +73,11 @@ export class AdminController {
     private readonly createTechnologyUseCase: CreateTechnologyUseCase,
     private readonly updateTechnologyUseCase: UpdateTechnologyUseCase,
     private readonly deleteTechnologyUseCase: DeleteTechnologyUseCase,
-    private readonly getTechnologyWithQuestionsUseCase: GetTechnologyWithQuestionsUseCase,
+    private readonly listQuestionSetsUseCase: ListQuestionSetsUseCase,
+    private readonly createQuestionSetUseCase: CreateQuestionSetUseCase,
+    private readonly updateQuestionSetUseCase: UpdateQuestionSetUseCase,
+    private readonly deleteQuestionSetUseCase: DeleteQuestionSetUseCase,
+    private readonly getQuestionSetWithQuestionsUseCase: GetQuestionSetWithQuestionsUseCase,
     private readonly saveQuestionUseCase: SaveQuestionUseCase,
     private readonly deleteQuestionUseCase: DeleteQuestionUseCase,
     private readonly deleteAnswerUseCase: DeleteAnswerUseCase,
@@ -216,7 +226,7 @@ export class AdminController {
 
   @Post('technologies')
   async createTechnology(
-    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name: string; slug?: string; description?: string | null; quizQuestionCount?: number; quizDurationMinutes?: number },
+    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name: string; slug?: string; description?: string | null },
   ): Promise<ReturnType<CreateTechnologyUseCase['execute']>> {
     return this.createTechnologyUseCase.execute(body);
   }
@@ -224,7 +234,7 @@ export class AdminController {
   @Put('technologies/:id')
   async updateTechnology(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name?: string; slug?: string; description?: string | null; quizQuestionCount?: number; quizDurationMinutes?: number },
+    @Body(new ZodValidationPipe(createTechnologyRequestSchema)) body: { name?: string; slug?: string; description?: string | null },
   ): Promise<ReturnType<UpdateTechnologyUseCase['execute']>> {
     return this.updateTechnologyUseCase.execute({ id, ...body });
   }
@@ -234,16 +244,52 @@ export class AdminController {
     return this.deleteTechnologyUseCase.execute(id);
   }
 
-  @Get('technologies/:id/questions')
-  async technologyQuestions(@Param('id') id: string): Promise<ReturnType<GetTechnologyWithQuestionsUseCase['execute']>> {
-    return this.getTechnologyWithQuestionsUseCase.execute(id);
+  @Get('technologies/:id/question-sets')
+  async technologyQuestionSets(@Param('id') id: string): Promise<ReturnType<ListQuestionSetsUseCase['execute']>> {
+    return this.listQuestionSetsUseCase.execute(id);
+  }
+
+  @Post('question-sets')
+  async createQuestionSet(
+    @Body(new ZodValidationPipe(createQuestionSetRequestSchema)) body: {
+      technologyId: string;
+      title: string;
+      quizQuestionCount?: number;
+      quizDurationMinutes?: number;
+    },
+    @Req() request: RequestWithUser,
+  ): Promise<ReturnType<CreateQuestionSetUseCase['execute']>> {
+    return this.createQuestionSetUseCase.execute({ ...body, createdByUserId: request.user!.sub });
+  }
+
+  @Put('question-sets/:id')
+  async updateQuestionSet(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(updateQuestionSetRequestSchema)) body: {
+      title?: string;
+      status?: 'active' | 'suspended';
+      quizQuestionCount?: number;
+      quizDurationMinutes?: number;
+    },
+  ): Promise<ReturnType<UpdateQuestionSetUseCase['execute']>> {
+    return this.updateQuestionSetUseCase.execute({ id, ...body });
+  }
+
+  @Delete('question-sets/:id')
+  async deleteQuestionSet(@Param('id') id: string): Promise<ReturnType<DeleteQuestionSetUseCase['execute']>> {
+    return this.deleteQuestionSetUseCase.execute(id);
+  }
+
+  @Get('question-sets/:id/questions')
+  async questionSetQuestions(@Param('id') id: string): Promise<ReturnType<GetQuestionSetWithQuestionsUseCase['execute']>> {
+    return this.getQuestionSetWithQuestionsUseCase.execute(id);
   }
 
   @Put('questions')
   async saveQuestion(
     @Body(new ZodValidationPipe(saveQuestionRequestSchema)) body: {
       id?: string;
-      technologyId: string;
+      questionSetId: string;
       content: string;
       type: 'single' | 'multiple';
       orderIndex: number;

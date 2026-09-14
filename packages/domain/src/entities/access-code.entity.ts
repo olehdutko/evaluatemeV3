@@ -8,7 +8,7 @@ export interface AccessCode extends Entity {
   companyId: string;
   campaignId: string | null;
   quizId: string | null;
-  technologyId: string | null;
+  questionSetId: string | null;
   status: AccessCodeStatus;
   sentAt: Date | null;
   sentToEmail: string | null;

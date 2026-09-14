@@ -26,8 +26,17 @@ export const createTechnologyRequestSchema = z.object({
   name: z.string().min(1).max(100),
   slug: z.string().min(1).max(100).optional().or(z.literal('')),
   description: z.string().max(5000).nullable().optional().or(z.literal('')),
-  quizQuestionCount: z.number().int().min(1).max(100).optional(),
-  quizDurationMinutes: z.number().int().min(1).max(300).optional(),
+});
+
+export const createQuestionSetRequestSchema = z.object({
+  technologyId: z.string().uuid(),
+  name: z.string().min(1).max(100),
+  description: z.string().max(5000).nullable().optional().or(z.literal('')),
+});
+
+export const updateQuestionSetRequestSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(5000).nullable().optional().or(z.literal('')),
 });
 
 export const answerInputSchema = z.object({
@@ -39,7 +48,7 @@ export const answerInputSchema = z.object({
 
 export const saveQuestionRequestSchema = z.object({
   id: z.string().uuid().optional(),
-  technologyId: z.string().uuid(),
+  questionSetId: z.string().uuid(),
   content: z.string().min(1).max(5000),
   type: z.enum(['single', 'multiple']),
   orderIndex: z.number().int().min(0),

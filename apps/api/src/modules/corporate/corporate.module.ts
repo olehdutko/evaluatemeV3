@@ -23,6 +23,7 @@ import { PrismaAccessCodeRepository } from '../../infrastructure/prisma/reposito
 import { PrismaCompanyProfileRepository } from '../../infrastructure/prisma/repositories/prisma-company-profile.repository';
 import { PrismaUserRepository } from '../../infrastructure/prisma/repositories/prisma-user.repository';
 import { PrismaQuestionRepository } from '../../infrastructure/prisma/repositories/prisma-question.repository';
+import { PrismaQuestionSetRepository } from '../../infrastructure/prisma/repositories/prisma-question-set.repository';
 import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories/prisma-answer.repository';
 import { PrismaQuizSessionRepository } from '../../infrastructure/prisma/repositories/prisma-quiz-session.repository';
 import {
@@ -37,6 +38,7 @@ import {
   IAccessCodeRepository,
   ICompanyProfileRepository,
   IUserRepository,
+  IQuestionSetRepository,
   IQuestionRepository,
   IAnswerRepository,
   ICandidateResultRepository,
@@ -67,6 +69,7 @@ import {
     { provide: IAccessCodeRepository, useClass: PrismaAccessCodeRepository },
     { provide: ICompanyProfileRepository, useClass: PrismaCompanyProfileRepository },
     { provide: IUserRepository, useClass: PrismaUserRepository },
+    { provide: IQuestionSetRepository, useClass: PrismaQuestionSetRepository },
     { provide: IQuestionRepository, useClass: PrismaQuestionRepository },
     { provide: IAnswerRepository, useClass: PrismaAnswerRepository },
     { provide: IQuizSessionRepository, useClass: PrismaQuizSessionRepository },

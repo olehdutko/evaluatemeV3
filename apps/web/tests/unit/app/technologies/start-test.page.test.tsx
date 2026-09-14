@@ -60,38 +60,39 @@ describe('StartTestPage', () => {
 
   const renderWithAuth = (ui: React.ReactElement) => render(<AuthProvider>{ui}</AuthProvider>);
 
+  const previewData = {
+    id: '550e8400-e29b-41d4-a716-446655440001',
+    name: 'C#',
+    slug: 'csharp',
+    description: 'C# technology',
+    questionSets: [
+      {
+        id: '550e8400-e29b-41d4-a716-446655440002',
+        title: 'C# Basics',
+        questionCount: 10,
+        durationMinutes: 20,
+      },
+    ],
+    price: 1,
+  };
+
   it('renders technology slug and start button', async () => {
     (technologyApi.fetchTechnologyPreview as jest.Mock).mockResolvedValue({
       success: true,
-      data: {
-        slug: 'csharp',
-        name: 'C#',
-        description: 'C# technology',
-        questionCount: 10,
-        durationMinutes: 20,
-        price: 1,
-        sampleQuestion: null,
-      },
+      data: previewData,
     });
 
     renderWithAuth(<StartTestPage />);
     expect(await screen.findByText('C#')).toBeInTheDocument();
     expect(screen.getByText('csharp')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Start quiz' })).toBeInTheDocument();
+    expect(screen.getByText('C# Basics')).toBeInTheDocument();
   });
 
   it('navigates to test session on success', async () => {
     (technologyApi.fetchTechnologyPreview as jest.Mock).mockResolvedValue({
       success: true,
-      data: {
-        slug: 'csharp',
-        name: 'C#',
-        description: 'C# technology',
-        questionCount: 10,
-        durationMinutes: 20,
-        price: 1,
-        sampleQuestion: null,
-      },
+      data: previewData,
     });
     (api.startPersonalQuiz as jest.Mock).mockResolvedValue({ success: true, data: {} });
     (api.startTest as jest.Mock).mockResolvedValue({
@@ -112,15 +113,7 @@ describe('StartTestPage', () => {
   it('shows error when start fails', async () => {
     (technologyApi.fetchTechnologyPreview as jest.Mock).mockResolvedValue({
       success: true,
-      data: {
-        slug: 'csharp',
-        name: 'C#',
-        description: 'C# technology',
-        questionCount: 10,
-        durationMinutes: 20,
-        price: 1,
-        sampleQuestion: null,
-      },
+      data: previewData,
     });
     (api.startPersonalQuiz as jest.Mock).mockResolvedValue({ success: true, data: {} });
     (api.startTest as jest.Mock).mockRejectedValue(new Error('Network error'));

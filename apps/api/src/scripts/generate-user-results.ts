@@ -7,7 +7,9 @@ async function main() {
   let created = 0;
   for (const tech of technologies) {
     if (created >= 5) break;
-    const questions = await prisma.question.findMany({ where: { technologyId: tech.id }, take: 10, orderBy: { orderIndex: 'asc' } });
+    const questionSet = await prisma.questionSet.findFirst({ where: { technologyId: tech.id } });
+    if (!questionSet) continue;
+    const questions = await prisma.question.findMany({ where: { questionSetId: questionSet.id }, take: 10, orderBy: { orderIndex: 'asc' } });
     if (questions.length === 0) continue;
     const answersByQuestion: Record<string, { id: string; isCorrect: boolean }[]> = {};
     for (const q of questions) {
@@ -21,7 +23,7 @@ async function main() {
     const session = await prisma.quizSession.create({
       data: {
         userId: USER_ID,
-        technologyId: tech.id,
+        questionSetId: questionSet.id,
         status: 'completed',
         startedAt,
         completedAt,
@@ -48,7 +50,8 @@ async function main() {
       data: {
         resultCode: `USR-${Date.now()}-${created}`,
         userId: USER_ID,
-        technologyId: tech.id,
+        technologyId: null,
+        questionSetId: questionSet.id,
         score,
         maxScore,
         status: 'completed',

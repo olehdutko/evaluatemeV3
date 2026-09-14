@@ -11,9 +11,9 @@ export class PrismaQuestionRepository implements IQuestionRepository {
     return rows.map((row) => this.mapRow(row));
   }
 
-  async findByTechnologyId(technologyId: string): Promise<Question[]> {
+  async findByQuestionSetId(questionSetId: string): Promise<Question[]> {
     const rows = await this.prisma.question.findMany({
-      where: technologyId ? { technologyId } : {},
+      where: questionSetId ? { questionSetId } : {},
       orderBy: { orderIndex: 'asc' },
     });
     return rows.map((row) => this.mapRow(row));
@@ -24,10 +24,10 @@ export class PrismaQuestionRepository implements IQuestionRepository {
     return row ? this.mapRow(row) : null;
   }
 
-  async findByTechnologyIdRandomized(technologyId: string, limit: number): Promise<Question[]> {
+  async findByQuestionSetIdRandomized(questionSetId: string, limit: number): Promise<Question[]> {
     const rows = await this.prisma.$queryRaw<Array<{
       id: string;
-      technologyId: string;
+      questionSetId: string;
       content: string;
       type: string;
       orderIndex: number;
@@ -35,7 +35,7 @@ export class PrismaQuestionRepository implements IQuestionRepository {
       createdAt: Date;
       updatedAt: Date;
     }>>`
-      SELECT * FROM questions WHERE technologyId = ${technologyId} ORDER BY RAND() LIMIT ${limit}
+      SELECT * FROM questions WHERE questionSetId = ${questionSetId} ORDER BY RAND() LIMIT ${limit}
     `;
     return rows.map((row) => this.mapRow(row));
   }
@@ -45,14 +45,14 @@ export class PrismaQuestionRepository implements IQuestionRepository {
       where: { id: question.id },
       create: {
         id: question.id,
-        technologyId: question.technologyId,
+        questionSetId: question.questionSetId,
         content: question.content,
         type: question.type === 'multiple' ? 'multiple_choice' : 'single_choice',
         orderIndex: question.orderIndex,
         score: question.score,
       },
       update: {
-        technologyId: question.technologyId,
+        questionSetId: question.questionSetId,
         content: question.content,
         type: question.type === 'multiple' ? 'multiple_choice' : 'single_choice',
         orderIndex: question.orderIndex,
@@ -69,7 +69,7 @@ export class PrismaQuestionRepository implements IQuestionRepository {
 
   private mapRow(row: {
     id: string;
-    technologyId: string;
+    questionSetId: string;
     content: string;
     type: string;
     orderIndex: number;
@@ -79,7 +79,7 @@ export class PrismaQuestionRepository implements IQuestionRepository {
   }): Question {
     return {
       id: row.id,
-      technologyId: row.technologyId,
+      questionSetId: row.questionSetId,
       content: row.content,
       type: row.type === 'multiple_choice' ? 'multiple' : 'single',
       orderIndex: row.orderIndex,

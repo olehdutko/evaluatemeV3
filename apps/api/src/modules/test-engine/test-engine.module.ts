@@ -7,6 +7,7 @@ import { PrismaQuizSessionRepository } from '../../infrastructure/prisma/reposit
 import { PrismaAccessCodeRepository } from '../../infrastructure/prisma/repositories/prisma-access-code.repository';
 import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repositories/prisma-credit-setting.repository';
 import { PrismaUserRepository } from '../../infrastructure/prisma/repositories/prisma-user.repository';
+import { PrismaQuestionSetRepository } from '../../infrastructure/prisma/repositories/prisma-question-set.repository';
 import {
   PrismaUserResultRepository,
   PrismaCandidateResultRepository,
@@ -21,6 +22,7 @@ import { SessionsController } from './sessions.controller';
 import { AuthModule } from '../auth/auth.module';
 import {
   ITechnologyRepository,
+  IQuestionSetRepository,
   IQuestionRepository,
   IAnswerRepository,
   IQuizSessionRepository,
@@ -42,6 +44,7 @@ import {
     GetTestSessionUseCase,
     StartSessionUseCase,
     { provide: ITechnologyRepository, useClass: PrismaTechnologyRepository },
+    { provide: IQuestionSetRepository, useClass: PrismaQuestionSetRepository },
     { provide: IQuestionRepository, useClass: PrismaQuestionRepository },
     { provide: IAnswerRepository, useClass: PrismaAnswerRepository },
     { provide: IQuizSessionRepository, useClass: PrismaQuizSessionRepository },

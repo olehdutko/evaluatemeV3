@@ -4,7 +4,7 @@ export type QuizSessionStatus = 'in_progress' | 'completed' | 'abandoned';
 
 export interface QuizSession extends Entity {
   userId?: string | null;
-  technologyId: string;
+  questionSetId: string;
   accessCodeId?: string | null;
   status: QuizSessionStatus;
   startedAt: Date;

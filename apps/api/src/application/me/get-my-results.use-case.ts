@@ -21,7 +21,7 @@ export class GetMyResultsUseCase {
       orderBy: { createdAt: 'desc' },
     });
 
-    const technologyIds = [...new Set(rows.map((row) => row.technologyId))];
+    const technologyIds = [...new Set(rows.map((row) => row.technologyId).filter((id): id is string => id !== null))];
     const technologies = technologyIds.length > 0
       ? await this.prisma.technology.findMany({ where: { id: { in: technologyIds } }, select: { id: true, name: true } })
       : [];
@@ -30,7 +30,7 @@ export class GetMyResultsUseCase {
     const data: MyResultListItem[] = rows.map((row: Record<string, unknown>) => ({
       resultCode: row.resultCode as string,
       technologyId: row.technologyId as string,
-      technologyName: techById.get(row.technologyId as string) || 'Unknown',
+      technologyName: techById.get(row.technologyId as string) || (row.questionSetId as string | null ? 'Question Set' : 'Unknown'),
       score: row.score as number | null,
       maxScore: row.maxScore as number | null,
       status: row.status as string,

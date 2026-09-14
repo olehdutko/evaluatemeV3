@@ -6,8 +6,6 @@ export const technologySchema = z.object({
   name: z.string().min(1).max(100),
   slug: z.string().min(1).max(100),
   description: z.string().nullable(),
-  quizQuestionCount: z.number().int().min(1).max(100).default(20),
-  quizDurationMinutes: z.number().int().min(1).max(300).default(40),
   createdAt: z.string().datetime(),
 });
 
@@ -36,15 +34,22 @@ export const sampleQuestionSchema = z.object({
   answers: z.array(sampleAnswerSchema),
 });
 
+export const questionSetPreviewSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  questionCount: z.number().int().min(1),
+  durationMinutes: z.number().int().min(1),
+});
+
+export type QuestionSetPreview = z.infer<typeof questionSetPreviewSchema>;
+
 export const technologyPreviewSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   slug: z.string(),
   description: z.string().nullable(),
-  questionCount: z.number().int().min(1),
-  durationMinutes: z.number().int().min(1),
+  questionSets: z.array(questionSetPreviewSchema),
   price: z.number().int().min(0),
-  sampleQuestion: sampleQuestionSchema.nullable(),
 });
 
 export const technologyPreviewResponseSchema = successEnvelopeSchema(

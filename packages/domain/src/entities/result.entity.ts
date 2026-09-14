@@ -4,7 +4,8 @@ import { SessionStatus } from './status.enums';
 export interface UserResult extends Entity {
   resultCode: string;
   userId: string;
-  technologyId: string;
+  technologyId: string | null;
+  questionSetId: string | null;
   score: number | null;
   maxScore: number | null;
   status: SessionStatus;
@@ -17,6 +18,7 @@ export interface CandidateResult extends Entity {
   candidateId: string | null;
   accessCodeId: string | null;
   technologyId: string | null;
+  questionSetId: string | null;
   companyQuizId: string | null;
   score: number | null;
   maxScore: number | null;

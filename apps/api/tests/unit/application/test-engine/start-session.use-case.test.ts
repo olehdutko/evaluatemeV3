@@ -4,20 +4,32 @@ import {
   IQuestionRepository,
   IQuizSessionRepository,
   ISessionStrategy,
-  ITechnologyRepository,
+  IQuestionSetRepository,
   AccessCode,
   Question,
   QuizSession,
-  Technology,
+  QuestionSet,
 } from '@evaluateme/domain';
 
 const now = new Date();
+
+const questionSet: QuestionSet = {
+  id: '550e8400-e29b-41d4-a716-446655440001',
+  title: 'C# Basics',
+  technologyId: 'tech-1',
+  status: 'active',
+  quizQuestionCount: 20,
+  quizDurationMinutes: 40,
+  createdByUserId: 'user-1',
+  createdAt: now,
+  updatedAt: now,
+};
 
 const accessCode: AccessCode = {
   id: 'ac-1',
   code: 'CODE-123',
   companyId: 'company-1',
-  technologyId: 'tech-1',
+  questionSetId: questionSet.id,
   campaignId: null,
   quizId: null,
   sentAt: null,
@@ -37,7 +49,7 @@ const accessCode: AccessCode = {
 
 const question: Question = {
   id: 'q-1',
-  technologyId: 'tech-1',
+  questionSetId: questionSet.id,
   content: 'Q1',
   type: 'single',
   orderIndex: 0,
@@ -49,7 +61,7 @@ const question: Question = {
 const session: QuizSession = {
   id: 'session-1',
   userId: null,
-  technologyId: 'tech-1',
+  questionSetId: questionSet.id,
   accessCodeId: 'ac-1',
   status: 'in_progress',
   startedAt: now,
@@ -93,10 +105,10 @@ class FakeQuestionRepository implements IQuestionRepository {
   findById(): Promise<Question | null> {
     return Promise.resolve(null);
   }
-  findByTechnologyId(): Promise<Question[]> {
+  findByQuestionSetId(): Promise<Question[]> {
     return Promise.resolve([question]);
   }
-  findByTechnologyIdRandomized(): Promise<Question[]> {
+  findByQuestionSetIdRandomized(): Promise<Question[]> {
     return Promise.resolve([question]);
   }
   save(q: Question): Promise<Question> {
@@ -140,32 +152,18 @@ class FakeSessionStrategy implements ISessionStrategy {
   }
 }
 
-const technology: Technology = {
-  id: 'tech-1',
-  name: 'C#',
-  slug: 'csharp',
-  description: null,
-  quizQuestionCount: 20,
-  quizDurationMinutes: 40,
-  createdAt: now,
-  updatedAt: now,
-};
-
-class FakeTechnologyRepository implements ITechnologyRepository {
-  findById(id: string): Promise<Technology | null> {
-    return Promise.resolve(id === technology.id ? technology : null);
+class FakeQuestionSetRepository implements IQuestionSetRepository {
+  findById(id: string): Promise<QuestionSet | null> {
+    return Promise.resolve(id === questionSet.id ? questionSet : null);
   }
-  findAll(): Promise<Technology[]> {
+  findByTechnologyId(): Promise<QuestionSet[]> {
     return Promise.resolve([]);
   }
-  findBySlug(): Promise<Technology | null> {
+  findByTechnologyIdAndTitle(): Promise<QuestionSet | null> {
     return Promise.resolve(null);
   }
-  findByName(): Promise<Technology | null> {
-    return Promise.resolve(null);
-  }
-  save(t: Technology): Promise<Technology> {
-    return Promise.resolve(t);
+  save(qs: QuestionSet): Promise<QuestionSet> {
+    return Promise.resolve(qs);
   }
   delete(): Promise<void> {
     return Promise.resolve();
@@ -175,10 +173,10 @@ class FakeTechnologyRepository implements ITechnologyRepository {
 describe('StartSessionUseCase', () => {
   const useCase = new StartSessionUseCase(
     new FakeAccessCodeRepository(),
+    new FakeQuestionSetRepository(),
     new FakeQuestionRepository(),
     new FakeQuizSessionRepository(),
     new FakeSessionStrategy(),
-    new FakeTechnologyRepository(),
   );
 
   it('starts a session for a valid access code', async () => {

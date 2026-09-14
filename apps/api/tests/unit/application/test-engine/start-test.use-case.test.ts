@@ -1,10 +1,10 @@
 import { StartTestUseCase } from '../../../../src/application/test-engine/start-test.use-case';
 import {
-  ITechnologyRepository,
+  IQuestionSetRepository,
   IQuestionRepository,
   IQuizSessionRepository,
   IUserRepository,
-  Technology,
+  QuestionSet,
   Question,
   QuizSession,
   User,
@@ -12,20 +12,21 @@ import {
 
 const now = new Date();
 
-const tech: Technology = {
-  id: 'tech-1',
-  name: 'C#',
-  slug: 'csharp',
-  description: null,
+const questionSet: QuestionSet = {
+  id: '550e8400-e29b-41d4-a716-446655440001',
+  title: 'C# Basics',
+  technologyId: 'tech-1',
+  status: 'active',
   quizQuestionCount: 20,
   quizDurationMinutes: 40,
+  createdByUserId: 'user-1',
   createdAt: now,
   updatedAt: now,
 };
 
 const question: Question = {
   id: 'q-1',
-  technologyId: 'tech-1',
+  questionSetId: questionSet.id,
   content: 'What is 2+2?',
   type: 'single',
   orderIndex: 0,
@@ -37,7 +38,7 @@ const question: Question = {
 const session: QuizSession = {
   id: 'session-1',
   userId: 'user-1',
-  technologyId: 'tech-1',
+  questionSetId: questionSet.id,
   status: 'in_progress',
   startedAt: new Date(),
   currentQuestionIndex: 0,
@@ -66,21 +67,18 @@ const user: User = {
   updatedAt: now,
 };
 
-class FakeTechnologyRepository implements ITechnologyRepository {
-  async findById(): Promise<Technology | null> {
-    return null;
+class FakeQuestionSetRepository implements IQuestionSetRepository {
+  async findById(id: string): Promise<QuestionSet | null> {
+    return id === questionSet.id ? questionSet : null;
   }
-  async findAll(): Promise<Technology[]> {
+  async findByTechnologyId(): Promise<QuestionSet[]> {
     return [];
   }
-  async findBySlug(slug: string): Promise<Technology | null> {
-    return slug === tech.slug ? tech : null;
-  }
-  async findByName(): Promise<Technology | null> {
+  async findByTechnologyIdAndTitle(): Promise<QuestionSet | null> {
     return null;
   }
-  async save(t: Technology): Promise<Technology> {
-    return t;
+  async save(qs: QuestionSet): Promise<QuestionSet> {
+    return qs;
   }
   async delete(): Promise<void> {
     // no-op
@@ -94,10 +92,10 @@ class FakeQuestionRepository implements IQuestionRepository {
   async findById(): Promise<Question | null> {
     return null;
   }
-  async findByTechnologyId(): Promise<Question[]> {
+  async findByQuestionSetId(): Promise<Question[]> {
     return [question];
   }
-  async findByTechnologyIdRandomized(): Promise<Question[]> {
+  async findByQuestionSetIdRandomized(): Promise<Question[]> {
     return [question];
   }
   async save(q: Question): Promise<Question> {
@@ -152,20 +150,20 @@ class FakeUserRepository implements IUserRepository {
 
 describe('StartTestUseCase', () => {
   const useCase = new StartTestUseCase(
-    new FakeTechnologyRepository(),
+    new FakeQuestionSetRepository(),
     new FakeQuestionRepository(),
     new FakeQuizSessionRepository(),
     new FakeUserRepository(),
   );
 
-  it('creates a test session for an existing technology', async () => {
-    const result = await useCase.execute('user-1', 'csharp');
+  it('creates a test session for an existing question set', async () => {
+    const result = await useCase.execute('user-1', questionSet.id);
     expect(result.data.sessionId).toBe('session-1');
-    expect(result.data.technology.slug).toBe('csharp');
+    expect(result.data.questionSet.id).toBe(questionSet.id);
     expect(result.data.questions).toHaveLength(1);
   });
 
-  it('throws for unknown technology', async () => {
+  it('throws for unknown question set', async () => {
     await expect(useCase.execute('user-1', 'unknown')).rejects.toThrow('not found');
   });
 
@@ -178,11 +176,11 @@ describe('StartTestUseCase', () => {
       return { ...existing, role: 'admin' };
     };
     const adminUseCase = new StartTestUseCase(
-      new FakeTechnologyRepository(),
+      new FakeQuestionSetRepository(),
       new FakeQuestionRepository(),
       new FakeQuizSessionRepository(),
       adminRepository,
     );
-    await expect(adminUseCase.execute('user-1', 'csharp')).rejects.toThrow('Admin users cannot take tests');
+    await expect(adminUseCase.execute('user-1', questionSet.id)).rejects.toThrow('Admin users cannot take tests');
   });
 });

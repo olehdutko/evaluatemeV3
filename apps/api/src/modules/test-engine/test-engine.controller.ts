@@ -40,10 +40,10 @@ export class TestEngineController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   async start(
-    @Body(new ZodValidationPipe(startTestRequestSchema)) body: { technologySlug: string },
+    @Body(new ZodValidationPipe(startTestRequestSchema)) body: { questionSetId: string },
     @Req() request: RequestWithUser,
   ) {
-    return this.startTestUseCase.execute(request.user.sub, body.technologySlug);
+    return this.startTestUseCase.execute(request.user.sub, body.questionSetId);
   }
 
   @Get(':sessionId')

@@ -9,6 +9,7 @@ import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repos
 import { PrismaHealthRepository } from '../../infrastructure/prisma/repositories/prisma-health.repository';
 import { PrismaTechnologyRepository } from '../../infrastructure/prisma/repositories/prisma-technology.repository';
 import { PrismaUserRepository } from '../../infrastructure/prisma/repositories/prisma-user.repository';
+import { PrismaQuestionSetRepository } from '../../infrastructure/prisma/repositories/prisma-question-set.repository';
 import { PrismaQuestionRepository } from '../../infrastructure/prisma/repositories/prisma-question.repository';
 import { PrismaQuizSessionRepository } from '../../infrastructure/prisma/repositories/prisma-quiz-session.repository';
 import {
@@ -16,6 +17,7 @@ import {
   IHealthRepository,
   ITechnologyRepository,
   IUserRepository,
+  IQuestionSetRepository,
   IQuestionRepository,
   IQuizSessionRepository,
 } from '@evaluateme/domain';
@@ -31,6 +33,7 @@ import {
     { provide: IHealthRepository, useClass: PrismaHealthRepository },
     { provide: ITechnologyRepository, useClass: PrismaTechnologyRepository },
     { provide: IUserRepository, useClass: PrismaUserRepository },
+    { provide: IQuestionSetRepository, useClass: PrismaQuestionSetRepository },
     { provide: IQuestionRepository, useClass: PrismaQuestionRepository },
     { provide: IQuizSessionRepository, useClass: PrismaQuizSessionRepository },
   ],

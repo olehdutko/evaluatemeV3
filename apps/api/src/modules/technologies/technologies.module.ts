@@ -9,8 +9,10 @@ import { PrismaTechnologyRepository } from '../../infrastructure/prisma/reposito
 import { PrismaQuestionRepository } from '../../infrastructure/prisma/repositories/prisma-question.repository';
 import { PrismaAnswerRepository } from '../../infrastructure/prisma/repositories/prisma-answer.repository';
 import { PrismaCreditSettingRepository } from '../../infrastructure/prisma/repositories/prisma-credit-setting.repository';
+import { PrismaQuestionSetRepository } from '../../infrastructure/prisma/repositories/prisma-question-set.repository';
 import {
   ITechnologyRepository,
+  IQuestionSetRepository,
   IQuestionRepository,
   IAnswerRepository,
   ICreditSettingRepository,
@@ -27,6 +29,10 @@ import {
     {
       provide: ITechnologyRepository,
       useClass: PrismaTechnologyRepository,
+    },
+    {
+      provide: IQuestionSetRepository,
+      useClass: PrismaQuestionSetRepository,
     },
     {
       provide: IQuestionRepository,

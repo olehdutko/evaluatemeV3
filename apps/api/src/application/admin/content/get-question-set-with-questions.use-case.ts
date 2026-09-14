@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ITechnologyRepository, IQuestionRepository, IAnswerRepository } from '@evaluateme/domain';
+import { IQuestionSetRepository, IQuestionRepository, IAnswerRepository } from '@evaluateme/domain';
 import { NotFoundError } from '../../../infrastructure/errors/app-error';
 
 @Injectable()
-export class GetTechnologyWithQuestionsUseCase {
+export class GetQuestionSetWithQuestionsUseCase {
   constructor(
-    @Inject(ITechnologyRepository) private readonly technologyRepository: ITechnologyRepository,
+    @Inject(IQuestionSetRepository) private readonly questionSetRepository: IQuestionSetRepository,
     @Inject(IQuestionRepository) private readonly questionRepository: IQuestionRepository,
     @Inject(IAnswerRepository) private readonly answerRepository: IAnswerRepository,
   ) {}
@@ -14,9 +14,9 @@ export class GetTechnologyWithQuestionsUseCase {
     success: true;
     data: {
       id: string;
-      name: string;
-      slug: string;
-      description: string | null;
+      title: string;
+      technologyId: string;
+      status: 'active' | 'suspended';
       quizQuestionCount: number;
       quizDurationMinutes: number;
       questions: Array<{
@@ -29,12 +29,12 @@ export class GetTechnologyWithQuestionsUseCase {
       }>;
     };
   }> {
-    const technology = await this.technologyRepository.findById(id);
-    if (!technology) {
-      throw new NotFoundError('Technology', id);
+    const questionSet = await this.questionSetRepository.findById(id);
+    if (!questionSet) {
+      throw new NotFoundError('QuestionSet', id);
     }
 
-    const questions = await this.questionRepository.findByTechnologyId(id);
+    const questions = await this.questionRepository.findByQuestionSetId(id);
     const answers = await this.answerRepository.findByQuestionIds(questions.map((q) => q.id));
     const questionsWithAnswers = questions.map((question) => ({
       id: question.id,
@@ -51,12 +51,12 @@ export class GetTechnologyWithQuestionsUseCase {
     return {
       success: true,
       data: {
-        id: technology.id,
-        name: technology.name,
-        slug: technology.slug,
-        description: technology.description,
-        quizQuestionCount: technology.quizQuestionCount,
-        quizDurationMinutes: technology.quizDurationMinutes,
+        id: questionSet.id,
+        title: questionSet.title,
+        technologyId: questionSet.technologyId,
+        status: questionSet.status,
+        quizQuestionCount: questionSet.quizQuestionCount,
+        quizDurationMinutes: questionSet.quizDurationMinutes,
         questions: questionsWithAnswers,
       },
     };

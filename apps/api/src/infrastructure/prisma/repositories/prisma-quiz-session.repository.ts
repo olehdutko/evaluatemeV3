@@ -10,7 +10,7 @@ export class PrismaQuizSessionRepository implements IQuizSessionRepository {
     const row = await this.prisma.quizSession.create({
       data: {
         userId: session.userId ?? null,
-        technologyId: session.technologyId,
+        questionSetId: session.questionSetId,
         accessCodeId: session.accessCodeId ?? null,
         status: session.status,
         startedAt: session.startedAt,
@@ -71,7 +71,7 @@ export class PrismaQuizSessionRepository implements IQuizSessionRepository {
   private mapSession(row: {
     id: string;
     userId: string | null;
-    technologyId: string;
+    questionSetId: string;
     accessCodeId: string | null;
     status: string;
     startedAt: Date;
@@ -85,7 +85,7 @@ export class PrismaQuizSessionRepository implements IQuizSessionRepository {
     return {
       id: row.id,
       userId: row.userId ?? undefined,
-      technologyId: row.technologyId,
+      questionSetId: row.questionSetId,
       accessCodeId: row.accessCodeId ?? undefined,
       status: row.status as QuizSessionStatus,
       startedAt: row.startedAt,
