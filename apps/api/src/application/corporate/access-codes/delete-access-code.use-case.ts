@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IAccessCodeRepository, ICampaignRepository, ICompanyProfileRepository } from '@evaluateme/domain';
+import { IAccessCodeRepository, ICampaignRepository, CampaignHistory } from '@evaluateme/domain';
 import { NotFoundError, ForbiddenError } from '../../../infrastructure/errors/app-error';
+import { randomUUID } from 'crypto';
 
 export interface DeleteAccessCodeInput {
   userId: string;
@@ -13,7 +14,6 @@ export class DeleteAccessCodeUseCase {
   constructor(
     @Inject(IAccessCodeRepository) private readonly accessCodeRepository: IAccessCodeRepository,
     @Inject(ICampaignRepository) private readonly campaignRepository: ICampaignRepository,
-    @Inject(ICompanyProfileRepository) private readonly companyProfileRepository: ICompanyProfileRepository,
   ) {}
 
   async execute(input: DeleteAccessCodeInput): Promise<{ success: true }> {
@@ -26,19 +26,30 @@ export class DeleteAccessCodeUseCase {
       throw new ForbiddenError('Access code does not belong to your company.');
     }
 
-    const campaign = accessCode.campaignId
-      ? await this.campaignRepository.findById(accessCode.campaignId)
-      : null;
-    if (campaign && campaign.companyId !== input.companyId) {
-      throw new ForbiddenError('Access code does not belong to your company.');
-    }
-
-    const profile = await this.companyProfileRepository.findByUserId(input.userId);
-    if (!profile || profile.id !== input.companyId) {
-      throw new ForbiddenError('You are not authorized to delete this access code.');
+    if (accessCode.campaignId) {
+      const campaign = await this.campaignRepository.findById(accessCode.campaignId);
+      if (campaign && campaign.companyId !== input.companyId) {
+        throw new ForbiddenError('Access code does not belong to your company.');
+      }
     }
 
     await this.accessCodeRepository.delete(input.accessCodeId);
+
+    if (accessCode.campaignId) {
+      const history: CampaignHistory = {
+        id: randomUUID(),
+        campaignId: accessCode.campaignId,
+        action: 'access_code_deleted',
+        status: null,
+        changedByUserId: input.userId,
+        metadata: JSON.stringify({ accessCodeId: accessCode.id, code: accessCode.code }),
+        changedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      await this.campaignRepository.saveHistory(history);
+    }
+
     return { success: true };
   }
 }
