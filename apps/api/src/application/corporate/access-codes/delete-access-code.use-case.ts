@@ -42,7 +42,12 @@ export class DeleteAccessCodeUseCase {
         action: 'access_code_deleted',
         status: null,
         changedByUserId: input.userId,
-        metadata: JSON.stringify({ accessCodeId: accessCode.id, code: accessCode.code }),
+        metadata: JSON.stringify({
+          accessCodeId: accessCode.id,
+          code: accessCode.code,
+          testeeEmail: accessCode.testeeEmail,
+          testeeName: accessCode.testeeName,
+        }),
         changedAt: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),

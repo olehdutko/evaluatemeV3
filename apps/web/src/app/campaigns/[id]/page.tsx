@@ -195,11 +195,15 @@ export default function CampaignDetailPage() {
                     const previousStatus = metadata.previousStatus ? String(metadata.previousStatus) : null;
                     const recipientEmail = metadata.recipientEmail ? String(metadata.recipientEmail) : null;
                     const testeeEmail = metadata.testeeEmail ? String(metadata.testeeEmail) : null;
+                    const testeeName = metadata.testeeName ? String(metadata.testeeName) : null;
+                    const code = metadata.code ? String(metadata.code) : null;
                     const details: string[] = [];
                     if (entry.status) details.push(`Status: ${entry.status}`);
                     if (previousStatus) details.push(`From: ${previousStatus}`);
                     if (recipientEmail) details.push(`Sent to: ${recipientEmail}`);
                     if (testeeEmail) details.push(`For: ${testeeEmail}`);
+                    if (testeeName) details.push(`Testee: ${testeeName}`);
+                    if (code) details.push(`Code: ${code}`);
                     return (
                       <tr key={entry.id}>
                         <td className="px-4 py-2 font-medium capitalize text-text-primary">{entry.action.replace(/_/g, ' ')}</td>
