@@ -113,6 +113,11 @@ export default function TechnologyDetailPage(): JSX.Element {
             <h2 className="font-display text-xl sm:text-2xl font-bold text-text-primary">
               Available question sets
             </h2>
+            {selectedQuestionSet && (
+              <p className="mt-2 text-sm text-text-secondary font-body">
+                <strong>{selectedQuestionSet.actualQuestionCount.toLocaleString()}</strong> questions available in this set.
+              </p>
+            )}
             {selectedQuestionSet?.description && (
               <p className="mt-3 text-text-secondary font-body">
                 {selectedQuestionSet.description}
@@ -143,6 +148,9 @@ export default function TechnologyDetailPage(): JSX.Element {
                           <p className="font-mono text-xs text-text-secondary">
                             {questionSet.questionCount} questions / {questionSet.durationMinutes} min
                           </p>
+                          <p className="font-mono text-[10px] text-text-muted">
+                            {questionSet.actualQuestionCount.toLocaleString()} available
+                          </p>
                         </div>
                       </div>
                     </button>
@@ -161,6 +169,9 @@ export default function TechnologyDetailPage(): JSX.Element {
                 <p className="label-mono">Questions</p>
                 <p className="font-display text-2xl font-bold text-text-primary">
                   {selectedQuestionSet?.questionCount ?? 0}
+                </p>
+                <p className="text-xs text-text-muted mt-1">
+                  {selectedQuestionSet?.actualQuestionCount.toLocaleString() ?? 0} available
                 </p>
               </div>
               <div className="p-4 bg-bg-secondary rounded">
