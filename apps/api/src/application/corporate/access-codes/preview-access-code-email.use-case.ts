@@ -62,10 +62,10 @@ export class PreviewAccessCodeEmailUseCase {
     const frontendOrigin = process.env.WEB_ORIGIN || 'http://localhost:4000';
     const testLink = `${frontendOrigin}/tests/start?accessCode=${encodeURIComponent(code.code)}`;
 
-    const subject = this.applyTemplate(template.subject, { candidateName, testName, testLink, accessCode: code.code });
-    const html = this.applyTemplate(template.bodyHtml, { candidateName, testName, testLink, accessCode: code.code });
+    const subject = this.applyTemplate(template.subject, { candidateName, testName, testLink, accessCode: code.code }, false);
+    const html = this.applyTemplate(template.bodyHtml, { candidateName, testName, testLink, accessCode: code.code }, true);
     const text = template.bodyText
-      ? this.applyTemplate(template.bodyText, { candidateName, testName, testLink, accessCode: code.code })
+      ? this.applyTemplate(template.bodyText, { candidateName, testName, testLink, accessCode: code.code }, false)
       : undefined;
 
     return {
@@ -77,12 +77,17 @@ export class PreviewAccessCodeEmailUseCase {
   private applyTemplate(
     template: string,
     values: { candidateName: string; testName: string; testLink: string; accessCode: string },
+    convertNewlinesToHtml: boolean,
   ): string {
-    return template
+    let result = template
       .replace(/{{candidateName}}/g, values.candidateName)
       .replace(/{{testName}}/g, values.testName)
       .replace(/{{testLink}}/g, values.testLink)
       .replace(/{{accessCode}}/g, values.accessCode);
+    if (convertNewlinesToHtml) {
+      result = result.replace(/\n/g, '<br>');
+    }
+    return result;
   }
 
 }
