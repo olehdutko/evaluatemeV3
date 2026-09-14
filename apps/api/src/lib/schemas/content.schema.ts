@@ -60,18 +60,18 @@ export const questionSetValueSchema = z.object({
 
 export const createQuestionSetRequestSchema = z.object({
   technologyId: z.string().uuid(),
-  title: z.string().min(1).max(100),
+  name: z.string().min(1).max(100),
   description: z.string().max(5000).nullable().optional(),
-  quizQuestionCount: z.number().int().min(1).max(1000).optional(),
-  quizDurationMinutes: z.number().int().min(1).max(300).optional(),
+  questionCount: z.number().int().min(1).max(1000).optional(),
+  durationMinutes: z.number().int().min(1).max(300).optional(),
 });
 
 export const updateQuestionSetRequestSchema = z.object({
-  title: z.string().min(1).max(100).optional(),
+  name: z.string().min(1).max(100).optional(),
   status: z.enum(['active', 'suspended']).optional(),
   description: z.string().max(5000).nullable().optional(),
-  quizQuestionCount: z.number().int().min(1).max(1000).optional(),
-  quizDurationMinutes: z.number().int().min(1).max(300).optional(),
+  questionCount: z.number().int().min(1).max(1000).optional(),
+  durationMinutes: z.number().int().min(1).max(300).optional(),
 });
 
 export const questionSetWithQuestionsSchema = z.object({

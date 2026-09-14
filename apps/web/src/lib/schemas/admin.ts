@@ -32,11 +32,16 @@ export const createQuestionSetRequestSchema = z.object({
   technologyId: z.string().uuid(),
   name: z.string().min(1).max(100),
   description: z.string().max(5000).nullable().optional().or(z.literal('')),
+  questionCount: z.number().int().min(1).max(1000).optional(),
+  durationMinutes: z.number().int().min(1).max(300).optional(),
 });
 
 export const updateQuestionSetRequestSchema = z.object({
-  name: z.string().min(1).max(100),
+  name: z.string().min(1).max(100).optional(),
+  status: z.enum(['active', 'suspended']).optional(),
   description: z.string().max(5000).nullable().optional().or(z.literal('')),
+  questionCount: z.number().int().min(1).max(1000).optional(),
+  durationMinutes: z.number().int().min(1).max(300).optional(),
 });
 
 export const answerInputSchema = z.object({

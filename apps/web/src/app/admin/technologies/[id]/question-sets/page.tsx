@@ -17,6 +17,8 @@ interface QuestionSet {
   name: string;
   description: string | null;
   questionCount: number;
+  durationMinutes: number;
+  status: 'active' | 'suspended';
   updatedAt: string;
 }
 
@@ -31,6 +33,8 @@ export default function AdminTechnologyQuestionSetsPage(): JSX.Element {
   const [editing, setEditing] = useState<QuestionSet | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [questionCount, setQuestionCount] = useState(20);
+  const [durationMinutes, setDurationMinutes] = useState(40);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -56,6 +60,8 @@ export default function AdminTechnologyQuestionSetsPage(): JSX.Element {
     setEditing(null);
     setName('');
     setDescription('');
+    setQuestionCount(20);
+    setDurationMinutes(40);
     setFormError(null);
   }
 
@@ -63,6 +69,8 @@ export default function AdminTechnologyQuestionSetsPage(): JSX.Element {
     setEditing(qs);
     setName(qs.name);
     setDescription(qs.description ?? '');
+    setQuestionCount(qs.questionCount);
+    setDurationMinutes(qs.durationMinutes);
     setFormError(null);
   }
 
@@ -75,8 +83,8 @@ export default function AdminTechnologyQuestionSetsPage(): JSX.Element {
     const descriptionValue = description.trim() || null;
 
     const promise = editing
-      ? updateQuestionSet(editing.id, { name, description: descriptionValue })
-      : createQuestionSet({ technologyId, name, description: descriptionValue });
+      ? updateQuestionSet(editing.id, { name, description: descriptionValue, questionCount, durationMinutes })
+      : createQuestionSet({ technologyId, name, description: descriptionValue, questionCount, durationMinutes });
 
     promise
       .then((response) => {
@@ -137,8 +145,11 @@ export default function AdminTechnologyQuestionSetsPage(): JSX.Element {
                   <div className="min-w-0">
                     <p className="font-display font-bold text-text-primary truncate">{qs.name}</p>
                     <p className="text-text-secondary font-mono text-xs">
-                      {qs.questionCount} question{qs.questionCount !== 1 ? 's' : ''}
+                      {qs.questionCount} question{qs.questionCount !== 1 ? 's' : ''} · {qs.durationMinutes} min · {qs.status}
                     </p>
+                    {qs.description && (
+                      <p className="text-text-muted font-body text-xs mt-1 line-clamp-2">{qs.description}</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
@@ -195,6 +206,32 @@ export default function AdminTechnologyQuestionSetsPage(): JSX.Element {
                 className="input-field"
               />
             </label>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <label className="block">
+                <span className="label-mono">Question count</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={1000}
+                  value={questionCount}
+                  onChange={(e) => setQuestionCount(parseInt(e.target.value, 10) || 0)}
+                  required
+                  className="input-field"
+                />
+              </label>
+              <label className="block">
+                <span className="label-mono">Duration (minutes)</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={300}
+                  value={durationMinutes}
+                  onChange={(e) => setDurationMinutes(parseInt(e.target.value, 10) || 0)}
+                  required
+                  className="input-field"
+                />
+              </label>
+            </div>
             <div className="flex items-center gap-3">
               <button type="submit" disabled={saving} className="btn-primary disabled:opacity-50">
                 {saving ? 'Saving…' : editing ? 'Update Question Set' : 'Create Question Set'}

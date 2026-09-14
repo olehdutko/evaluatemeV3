@@ -14,11 +14,12 @@ export class GetQuestionSetWithQuestionsUseCase {
     success: true;
     data: {
       id: string;
-      title: string;
+      name: string;
+      description: string | null;
       technologyId: string;
       status: 'active' | 'suspended';
-      quizQuestionCount: number;
-      quizDurationMinutes: number;
+      questionCount: number;
+      durationMinutes: number;
       questions: Array<{
         id: string;
         content: string;
@@ -52,11 +53,12 @@ export class GetQuestionSetWithQuestionsUseCase {
       success: true,
       data: {
         id: questionSet.id,
-        title: questionSet.title,
+        name: questionSet.title,
+        description: questionSet.description,
         technologyId: questionSet.technologyId,
         status: questionSet.status,
-        quizQuestionCount: questionSet.quizQuestionCount,
-        quizDurationMinutes: questionSet.quizDurationMinutes,
+        questionCount: questionSet.quizQuestionCount,
+        durationMinutes: questionSet.quizDurationMinutes,
         questions: questionsWithAnswers,
       },
     };

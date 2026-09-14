@@ -190,6 +190,8 @@ export const questionSetsSchema = z.object({
       name: z.string(),
       description: z.string().nullable(),
       questionCount: z.number().int(),
+      durationMinutes: z.number().int(),
+      status: z.enum(['active', 'suspended']),
       updatedAt: z.string().datetime(),
     }),
   ),
@@ -203,6 +205,8 @@ export const questionSetValueSchema = z.object({
     name: z.string(),
     description: z.string().nullable(),
     questionCount: z.number().int(),
+    durationMinutes: z.number().int(),
+    status: z.enum(['active', 'suspended']),
     updatedAt: z.string().datetime(),
   }),
 });
@@ -213,6 +217,10 @@ export const questionSetWithQuestionsSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
     description: z.string().nullable(),
+    technologyId: z.string().uuid(),
+    status: z.enum(['active', 'suspended']),
+    questionCount: z.number().int(),
+    durationMinutes: z.number().int(),
     questions: z.array(
       z.object({
         id: z.string().uuid(),

@@ -9,11 +9,12 @@ export class ListQuestionSetsUseCase {
     success: true;
     data: Array<{
       id: string;
-      title: string;
+      name: string;
+      description: string | null;
       technologyId: string;
       status: 'active' | 'suspended';
-      quizQuestionCount: number;
-      quizDurationMinutes: number;
+      questionCount: number;
+      durationMinutes: number;
       updatedAt: string;
     }>;
   }> {
@@ -22,11 +23,12 @@ export class ListQuestionSetsUseCase {
       success: true,
       data: rows.map((row) => ({
         id: row.id,
-        title: row.title,
+        name: row.title,
+        description: row.description,
         technologyId: row.technologyId,
         status: row.status,
-        quizQuestionCount: row.quizQuestionCount,
-        quizDurationMinutes: row.quizDurationMinutes,
+        questionCount: row.quizQuestionCount,
+        durationMinutes: row.quizDurationMinutes,
         updatedAt: row.updatedAt.toISOString(),
       })),
     };

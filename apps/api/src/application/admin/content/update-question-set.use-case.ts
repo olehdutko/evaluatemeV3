@@ -4,11 +4,11 @@ import { BadRequestError, NotFoundError } from '../../../infrastructure/errors/a
 
 export interface UpdateQuestionSetInput {
   id: string;
-  title?: string;
+  name?: string;
   status?: 'active' | 'suspended';
   description?: string | null;
-  quizQuestionCount?: number;
-  quizDurationMinutes?: number;
+  questionCount?: number;
+  durationMinutes?: number;
 }
 
 @Injectable()
@@ -19,11 +19,12 @@ export class UpdateQuestionSetUseCase {
     success: true;
     data: {
       id: string;
-      title: string;
+      name: string;
+      description: string | null;
       technologyId: string;
       status: 'active' | 'suspended';
-      quizQuestionCount: number;
-      quizDurationMinutes: number;
+      questionCount: number;
+      durationMinutes: number;
       updatedAt: string;
     };
   }> {
@@ -32,29 +33,29 @@ export class UpdateQuestionSetUseCase {
       throw new NotFoundError('QuestionSet', input.id);
     }
 
-    const title = input.title !== undefined ? input.title.trim() : existing.title;
+    const name = input.name !== undefined ? input.name.trim() : existing.title;
     const status = input.status ?? existing.status;
     const description = input.description !== undefined ? input.description : existing.description;
-    const quizQuestionCount = input.quizQuestionCount ?? existing.quizQuestionCount;
-    const quizDurationMinutes = input.quizDurationMinutes ?? existing.quizDurationMinutes;
+    const questionCount = input.questionCount ?? existing.quizQuestionCount;
+    const durationMinutes = input.durationMinutes ?? existing.quizDurationMinutes;
 
-    if (!title) {
-      throw new BadRequestError({ title: ['Title is required'] });
+    if (!name) {
+      throw new BadRequestError({ name: ['Name is required'] });
     }
-    if (quizQuestionCount <= 0) {
-      throw new BadRequestError({ quizQuestionCount: ['Question count must be positive'] });
+    if (questionCount <= 0) {
+      throw new BadRequestError({ questionCount: ['Question count must be positive'] });
     }
-    if (quizDurationMinutes <= 0) {
-      throw new BadRequestError({ quizDurationMinutes: ['Duration must be positive'] });
+    if (durationMinutes <= 0) {
+      throw new BadRequestError({ durationMinutes: ['Duration must be positive'] });
     }
 
     const saved = await this.questionSetRepository.save({
       ...existing,
-      title,
+      title: name,
       status,
       description,
-      quizQuestionCount,
-      quizDurationMinutes,
+      quizQuestionCount: questionCount,
+      quizDurationMinutes: durationMinutes,
       updatedAt: new Date(),
     } as QuestionSet);
 
@@ -62,11 +63,12 @@ export class UpdateQuestionSetUseCase {
       success: true,
       data: {
         id: saved.id,
-        title: saved.title,
+        name: saved.title,
+        description: saved.description,
         technologyId: saved.technologyId,
         status: saved.status,
-        quizQuestionCount: saved.quizQuestionCount,
-        quizDurationMinutes: saved.quizDurationMinutes,
+        questionCount: saved.quizQuestionCount,
+        durationMinutes: saved.quizDurationMinutes,
         updatedAt: saved.updatedAt.toISOString(),
       },
     };

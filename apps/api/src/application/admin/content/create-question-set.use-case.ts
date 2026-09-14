@@ -5,10 +5,10 @@ import { BadRequestError, ConflictError } from '../../../infrastructure/errors/a
 
 export interface CreateQuestionSetInput {
   technologyId: string;
-  title: string;
+  name: string;
   description?: string | null;
-  quizQuestionCount?: number;
-  quizDurationMinutes?: number;
+  questionCount?: number;
+  durationMinutes?: number;
   createdByUserId: string;
 }
 
@@ -20,46 +20,47 @@ export class CreateQuestionSetUseCase {
     success: true;
     data: {
       id: string;
-      title: string;
+      name: string;
+      description: string | null;
       technologyId: string;
       status: 'active' | 'suspended';
-      quizQuestionCount: number;
-      quizDurationMinutes: number;
+      questionCount: number;
+      durationMinutes: number;
       updatedAt: string;
     };
   }> {
-    const title = input.title.trim();
+    const name = input.name.trim();
     const technologyId = input.technologyId.trim();
-    const quizQuestionCount = input.quizQuestionCount ?? 20;
-    const quizDurationMinutes = input.quizDurationMinutes ?? 40;
+    const questionCount = input.questionCount ?? 20;
+    const durationMinutes = input.durationMinutes ?? 40;
 
-    if (!title) {
-      throw new BadRequestError({ title: ['Title is required'] });
+    if (!name) {
+      throw new BadRequestError({ name: ['Name is required'] });
     }
     if (!technologyId) {
       throw new BadRequestError({ technologyId: ['Technology id is required'] });
     }
-    if (quizQuestionCount <= 0) {
-      throw new BadRequestError({ quizQuestionCount: ['Question count must be positive'] });
+    if (questionCount <= 0) {
+      throw new BadRequestError({ questionCount: ['Question count must be positive'] });
     }
-    if (quizDurationMinutes <= 0) {
-      throw new BadRequestError({ quizDurationMinutes: ['Duration must be positive'] });
+    if (durationMinutes <= 0) {
+      throw new BadRequestError({ durationMinutes: ['Duration must be positive'] });
     }
 
-    const existing = await this.questionSetRepository.findByTechnologyIdAndTitle(technologyId, title);
+    const existing = await this.questionSetRepository.findByTechnologyIdAndTitle(technologyId, name);
     if (existing) {
-      throw new ConflictError('A question set with this title already exists for this technology.');
+      throw new ConflictError('A question set with this name already exists for this technology.');
     }
 
     const now = new Date();
     const saved = await this.questionSetRepository.save({
       id: randomUUID(),
-      title,
+      title: name,
       technologyId,
       status: 'active',
       description: input.description ?? null,
-      quizQuestionCount,
-      quizDurationMinutes,
+      quizQuestionCount: questionCount,
+      quizDurationMinutes: durationMinutes,
       createdByUserId: input.createdByUserId,
       createdAt: now,
       updatedAt: now,
@@ -69,11 +70,12 @@ export class CreateQuestionSetUseCase {
       success: true,
       data: {
         id: saved.id,
-        title: saved.title,
+        name: saved.title,
+        description: saved.description,
         technologyId: saved.technologyId,
         status: saved.status,
-        quizQuestionCount: saved.quizQuestionCount,
-        quizDurationMinutes: saved.quizDurationMinutes,
+        questionCount: saved.quizQuestionCount,
+        durationMinutes: saved.quizDurationMinutes,
         updatedAt: saved.updatedAt.toISOString(),
       },
     };

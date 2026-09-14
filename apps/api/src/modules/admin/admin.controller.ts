@@ -253,9 +253,10 @@ export class AdminController {
   async createQuestionSet(
     @Body(new ZodValidationPipe(createQuestionSetRequestSchema)) body: {
       technologyId: string;
-      title: string;
-      quizQuestionCount?: number;
-      quizDurationMinutes?: number;
+      name: string;
+      description?: string | null;
+      questionCount?: number;
+      durationMinutes?: number;
     },
     @Req() request: RequestWithUser,
   ): Promise<ReturnType<CreateQuestionSetUseCase['execute']>> {
@@ -266,10 +267,11 @@ export class AdminController {
   async updateQuestionSet(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateQuestionSetRequestSchema)) body: {
-      title?: string;
+      name?: string;
       status?: 'active' | 'suspended';
-      quizQuestionCount?: number;
-      quizDurationMinutes?: number;
+      description?: string | null;
+      questionCount?: number;
+      durationMinutes?: number;
     },
   ): Promise<ReturnType<UpdateQuestionSetUseCase['execute']>> {
     return this.updateQuestionSetUseCase.execute({ id, ...body });
