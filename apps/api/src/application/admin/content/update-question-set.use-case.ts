@@ -6,6 +6,7 @@ export interface UpdateQuestionSetInput {
   id: string;
   title?: string;
   status?: 'active' | 'suspended';
+  description?: string | null;
   quizQuestionCount?: number;
   quizDurationMinutes?: number;
 }
@@ -33,6 +34,7 @@ export class UpdateQuestionSetUseCase {
 
     const title = input.title !== undefined ? input.title.trim() : existing.title;
     const status = input.status ?? existing.status;
+    const description = input.description !== undefined ? input.description : existing.description;
     const quizQuestionCount = input.quizQuestionCount ?? existing.quizQuestionCount;
     const quizDurationMinutes = input.quizDurationMinutes ?? existing.quizDurationMinutes;
 
@@ -50,6 +52,7 @@ export class UpdateQuestionSetUseCase {
       ...existing,
       title,
       status,
+      description,
       quizQuestionCount,
       quizDurationMinutes,
       updatedAt: new Date(),

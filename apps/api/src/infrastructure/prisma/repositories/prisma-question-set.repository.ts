@@ -34,6 +34,7 @@ export class PrismaQuestionSetRepository implements IQuestionSetRepository {
         title: questionSet.title,
         technologyId: questionSet.technologyId,
         status: questionSet.status,
+        description: questionSet.description,
         quizQuestionCount: questionSet.quizQuestionCount,
         quizDurationMinutes: questionSet.quizDurationMinutes,
         createdByUserId: questionSet.createdByUserId,
@@ -42,6 +43,7 @@ export class PrismaQuestionSetRepository implements IQuestionSetRepository {
         title: questionSet.title,
         technologyId: questionSet.technologyId,
         status: questionSet.status,
+        description: questionSet.description,
         quizQuestionCount: questionSet.quizQuestionCount,
         quizDurationMinutes: questionSet.quizDurationMinutes,
         createdByUserId: questionSet.createdByUserId,
@@ -59,6 +61,7 @@ export class PrismaQuestionSetRepository implements IQuestionSetRepository {
     title: string;
     technologyId: string;
     status: string;
+    description: string | null;
     quizQuestionCount: number;
     quizDurationMinutes: number;
     createdByUserId: string;
@@ -70,6 +73,7 @@ export class PrismaQuestionSetRepository implements IQuestionSetRepository {
       title: row.title,
       technologyId: row.technologyId,
       status: row.status === 'active' ? 'active' : 'suspended',
+      description: row.description,
       quizQuestionCount: row.quizQuestionCount,
       quizDurationMinutes: row.quizDurationMinutes,
       createdByUserId: row.createdByUserId,

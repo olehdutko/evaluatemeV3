@@ -19,6 +19,7 @@ export interface TechnologyPreviewResult {
   questionSets: Array<{
     id: string;
     title: string;
+    description: string | null;
     questionCount: number;
     actualQuestionCount: number;
     durationMinutes: number;
@@ -52,6 +53,7 @@ export class GetTechnologyPreviewUseCase {
         return {
           id: qs.id,
           title: qs.title,
+          description: qs.description,
           questionCount: qs.quizQuestionCount,
           actualQuestionCount,
           durationMinutes: qs.quizDurationMinutes,

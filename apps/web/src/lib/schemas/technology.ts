@@ -37,6 +37,7 @@ export const sampleQuestionSchema = z.object({
 export const questionSetPreviewSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
+  description: z.string().nullable(),
   questionCount: z.number().int().min(1),
   actualQuestionCount: z.number().int().min(0),
   durationMinutes: z.number().int().min(1),

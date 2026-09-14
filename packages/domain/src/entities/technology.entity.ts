@@ -10,6 +10,7 @@ export interface QuestionSet extends Entity {
   title: string;
   technologyId: string;
   status: 'active' | 'suspended';
+  description: string | null;
   quizQuestionCount: number;
   quizDurationMinutes: number;
   createdByUserId: string;

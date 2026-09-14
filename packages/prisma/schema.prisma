@@ -98,6 +98,7 @@ model QuestionSet {
   title               String   @db.VarChar(255)
   technologyId        String   @db.VarChar(36)
   status              String   @db.VarChar(20)
+  description         String?  @db.Text
   quizQuestionCount   Int      @default(20)
   quizDurationMinutes Int      @default(40)
   createdByUserId     String   @db.VarChar(36)

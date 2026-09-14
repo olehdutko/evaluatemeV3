@@ -6,6 +6,7 @@ import { BadRequestError, ConflictError } from '../../../infrastructure/errors/a
 export interface CreateQuestionSetInput {
   technologyId: string;
   title: string;
+  description?: string | null;
   quizQuestionCount?: number;
   quizDurationMinutes?: number;
   createdByUserId: string;
@@ -56,6 +57,7 @@ export class CreateQuestionSetUseCase {
       title,
       technologyId,
       status: 'active',
+      description: input.description ?? null,
       quizQuestionCount,
       quizDurationMinutes,
       createdByUserId: input.createdByUserId,

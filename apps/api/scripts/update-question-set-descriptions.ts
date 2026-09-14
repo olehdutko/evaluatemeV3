@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { randomUUID } from 'crypto';
 
 const OLD_DATABASE_URL = process.env.OLD_DATABASE_URL;
 const NEW_DATABASE_URL = process.env.NEW_DATABASE_URL ?? process.env.DATABASE_URL;
@@ -18,16 +17,7 @@ interface LegacyTest {
   id: number;
   Name: string;
   Technology_id: number;
-  questions_count: number;
-  minutes: number;
-  is_free: number;
   description: string | null;
-}
-
-interface LegacyTechnology {
-  Technology_id: number;
-  Technology: string;
-  is_active: number;
 }
 
 async function run(): Promise<void> {
@@ -36,15 +26,11 @@ async function run(): Promise<void> {
 
   try {
     const legacyTests: LegacyTest[] = await oldPrisma.$queryRaw`
-      SELECT id, Name, Technology_id, questions_count, minutes, is_free, description
-      FROM Tests
-      ORDER BY id ASC
+      SELECT id, Name, Technology_id, description FROM Tests ORDER BY id ASC
     `;
 
-    const legacyTechnologies: LegacyTechnology[] = await oldPrisma.$queryRaw`
-      SELECT Technology_id, Technology, is_active
-      FROM Technologies
-      ORDER BY Technology_id ASC
+    const legacyTechnologies = await oldPrisma.$queryRaw<{ Technology_id: number; Technology: string }[]>`
+      SELECT Technology_id, Technology FROM Technologies ORDER BY Technology_id ASC
     `;
 
     const newTechnologies = await newPrisma.technology.findMany({
@@ -54,20 +40,18 @@ async function run(): Promise<void> {
     const technologyNameToId = new Map(newTechnologies.map((t) => [t.name, t.id]));
     const legacyTechNameById = new Map(legacyTechnologies.map((t) => [t.Technology_id, t.Technology]));
 
-    let created = 0;
+    let updated = 0;
     let skipped = 0;
 
     for (const legacy of legacyTests) {
       const legacyTechName = legacyTechNameById.get(legacy.Technology_id);
       if (!legacyTechName) {
-        console.warn(`Skipping test ${legacy.id}: unknown legacy technology ${legacy.Technology_id}`);
         skipped += 1;
         continue;
       }
 
       const newTechnologyId = technologyNameToId.get(legacyTechName);
       if (!newTechnologyId) {
-        console.warn(`Skipping test ${legacy.id}: technology "${legacyTechName}" not found in new DB`);
         skipped += 1;
         continue;
       }
@@ -76,31 +60,20 @@ async function run(): Promise<void> {
         where: { technologyId: newTechnologyId, title: legacy.Name },
       });
 
-      if (existing) {
-        console.warn(`Skipping test ${legacy.id}: question set "${legacy.Name}" for "${legacyTechName}" already exists`);
+      if (!existing) {
         skipped += 1;
         continue;
       }
 
-      await newPrisma.questionSet.create({
-        data: {
-          id: randomUUID(),
-          title: legacy.Name,
-          technologyId: newTechnologyId,
-          status: 'active',
-          description: legacy.description || null,
-          quizQuestionCount: legacy.questions_count,
-          quizDurationMinutes: legacy.minutes,
-          createdByUserId: '00000000-0000-0000-0000-000000000000',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+      await newPrisma.questionSet.update({
+        where: { id: existing.id },
+        data: { description: legacy.description || null },
       });
 
-      created += 1;
+      updated += 1;
     }
 
-    console.log(`Migration complete. Created ${created} question sets, skipped ${skipped}.`);
+    console.log(`Updated ${updated} question set descriptions, skipped ${skipped}.`);
   } finally {
     await oldPrisma.$disconnect();
     await newPrisma.$disconnect();
