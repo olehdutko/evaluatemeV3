@@ -21,9 +21,9 @@ interface TechnologiesListProps {
 function TechnologiesList({ technologies }: TechnologiesListProps): JSX.Element {
   const { isCompany } = useAuth();
   return (
-    <ul className="border-t border-border">
+    <ul className="border-b border-border">
       {technologies.map((technology, index) => (
-        <li key={technology.id} className="group border-b border-border">
+        <li key={technology.id} className="group border-t border-border">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-5 sm:py-6 px-2 sm:px-4 -mx-2 sm:-mx-4 transition-colors duration-200 hover:bg-bg-secondary">
             <div className="flex items-start gap-4 sm:gap-6">
               <span className="font-mono text-sm text-text-muted w-8 shrink-0">
@@ -91,6 +91,7 @@ export default function TechnologiesPage(): JSX.Element {
       <PageHeader
         title="Technologies"
         description="Catalog of technologies available for tests."
+        borderless
       />
 
       {isLoading ? (

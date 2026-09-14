@@ -119,11 +119,6 @@ export default function TechnologyDetailPage(): JSX.Element {
             <h2 className="font-display text-xl sm:text-2xl font-bold text-text-primary">
               Available question sets
             </h2>
-            {selectedQuestionSet && (
-              <p className="mt-2 text-sm text-text-secondary font-body">
-                <strong>{selectedQuestionSet.actualQuestionCount.toLocaleString()}</strong> questions available in this set.
-              </p>
-            )}
             {selectedQuestionSet?.description && (
               <p className="mt-3 text-text-secondary font-body">
                 {selectedQuestionSet.description}
