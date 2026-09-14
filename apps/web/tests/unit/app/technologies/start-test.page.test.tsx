@@ -86,7 +86,7 @@ describe('StartTestPage', () => {
     expect(await screen.findByRole('heading', { name: 'C#' })).toBeInTheDocument();
     expect(screen.getByText('csharp')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Start quiz' })).toBeInTheDocument();
-    expect(screen.getByText('C# Basics')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'C# Basics' })).toBeInTheDocument();
   });
 
   it('navigates to test session on success', async () => {

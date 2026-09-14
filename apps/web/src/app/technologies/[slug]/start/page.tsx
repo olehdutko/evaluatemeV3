@@ -71,9 +71,19 @@ export default function TechnologyDetailPage(): JSX.Element {
             </Link>
           </li>
           <li aria-hidden="true">/</li>
-          <li className="text-text-primary" aria-current="page">
-            {preview.name}
+          <li>
+            <Link href={`/technologies/${preview.slug}/start`} className="hover:text-accent transition-colors">
+              {preview.name}
+            </Link>
           </li>
+          {selectedQuestionSet && (
+            <>
+              <li aria-hidden="true">/</li>
+              <li className="text-text-primary" aria-current="page">
+                {selectedQuestionSet.title}
+              </li>
+            </>
+          )}
         </ol>
       </nav>
 
