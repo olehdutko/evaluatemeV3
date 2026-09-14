@@ -3,7 +3,10 @@ import {
   loginResponseSchema,
   registerRequestSchema,
   registerResponseSchema,
+  updateProfileResponseSchema,
 } from '../../src/lib/schemas/auth.schema';
+import { UpdateProfileUseCase } from '../../src/application/auth/update-profile.use-case';
+import { IUserRepository } from '@evaluateme/domain';
 
 describe('Auth endpoint contracts', () => {
   it('validates a register request', () => {
@@ -78,5 +81,40 @@ describe('Auth endpoint contracts', () => {
       },
     };
     expect(() => loginResponseSchema.parse(payload)).not.toThrow();
+  });
+
+  it('validates an update profile response produced by the use case', async () => {
+    const existing = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      email: 'user@example.com',
+      username: 'johndoe',
+      role: 'user',
+      credits: 10,
+      firstName: 'John',
+      lastName: 'Doe',
+      middleName: null,
+      birthDate: new Date('1990-01-01'),
+      country: 'UA',
+      city: 'Lviv',
+      phone: null,
+      createdAt: new Date('2026-08-10T12:00:00Z'),
+      updatedAt: new Date('2026-08-10T12:00:00Z'),
+      companyProfileId: null,
+      passwordHash: 'hash',
+      activationStatus: 'active',
+    };
+    const userRepository: IUserRepository = {
+      findById: jest.fn().mockResolvedValue(existing),
+      findByEmail: jest.fn().mockResolvedValue(null),
+      findByUsername: jest.fn().mockResolvedValue(null),
+      save: jest.fn().mockImplementation((user) => Promise.resolve(user)),
+    } as unknown as IUserRepository;
+    const useCase = new UpdateProfileUseCase(userRepository);
+    const result = await useCase.execute({
+      userId: existing.id,
+      city: 'Lviv2233',
+    });
+    expect(result.success).toBe(true);
+    expect(() => updateProfileResponseSchema.parse(result)).not.toThrow();
   });
 });

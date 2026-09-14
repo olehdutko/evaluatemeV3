@@ -134,7 +134,6 @@ export const updateProfileResponseSchema = z.object({
     username: z.string().min(1).max(100).nullable(),
     role: userRoleSchema,
     credits: z.number().int().min(0),
-    companyId: z.string().uuid().nullable(),
     firstName: z.string().max(100).nullable(),
     lastName: z.string().max(100).nullable(),
     middleName: z.string().max(100).nullable(),
