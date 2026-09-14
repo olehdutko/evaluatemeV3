@@ -195,51 +195,43 @@ export default function TechnologyDetailPage(): JSX.Element {
           </div>
         </div>
 
+        {!isCompany && (
           <div className="panel p-6 sm:p-8 h-fit space-y-4">
-          <p className="label-mono">Slug</p>
-          <p className="font-mono text-sm text-text-secondary">{preview.slug}</p>
+            <p className="label-mono">Slug</p>
+            <p className="font-mono text-sm text-text-secondary">{preview.slug}</p>
 
-          {!isAuthenticated ? (
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-text-secondary font-body">
-                Want to test your skills? Create an account or log in to start a quiz.
-              </p>
-              <div className="flex flex-col gap-3 mt-4">
-                <Link href="/register" className="btn-primary text-center">Sign up</Link>
-                <Link href="/login" className="btn-secondary text-center">Log in</Link>
+            {!isAuthenticated ? (
+              <div className="pt-4 border-t border-border">
+                <p className="text-sm text-text-secondary font-body">
+                  Want to test your skills? Create an account or log in to start a quiz.
+                </p>
+                <div className="flex flex-col gap-3 mt-4">
+                  <Link href="/register" className="btn-primary text-center">Sign up</Link>
+                  <Link href="/login" className="btn-secondary text-center">Log in</Link>
+                </div>
               </div>
-            </div>
-          ) : isAdminUser ? (
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-text-secondary font-body">
-                Admin accounts cannot take tests. Switch to a personal account to start a quiz.
-              </p>
-              <div className="flex flex-col gap-3 mt-4">
-                <Link href="/admin/dashboard" className="btn-secondary text-center">Go to admin panel</Link>
+            ) : isAdminUser ? (
+              <div className="pt-4 border-t border-border">
+                <p className="text-sm text-text-secondary font-body">
+                  Admin accounts cannot take tests. Switch to a personal account to start a quiz.
+                </p>
+                <div className="flex flex-col gap-3 mt-4">
+                  <Link href="/admin/dashboard" className="btn-secondary text-center">Go to admin panel</Link>
+                </div>
               </div>
-            </div>
-          ) : isCompany ? (
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-text-secondary font-body">
-                Corporate accounts cannot take tests directly. Create a campaign to invite participants.
-              </p>
-              <div className="flex flex-col gap-3 mt-4">
-                <Link href="/campaigns/new" className="btn-secondary text-center">Create campaign</Link>
-                <Link href="/campaigns" className="btn-secondary text-center">My campaigns</Link>
+            ) : (
+              <div className="space-y-3 pt-4 border-t border-border">
+                <QuizStartButtonWithDialog
+                  slug={preview.slug}
+                  questionSetId={selectedQuestionSetId ?? ''}
+                  variant="primary"
+                  className="w-full"
+                  initialPreview={preview}
+                />
               </div>
-            </div>
-          ) : (
-            <div className="space-y-3 pt-4 border-t border-border">
-              <QuizStartButtonWithDialog
-                slug={preview.slug}
-                questionSetId={selectedQuestionSetId ?? ''}
-                variant="primary"
-                className="w-full"
-                initialPreview={preview}
-              />
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
