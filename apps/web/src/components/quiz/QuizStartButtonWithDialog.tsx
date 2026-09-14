@@ -98,6 +98,11 @@ export function QuizStartButtonWithDialog({
         <div className="space-y-4">
           {preview ? (
             <>
+              {selectedSet && (
+                <h2 className="font-display text-xl font-bold text-text-primary">
+                  {selectedSet.title}
+                </h2>
+              )}
               <p className="font-body text-text-primary">
                 Once you click "Yes" button, {preview.price} credits will be taken from your account for selected test. Do you really want to navigate to test?
               </p>
