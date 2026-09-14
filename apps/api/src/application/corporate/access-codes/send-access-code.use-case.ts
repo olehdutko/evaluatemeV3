@@ -78,19 +78,21 @@ export class SendAccessCodeUseCase {
     }
 
     const template = await this.templateRepository.findByName(TEST_INVITATION_TEMPLATE_NAME);
+    if (!template) {
+      throw new NotFoundError('email template', TEST_INVITATION_TEMPLATE_NAME);
+    }
+
     const questionSet = code.questionSetId ? await this.questionSetRepository.findById(code.questionSetId) : null;
     const testName = questionSet?.title ?? 'the assessment';
     const candidateName = code.testeeName ?? recipientEmail;
     const frontendOrigin = process.env.WEB_ORIGIN || 'http://localhost:4000';
     const testLink = `${frontendOrigin}/tests/start?accessCode=${encodeURIComponent(code.code)}`;
 
-    const subject = template?.subject.replace(/{{testName}}/g, testName) ?? `You are invited to take ${testName}`;
-    const html = template?.bodyHtml
-      ? this.applyTemplate(template.bodyHtml, { candidateName, testName, testLink, accessCode: code.code })
-      : this.defaultInvitationHtml(candidateName, testName, testLink, code.code);
-    const text = template?.bodyText
+    const subject = this.applyTemplate(template.subject, { candidateName, testName, testLink, accessCode: code.code });
+    const html = this.applyTemplate(template.bodyHtml, { candidateName, testName, testLink, accessCode: code.code });
+    const text = template.bodyText
       ? this.applyTemplate(template.bodyText, { candidateName, testName, testLink, accessCode: code.code })
-      : this.defaultInvitationText(candidateName, testName, testLink, code.code);
+      : undefined;
 
     const now = new Date();
     await this.emailService.send({
@@ -172,14 +174,4 @@ export class SendAccessCodeUseCase {
       .replace(/{{accessCode}}/g, values.accessCode);
   }
 
-  private defaultInvitationHtml(candidateName: string, testName: string, testLink: string, accessCode: string): string {
-    return `<p>Hello ${candidateName},</p>
-<p>You have been invited to take ${testName}.</p>
-<p><a href="${testLink}">Start Test</a></p>
-<p>Or use this access code: <strong>${accessCode}</strong></p>`;
-  }
-
-  private defaultInvitationText(candidateName: string, testName: string, testLink: string, accessCode: string): string {
-    return `Hello ${candidateName},\n\nYou have been invited to take ${testName}.\n\nStart here: ${testLink}\nAccess code: ${accessCode}`;
-  }
 }
