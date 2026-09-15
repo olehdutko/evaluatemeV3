@@ -250,24 +250,23 @@ export default function CampaignDetailPage() {
               </div>
 
               {historyPageSize !== 'all' && campaign.history.length > historyPageSize && (
-                <div className="flex items-center justify-between gap-4">
-                  <Button
-                    onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
-                    disabled={historyPage <= 1}
-                    variant="secondary"
-                  >
-                    Previous
-                  </Button>
-                  <p className="font-mono text-xs text-text-secondary">
-                    Showing {(historyPage - 1) * historyPageSize + 1}–{Math.min(historyPage * historyPageSize, campaign.history.length)} of {campaign.history.length}
-                  </p>
-                  <Button
-                    onClick={() => setHistoryPage((p) => Math.min(Math.ceil(campaign.history.length / historyPageSize), p + 1))}
-                    disabled={historyPage >= Math.ceil(campaign.history.length / historyPageSize)}
-                    variant="secondary"
-                  >
-                    Next
-                  </Button>
+                <div className="flex items-center justify-center gap-2">
+                  {Array.from({ length: Math.ceil(campaign.history.length / historyPageSize) }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      type="button"
+                      onClick={() => setHistoryPage(page)}
+                      className={`min-w-[2rem] px-2 py-1 text-sm font-mono border transition-colors ${
+                        historyPage === page
+                          ? 'border-text-primary bg-text-primary text-bg-primary'
+                          : 'border-border text-text-secondary hover:border-text-primary hover:text-text-primary'
+                      }`}
+                      aria-label={`Go to page ${page}`}
+                      aria-current={historyPage === page ? 'page' : undefined}
+                    >
+                      {page}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
