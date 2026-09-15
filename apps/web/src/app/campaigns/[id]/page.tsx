@@ -183,33 +183,6 @@ export default function CampaignDetailPage() {
             <p className="text-gray-600">No history yet.</p>
           ) : (
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <label htmlFor="history-page-size" className="font-mono text-xs uppercase tracking-wider text-text-secondary">
-                    Per page
-                  </label>
-                  <select
-                    id="history-page-size"
-                    value={historyPageSize}
-                    onChange={(e) => {
-                      setHistoryPageSize(e.target.value === 'all' ? 'all' : Number(e.target.value));
-                      setHistoryPage(1);
-                    }}
-                    className="input-field py-1.5 pr-8 text-sm"
-                  >
-                    <option value={15}>15</option>
-                    <option value={25}>25</option>
-                    <option value={50}>50</option>
-                    <option value="all">All</option>
-                  </select>
-                </div>
-                <p className="font-mono text-xs text-text-secondary">
-                  {historyPageSize === 'all'
-                    ? `Showing all ${campaign.history.length} entries`
-                    : `Page ${historyPage} of ${Math.max(1, Math.ceil(campaign.history.length / historyPageSize))}`}
-                </p>
-              </div>
-
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-bg-tertiary">
@@ -249,26 +222,48 @@ export default function CampaignDetailPage() {
                 </table>
               </div>
 
-              {historyPageSize !== 'all' && campaign.history.length > historyPageSize && (
-                <div className="flex items-center justify-center gap-2">
-                  {Array.from({ length: Math.ceil(campaign.history.length / historyPageSize) }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      type="button"
-                      onClick={() => setHistoryPage(page)}
-                      className={`min-w-[2rem] px-2 py-1 text-sm font-mono border transition-colors ${
-                        historyPage === page
-                          ? 'border-text-primary bg-text-primary text-bg-primary'
-                          : 'border-border text-text-secondary hover:border-text-primary hover:text-text-primary'
-                      }`}
-                      aria-label={`Go to page ${page}`}
-                      aria-current={historyPage === page ? 'page' : undefined}
-                    >
-                      {page}
-                    </button>
-                  ))}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                {historyPageSize !== 'all' && campaign.history.length > historyPageSize && (
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: Math.ceil(campaign.history.length / historyPageSize) }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setHistoryPage(page)}
+                        className={`min-w-[2rem] px-2 py-1 text-sm font-mono border transition-colors ${
+                          historyPage === page
+                            ? 'border-text-primary bg-text-primary text-bg-primary'
+                            : 'border-border text-text-secondary hover:border-text-primary hover:text-text-primary'
+                        }`}
+                        aria-label={`Go to page ${page}`}
+                        aria-current={historyPage === page ? 'page' : undefined}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <select
+                    id="history-page-size"
+                    value={historyPageSize}
+                    onChange={(e) => {
+                      setHistoryPageSize(e.target.value === 'all' ? 'all' : Number(e.target.value));
+                      setHistoryPage(1);
+                    }}
+                    className="bg-transparent border border-border px-2 py-1 text-sm font-mono text-text-secondary hover:border-text-primary focus:border-text-primary focus:outline-none transition-colors"
+                  >
+                    <option value={15}>15</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value="all">All</option>
+                  </select>
+                  <label htmlFor="history-page-size" className="font-mono text-xs uppercase tracking-wider text-text-secondary">
+                    / page
+                  </label>
                 </div>
-              )}
+              </div>
             </div>
           )}
         </>
