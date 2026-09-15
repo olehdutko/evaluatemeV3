@@ -52,6 +52,8 @@ export default function CampaignDetailPage() {
   const [refreshToken, setRefreshToken] = useState(0);
   const [activeTab, setActiveTab] = useState<'access-codes' | 'results' | 'history'>('access-codes');
   const [confirmStatus, setConfirmStatus] = useState<'open' | 'closed' | 'archived' | null>(null);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyPageSize, setHistoryPageSize] = useState<number | 'all'>(15);
 
   const fetchCampaign = useCallback(() => {
     if (!companyId) {
@@ -180,40 +182,94 @@ export default function CampaignDetailPage() {
           {campaign.history.length === 0 ? (
             <p className="text-gray-600">No history yet.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-bg-tertiary">
-                  <tr>
-                    <th className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-text-secondary">Action</th>
-                    <th className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-text-secondary">Details</th>
-                    <th className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-text-secondary">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {campaign.history.map((entry) => {
-                    const metadata = entry.metadata ? (JSON.parse(entry.metadata) as Record<string, unknown>) : {};
-                    const previousStatus = metadata.previousStatus ? String(metadata.previousStatus) : null;
-                    const recipientEmail = metadata.recipientEmail ? String(metadata.recipientEmail) : null;
-                    const testeeEmail = metadata.testeeEmail ? String(metadata.testeeEmail) : null;
-                    const testeeName = metadata.testeeName ? String(metadata.testeeName) : null;
-                    const code = metadata.code ? String(metadata.code) : null;
-                    const details: string[] = [];
-                    if (entry.status) details.push(`Status: ${entry.status}`);
-                    if (previousStatus) details.push(`From: ${previousStatus}`);
-                    if (recipientEmail) details.push(`Sent to: ${recipientEmail}`);
-                    if (code) details.push(`Code: ${code}`);
-                    if (testeeEmail) details.push(`For: ${testeeEmail}`);
-                    if (testeeName) details.push(`Testee: ${testeeName}`);
-                    return (
-                      <tr key={entry.id}>
-                        <td className="px-4 py-2 font-medium capitalize text-text-primary">{entry.action.replace(/_/g, ' ')}</td>
-                        <td className="px-4 py-2 text-text-secondary">{details.join(' · ') || '-'}</td>
-                        <td className="px-4 py-2 text-text-secondary whitespace-nowrap">{new Date(entry.changedAt).toLocaleString()}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <label htmlFor="history-page-size" className="font-mono text-xs uppercase tracking-wider text-text-secondary">
+                    Per page
+                  </label>
+                  <select
+                    id="history-page-size"
+                    value={historyPageSize}
+                    onChange={(e) => {
+                      setHistoryPageSize(e.target.value === 'all' ? 'all' : Number(e.target.value));
+                      setHistoryPage(1);
+                    }}
+                    className="input-field py-1.5 pr-8 text-sm"
+                  >
+                    <option value={15}>15</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value="all">All</option>
+                  </select>
+                </div>
+                <p className="font-mono text-xs text-text-secondary">
+                  {historyPageSize === 'all'
+                    ? `Showing all ${campaign.history.length} entries`
+                    : `Page ${historyPage} of ${Math.max(1, Math.ceil(campaign.history.length / historyPageSize))}`}
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-bg-tertiary">
+                    <tr>
+                      <th className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-text-secondary">Action</th>
+                      <th className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-text-secondary">Details</th>
+                      <th className="px-4 py-2 font-mono text-xs uppercase tracking-wider text-text-secondary">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {(historyPageSize === 'all'
+                      ? campaign.history
+                      : campaign.history.slice((historyPage - 1) * historyPageSize, historyPage * historyPageSize)
+                    ).map((entry) => {
+                      const metadata = entry.metadata ? (JSON.parse(entry.metadata) as Record<string, unknown>) : {};
+                      const previousStatus = metadata.previousStatus ? String(metadata.previousStatus) : null;
+                      const recipientEmail = metadata.recipientEmail ? String(metadata.recipientEmail) : null;
+                      const testeeEmail = metadata.testeeEmail ? String(metadata.testeeEmail) : null;
+                      const testeeName = metadata.testeeName ? String(metadata.testeeName) : null;
+                      const code = metadata.code ? String(metadata.code) : null;
+                      const details: string[] = [];
+                      if (entry.status) details.push(`Status: ${entry.status}`);
+                      if (previousStatus) details.push(`From: ${previousStatus}`);
+                      if (recipientEmail) details.push(`Sent to: ${recipientEmail}`);
+                      if (code) details.push(`Code: ${code}`);
+                      if (testeeEmail) details.push(`For: ${testeeEmail}`);
+                      if (testeeName) details.push(`Testee: ${testeeName}`);
+                      return (
+                        <tr key={entry.id}>
+                          <td className="px-4 py-2 font-medium capitalize text-text-primary">{entry.action.replace(/_/g, ' ')}</td>
+                          <td className="px-4 py-2 text-text-secondary">{details.join(' · ') || '-'}</td>
+                          <td className="px-4 py-2 text-text-secondary whitespace-nowrap">{new Date(entry.changedAt).toLocaleString()}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {historyPageSize !== 'all' && campaign.history.length > historyPageSize && (
+                <div className="flex items-center justify-between gap-4">
+                  <Button
+                    onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+                    disabled={historyPage <= 1}
+                    variant="secondary"
+                  >
+                    Previous
+                  </Button>
+                  <p className="font-mono text-xs text-text-secondary">
+                    Showing {(historyPage - 1) * historyPageSize + 1}–{Math.min(historyPage * historyPageSize, campaign.history.length)} of {campaign.history.length}
+                  </p>
+                  <Button
+                    onClick={() => setHistoryPage((p) => Math.min(Math.ceil(campaign.history.length / historyPageSize), p + 1))}
+                    disabled={historyPage >= Math.ceil(campaign.history.length / historyPageSize)}
+                    variant="secondary"
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </>
